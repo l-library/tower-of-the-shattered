@@ -23,11 +23,12 @@
  ****************************************************************************/
 
 #include "main.h"
-#include "AppDelegate.h"
+#include "../Classes/Core/AppDelegate.h"
 #include "cocos2d.h"
 
 USING_NS_CC;
 
+//win32 默认入口函数（功能等同main）
 int WINAPI _tWinMain(HINSTANCE hInstance,
                        HINSTANCE hPrevInstance,
                        LPTSTR    lpCmdLine,
@@ -38,5 +39,5 @@ int WINAPI _tWinMain(HINSTANCE hInstance,
 
     // create the application instance
     AppDelegate app;
-    return Application::getInstance()->run();
+    return Application::getInstance()->run();//开始运行第一个场景
 }

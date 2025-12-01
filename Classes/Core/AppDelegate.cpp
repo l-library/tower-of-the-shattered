@@ -24,6 +24,7 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
+//下面是音频相关引擎的开关
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -33,8 +34,8 @@ using namespace cocos2d::experimental;
 #endif
 
 USING_NS_CC;
-
-static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
+static cocos2d::Size designResolutionSize = cocos2d::Size(1280, 720);//默认窗口大小和分辨率改大了一点
+//static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
@@ -73,21 +74,25 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-        glview = GLViewImpl::createWithRect("tower-of-the-shattered", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+        {
+            //创建窗口
+            glview = GLViewImpl::createWithRect("tower-of-the-shattered", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+        }
 #else
         glview = GLViewImpl::create("tower-of-the-shattered");
 #endif
         director->setOpenGLView(glview);
     }
 
-    // turn on display FPS
+    //开启帧率显示（最后关掉）
     director->setDisplayStats(true);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
 
-    // Set the design resolution
+    //设置分辨率
     glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
+#if 0//一些自动调整功能，感觉会产生奇怪的影响，注释掉了
     auto frameSize = glview->getFrameSize();
     // if the frame's height is larger than the height of medium size.
     if (frameSize.height > mediumResolutionSize.height)
@@ -104,7 +109,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     {        
         director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
     }
-
+#endif
     register_all_packages();
 
     // create a scene. it's an autorelease object

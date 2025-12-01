@@ -30,15 +30,15 @@
 class HelloWorld : public cocos2d::Scene
 {
 public:
-    static cocos2d::Scene* createScene();
+    static cocos2d::Scene* createScene();//创建场景
 
-    virtual bool init();
+    virtual bool init();//初始化
     
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     
     // implement the "static create()" method manually
-    CREATE_FUNC(HelloWorld);
+    CREATE_FUNC(HelloWorld);//生成一个create函数
 };
 
 #endif // __HELLOWORLD_SCENE_H__
