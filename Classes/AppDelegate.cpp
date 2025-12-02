@@ -24,6 +24,7 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
+#include "TowerOfTheShattered.h"
 //下面是音频相关引擎的开关
 
 // #define USE_AUDIO_ENGINE 1
@@ -112,8 +113,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 #endif
     register_all_packages();
 
-    // create a scene. it's an autorelease object
-    auto scene = HelloWorld::createScene();
+    // 创建场景实例，自动释放
+    auto scene = PlayerTest::createScene();
 
     // run
     director->runWithScene(scene);
