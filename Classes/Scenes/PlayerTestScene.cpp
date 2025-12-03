@@ -1,10 +1,10 @@
-#include "PlayerTest.h"
+#include "PlayerTestScene.h"
 
 USING_NS_CC;
 
-Scene* PlayerTest::createScene()
+Scene* PlayerTestScene::createScene()
 {
-    return PlayerTest::create();
+    return PlayerTestScene::create();
 }
 
 // 如果加载错误，打印错误信息
@@ -14,7 +14,7 @@ static void problemLoading(const char* filename)
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in PlayerTestScene.cpp\n");
 }
 
-bool PlayerTest::init()
+bool PlayerTestScene::init()
 {
     if (!Scene::init())
     {
@@ -49,18 +49,4 @@ bool PlayerTest::init()
     grossini->runAction(Sequence::create(action2, action2->reverse(), NULL));
 
     return true;
-}
-
-
-void PlayerTest::menuCloseCallback(Ref* pSender)
-{
-    //Close the cocos2d-x game scene and quit the application
-    Director::getInstance()->end();
-
-    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
-
-    //EventCustom customEndEvent("game_scene_close_event");
-    //_eventDispatcher->dispatchEvent(&customEndEvent);
-
-
 }
