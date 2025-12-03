@@ -1,4 +1,5 @@
 #include "PlayerTestScene.h"
+#include "TowerOfTheShattered.h"
 
 USING_NS_CC;
 
@@ -31,22 +32,15 @@ bool PlayerTestScene::init()
     background->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(background);
 
-    //创建一个精灵用于显示动画
-    Sprite* grossini = Sprite::create("player/Knight_idle_first.png");
-
-    grossini->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
-
-    grossini->setScale(0.5f);
-
-    this->addChild(grossini, 1);
     //在缓存中存入动画
     auto cache = AnimationCache::getInstance();
-    cache->addAnimationsWithFile("player/HeroKnight_idle_.plist");
-    //从缓存中取出动画
-    auto animation2 = cache->getAnimation("idle");
+    cache->addAnimationsWithFile("player/Animation_test.plist");
 
-    auto action2 = Animate::create(animation2);
-    grossini->runAction(Sequence::create(action2, action2->reverse(), NULL));
+    //创建一个player对象
+    auto player = Player::createNode();
+    player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
+    player->setScale(0.5f);
+    this->addChild(player, 1);///渲染player
 
     return true;
 }

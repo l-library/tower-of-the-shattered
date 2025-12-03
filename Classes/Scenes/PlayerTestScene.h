@@ -1,6 +1,8 @@
+#pragma once
 #include "cocos2d.h"
 
-//创建Scene的子类PlayerTest
+//创建Scene的子类PlayerTestScene
+//该场景用于测试玩家的基本操作
 class PlayerTestScene : public cocos2d::Scene
 {
 public:
