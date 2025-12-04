@@ -90,16 +90,79 @@
 					<string>processed_frame_012.png</string>
 					<key>delayUnits</key>
 					<integer>1</integer>
+					<key>notification</key>
+					<dict>
+						<key>lastframe</key>
+						<true/>
+					</dict>
+				</dict>
+			</array>
+		</dict>
+	<key>magician_idle</key>
+		<dict>
+			<key>delayPerUnit</key>
+			<real>0.2</real>
+			<key>restoreOriginalFrame</key>
+			<true/>
+			<key>loops</key>
+			<integer>-1</integer>
+			<key>frames</key>
+			<array>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-0.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+					<key>notification</key>
+					<dict>
+						<key>firstframe</key>
+						<true/>
+					</dict>
 				</dict>
 				<dict>
 					<key>spriteframe</key>
-					<string>processed_frame_013.png</string>
+					<string>idle-1.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+					<key>notification</key>
+					<dict>
+						<key>firstframe</key>
+						<true/>
+					</dict>
+				</dict>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-2.png</string>
 					<key>delayUnits</key>
 					<integer>1</integer>
 				</dict>
 				<dict>
 					<key>spriteframe</key>
-					<string>processed_frame_014.png</string>
+					<string>idle-3.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+				</dict>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-2.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+				</dict>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-4.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+				</dict>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-5.png</string>
+					<key>delayUnits</key>
+					<integer>1</integer>
+				</dict>
+				<dict>
+					<key>spriteframe</key>
+					<string>idle-6.png</string>
 					<key>delayUnits</key>
 					<integer>1</integer>
 					<key>notification</key>
@@ -115,7 +178,8 @@
 	<dict>
 		<key>spritesheets</key>
 		<array>
-			<string>Knight_idle.plist</string>
+			<string>KnightIdle.plist</string>
+			<string>magician.plist</string>
 		</array>
 		<key>format</key>
 		<integer>2</integer>

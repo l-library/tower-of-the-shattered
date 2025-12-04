@@ -39,7 +39,7 @@ bool PlayerTestScene::init()
     //创建一个player对象
     auto player = Player::createNode();
     player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
-    player->setScale(0.5f);
+    player->setScale(5.0f);
     this->addChild(player, 1);///渲染player
 
     return true;
