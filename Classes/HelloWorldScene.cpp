@@ -40,10 +40,18 @@ public:
         CC_SAFE_DELETE(enemy);
         return nullptr;
     }
-
-    virtual void updateState(float delta) override {
-        // 更新状态逻辑
+    
+    // 重写精灵初始化虚函数
+    virtual void InitSprite() override {
+        // 初始化精灵并设置默认图像
+        sprite_ = Sprite::create("HelloWorld.png");
+        if (sprite_) {
+            this->addChild(sprite_);
+            // 设置精灵大小
+            sprite_->setScale(0.5f);
+        }
     }
+
 
     virtual void Hitted(int damage, int poise_damage = 0) override {
         // 被击中反应
@@ -121,18 +129,23 @@ public:
             
             return {false, 0.0f}; // 行为未完成，无后摇
         });
+        
+        // 添加硬直行为，后摇为0
+        addBehavior("staggered", [this](float delta) -> BehaviorResult {
+            // 硬直行为：显示硬直效果
+            if (getSprite()) {
+                // 简单的硬直效果：闪烁
+                int frameCount = static_cast<int>(staggerTimer_ / delta);
+                if (frameCount % 3 == 0) {
+                    getSprite()->setOpacity(frameCount % 6 < 3 ? 128 : 255);
+                }
+            }
+            return {true, 0.0f}; // 硬直行为总是立即完成，无后摇
+        });
     }
 
-    virtual BehaviorResult Execute(const std::string& name, float delta) override {
-        if (hasBehavior(name)) {
-            auto behavior = aiBehaviors_[name];
-            return behavior(delta);
-        }
-        return {false, 0.0f};
-    }
     
     virtual std::string DecideNextBehavior(float delta) override {
-        // 决定下一个行为的简单实现：50%概率返回idle，50%概率返回move
         // 实际项目中可以根据游戏逻辑、敌人状态、玩家位置等因素决定
         static float decisionTimer = 0.0f;
         static std::string lastDecision = "idle";
@@ -258,15 +271,6 @@ bool HelloWorld::init()
     // 创建测试敌人
     auto testEnemy = TestEnemy::create();
     if (testEnemy) {
-        // 获取敌人的精灵并设置图像（使用HelloWorld.png作为临时图像）
-        auto enemySprite = testEnemy->getSprite();
-        if (enemySprite) {
-            // 设置精灵图像
-            enemySprite->setTexture("HelloWorld.png");
-            // 缩小精灵以便区分
-            enemySprite->setScale(0.5f);
-        }
-        
         // 设置敌人位置
         testEnemy->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/4 + origin.y));
         
@@ -303,6 +307,41 @@ bool HelloWorld::init()
         
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
     }
+    
+    // 添加一个按钮用于测试韧性被清零的效果
+    auto breakPoiseButton = MenuItemFont::create("Break Poise", [=](Ref* pSender) {
+        // 一次性打空敌人的韧性
+        int currentPoise = testEnemy->getCurrentStaggerResistance();
+        testEnemy->Hitted(0, currentPoise); // 只造成韧性伤害，不造成生命值伤害
+        
+        // 显示敌人当前状态
+        auto statusLabel = Label::createWithTTF(
+            StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
+                                testEnemy->getCurrentVitality(), 
+                                testEnemy->getMaxVitality(),
+                                testEnemy->getCurrentStaggerResistance(),
+                                testEnemy->getStaggerResistance()), 
+            "fonts/Marker Felt.ttf", 16);
+        statusLabel->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height - 50));
+        statusLabel->setColor(Color3B::GREEN);
+        this->addChild(statusLabel, 2);
+        
+        // 1秒后移除状态标签
+        statusLabel->runAction(Sequence::create(
+            DelayTime::create(1.0f),
+            RemoveSelf::create(),
+            nullptr
+        ));
+    });
+    
+    // 设置按钮位置
+    breakPoiseButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 50));
+    breakPoiseButton->setColor(Color3B::BLUE);
+    
+    // 创建按钮菜单并添加到场景
+    auto buttonMenu = Menu::create(breakPoiseButton, nullptr);
+    buttonMenu->setPosition(Vec2::ZERO);
+    this->addChild(buttonMenu, 2);
     
     return true;
 }

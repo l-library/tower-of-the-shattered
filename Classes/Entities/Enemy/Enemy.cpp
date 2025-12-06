@@ -15,6 +15,8 @@ EnemyBase::EnemyBase()
     , currentBehavior_("")
     , recoveryDuration_(0.0f)
     , recoveryTimer_(0.0f)
+    , staggerDuration_(2.0f)  // 默认硬直持续2秒
+    , staggerTimer_(0.0f)
 {
 }
 
@@ -37,12 +39,8 @@ bool EnemyBase::init()
         return false; 
     }
     
-    // 初始化精灵
-    sprite_ = Sprite::create();
-    if (sprite_ != nullptr)
-    {
-        this->addChild(sprite_);
-    }
+    // 调用精灵初始化虚函数
+    this->InitSprite();
     
     // 初始化默认状态
     currentState_ = EnemyState::IDLE;
@@ -58,6 +56,17 @@ bool EnemyBase::init()
     this->scheduleUpdate();
     
     return true;
+}
+
+// 精灵初始化虚函数的默认实现
+void EnemyBase::InitSprite()
+{
+    // 初始化精灵
+    sprite_ = Sprite::create();
+    if (sprite_ != nullptr)
+    {
+        this->addChild(sprite_);
+    }
 }
 
 void EnemyBase::updateAI(float delta)
@@ -114,8 +123,31 @@ void EnemyBase::updateAI(float delta)
             currentState_ = EnemyState::IDLE;
         }
     }
+    
+    if (currentState_ == EnemyState::STAGGERED)
+    {
+        // 执行硬直行为
+        this->Execute("staggered", delta);
+        
+        // 更新硬直计时器
+        staggerTimer_ += delta;
+        
+        // 如果硬直时间结束，进入IDLE状态并重置韧性
+        if (staggerTimer_ >= staggerDuration_)
+        {
+            currentState_ = EnemyState::IDLE;
+            current_stagger_resistance_ = stagger_resistance_; // 重置韧性
+        }
+    }
 }
-
+BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
+{
+    if (hasBehavior(name)) {
+        auto behavior = aiBehaviors_[name];
+        return behavior(delta);
+    }
+    return { false, 0.0f };
+}
 void EnemyBase::update(float delta)
 {
     // 如果已经死亡，不再更新
@@ -124,8 +156,7 @@ void EnemyBase::update(float delta)
         return;
     }
     
-    // 更新状态
-    this->updateState(delta);
+
     
     // 调用AI更新方法，封装了所有AI相关逻辑
     this->updateAI(delta);
@@ -173,6 +204,16 @@ int EnemyBase::getDefense() const
     return defense_;
 }
 
+float EnemyBase::getStaggerDuration() const
+{
+    return staggerDuration_;
+}
+
+void EnemyBase::setStaggerDuration(float duration)
+{
+    staggerDuration_ = std::max(0.0f, duration);
+}
+
 // Setter方法
 void EnemyBase::setMaxVitality(int maxVitality)
 {
@@ -207,7 +248,16 @@ void EnemyBase::setStaggerResistance(int staggerResistance)
 
 void EnemyBase::setCurrentStaggerResistance(int currentStaggerResistance)
 {
+    int oldValue = current_stagger_resistance_;
     current_stagger_resistance_ = std::max(0, std::min(currentStaggerResistance, stagger_resistance_));
+    
+    // 检查韧性是否被清零
+    if (oldValue > 0 && current_stagger_resistance_ <= 0)
+    {
+        // 韧性被清零，无论当前是什么状态，强制进入STAGGERED状态
+        currentState_ = EnemyState::STAGGERED;
+        staggerTimer_ = 0.0f;
+    }
 }
 
 void EnemyBase::setCurrentState(EnemyState state)
