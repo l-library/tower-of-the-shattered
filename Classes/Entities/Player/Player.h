@@ -1,11 +1,38 @@
 #pragma once
 #include "cocos2d.h"
+#include "Box2D/Box2D.h"
+
+// 玩家状态枚举
+enum class PlayerState {
+	IDLE,           // 待机
+	RUNNING,        // 奔跑
+	DODGING,		// 闪避
+	JUMPING,        // 跳跃中
+	FALLING,        // 下落中
+	LANDING,		// 落地
+	ATTACKING,      // 攻击中
+	HURT,           // 受伤
+	DEAD			// 死亡
+};
+//方向枚举
+enum class Direction {
+	RIGHT,
+	LEFT
+};
+
+//规定32个像素为1米
+#define PTM_RATIO 32
+
+//规定作用在玩家身上的重力加速度
+constexpr double kGravity = 10.0;
+//默认土狼时间
+constexpr double kCoyoteTime = 0.15;
 
 /**
 * @brief 储存主角的各类信息 
 * @details 这个类继承自Node
 ***/
-class Player :cocos2d::Node
+class Player :public cocos2d::Node
 {
 public:
 	/**
@@ -13,7 +40,7 @@ public:
 	* @param[in] 无
 	* @return 指向创建好的对象的指针Node*
 	***/
-	static cocos2d::Node* createNode();
+	static Player* createNode();
 
 	/**
 	* @brief 初始化主角对象
@@ -21,9 +48,119 @@ public:
 	***/
 	virtual bool init();
 
+	/**
+	* @brief 播放动画
+	* @param[in] 动画名称string name，是否循环播放bool loop
+	* @return 无
+	***/
+	void playAnimation(const std::string& name, bool loop = false);
+
+	/**
+	* @brief 获得玩家当前状态
+	* @param[in] void
+	* @return 玩家当前状态: idle, run, dodge, jump, fall, attack, hurt, dead
+	***/
+	std::string getCurrentState();
+
+	/*----各操作实现/对外接口----*/
+	void moveLeft();
+	void moveRight();
+	void stopMoving();
+	void jump();
+
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
-protected:
-	cocos2d::Sprite* _sprite;//主角图像_sprite（待机动作的第一帧）
 
+protected:
+	/**
+	* @brief 更新主角状态
+	* @details 每帧调用一次
+	***/
+	void update(float dt);
+
+	/**
+	* @brief 限制速度
+	* @details 保证角色的移动速度不会超过角色的最大速度
+	***/
+	void clampVelocity();
+
+	/**
+	* @brief 应用作用力
+	* @details 模仿真实物理世界：作用力，速度，加速度，重力
+	***/
+	void applyMovementForce();
+
+	/**
+	* @brief 检查地面/墙壁/碰撞
+	* @details 该函数待完善
+	***/
+	void checkCollisions();
+
+	/**
+	* @brief 改变主角状态
+	* @details 将同时更新当前状态和前一个状态，若状态不变，则不会更新
+	* @param[in] 要更改为的状态
+	***/
+	void changeState(PlayerState newState);
+
+private:
+	/*----各个更新函数----*/
+	void updateTimers(float dt);//更新计时器
+	void updateState();//更新状态
+	void updatePhysics(float dt);//更新物理
+	void updateAnimation();//更新动画
+
+	/*----主角属性----*/
+	//主角图像_sprite（待机动作的第一帧）
+	cocos2d::Sprite* _sprite;
+	//主角血量
+	double _health;
+	double _maxHealth;
+	//主角法力值
+	double _magic;
+	double _maxMagic;
+	//主角移动速度
+	double _speed;
+	//主角跳跃高度
+	double _jumpForce;
+	//主角闪避距离
+	double _dodgeForce;
+
+	/*----计时器----*/
+	//跳跃缓冲时间
+	double _jumpBufferTime;
+	//土狼时间
+	double _coyoteTime;
+	//闪避冷却
+	double _dodgeCooldown;
+	//攻击冷却
+	double _attackCooldown;
+	//无敌时间
+	double _invincibilityTime;
+
+	/*----主角当前状态----*/
+	//是否允许控制
+	bool _controlEnabled;
+	//是否位于地面上
+	bool _isGrounded;
+	//是否无敌
+	bool _isInvincible;
+	//是否正在闪避
+	bool _isDodge;
+	//是否正在攻击
+	bool _isAttacking;
+	//当前状态
+	PlayerState _currentState;
+	//前一个状态
+	PlayerState _previousState;
+	//面朝方向
+	Direction _direction;
+	//速度
+	cocos2d::Vec2 _velocity;
+	//加速度
+	float _acceleration;
+	float _deceleration;
+
+	/*----输入----*/
+	float _moveInput;
 };

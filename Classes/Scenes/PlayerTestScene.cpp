@@ -34,13 +34,66 @@ bool PlayerTestScene::init()
 
     //在缓存中存入动画
     auto cache = AnimationCache::getInstance();
-    cache->addAnimationsWithFile("player/Animation_test.plist");
+    cache->addAnimationsWithFile("player/PlayerAnimation.plist");
 
-    //创建一个player对象
-    auto player = Player::createNode();
-    player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
-    player->setScale(5.0f);
-    this->addChild(player, 1);///渲染player
+    //修改player对象
+    _player = Player::createNode();
+    _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
+    _player->setScale(5.0f);
+    this->addChild(_player, 1);///渲染player
+
+    setupInput();
 
     return true;
+}
+
+void PlayerTestScene::setupInput() {
+    // 键盘监听
+    auto keyboardListener = EventListenerKeyboard::create();
+
+    keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
+        switch (code) {
+            case EventKeyboard::KeyCode::KEY_A:
+            case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+                _player->moveLeft();
+                break;
+            case EventKeyboard::KeyCode::KEY_D:
+            case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+                _player->moveRight();
+                break;
+            case EventKeyboard::KeyCode::KEY_W:
+            case EventKeyboard::KeyCode::KEY_UP_ARROW:
+            case EventKeyboard::KeyCode::KEY_SPACE:
+                _player->jump();
+                break;
+            case EventKeyboard::KeyCode::KEY_J:
+            case EventKeyboard::KeyCode::KEY_K:
+                /*_player->attack();
+                break;*/
+            case EventKeyboard::KeyCode::KEY_SHIFT:
+                /*_player->dash();*/
+                break;
+            case EventKeyboard::KeyCode::KEY_S:
+            case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+                //_player->crouch(true);
+                break;
+        }
+        };
+
+    keyboardListener->onKeyReleased = [this](EventKeyboard::KeyCode code, Event* event) {
+        switch (code) {
+            case EventKeyboard::KeyCode::KEY_A:
+            case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+            case EventKeyboard::KeyCode::KEY_D:
+            case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+                _player->stopMoving();
+                break;
+            case EventKeyboard::KeyCode::KEY_S:
+            case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+                //_player->crouch(false);
+                break;
+        }
+        };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 }
