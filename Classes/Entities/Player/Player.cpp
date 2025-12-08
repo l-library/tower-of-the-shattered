@@ -19,6 +19,7 @@ bool Player::init()
 
 	//加载主角图像
 	_sprite = Sprite::create("player/magician-idle-0.png");
+    _sprite->setAnchorPoint(Vec2(0.5, 0));
 	this->addChild(_sprite);
 	//播放主角待机动画
 	playAnimation("idle", true);
@@ -35,18 +36,23 @@ bool Player::init()
     _dodgeForce = 600.0;
     _acceleration = 2000.0;
     _deceleration = 2500.0;
+    _maxAttackCooldown = 0.3;
+    _maxDodgeCooldown = 1.0;
+    _dodgeTime = 0;
     // 状态标志
     _isGrounded = true;//标记：有了具体场景之后应当设置为false
     _isDodge = false;
     _isAttacking = false;
     _isInvincible = false;
     _controlEnabled = true;
+    _attack_num = 0;
     // 计时器
     _jumpBufferTime = 0.0;
     _coyoteTime = 0.0;
     _dodgeCooldown = 0.0;
     _attackCooldown = 0.0;
     _invincibilityTime = 0.0;
+    _attackEngageTime = 0.0;
     // 物理效果
     _velocity = Vec2::ZERO;
     //输入
@@ -118,9 +124,23 @@ void Player::updateTimers(float dt) {
         _dodgeCooldown -= dt;
     }
 
+    //闪避持续
+    if (_dodgeTime > 0) {
+        _dodgeTime -= dt;
+        if (_dodgeTime < 0) {
+            _isDodge = false;
+            changeState(PlayerState::IDLE);
+        }
+    }
+
     // 攻击冷却
     if (_attackCooldown > 0) {
         _attackCooldown -= dt;
+    }
+
+    //攻击衔接
+    if (_attackCooldown <= 0 && _attackEngageTime > 0) {
+        _attackEngageTime -= dt;
     }
 
     // 无敌时间
@@ -185,6 +205,9 @@ void Player::changeState(PlayerState newState) {
             //音效相关待实现
             //AudioEngine::play2d("sounds/land.wav");
             break;
+        case PlayerState::IDLE:
+            _velocity.x = 0.0;
+            break;
         default:
             break;
     }
@@ -193,6 +216,8 @@ void Player::changeState(PlayerState newState) {
 
 void Player::updatePhysics(float dt) {
     //if (!_physicsBody) return;
+
+    if (_isAttacking == true)return;
 
     // 应用移动力
     applyMovementForce();
@@ -270,7 +295,9 @@ void Player::updateAnimation()
             loop = false;
             break;
         case PlayerState::ATTACKING:
-            animationName = "attack";
+            char tmp[20];//存放攻击段数名
+            sprintf(tmp, "attack-%d", _attack_num + 1);
+            animationName = tmp;
             loop = false;
             break;
         case PlayerState::DODGING:
@@ -327,7 +354,9 @@ std::string Player::getCurrentState()
             current = "fall";
             break;
         case PlayerState::ATTACKING:
-            current = "attack";
+            char tmp[20];//存放攻击段数名
+            sprintf(tmp,"attack-%d",_attack_num+1);
+            current = tmp;
             break;
         case PlayerState::DODGING:
             current = "dodge";
@@ -373,4 +402,39 @@ void Player::jump()
         _coyoteTime = 0;
         _isGrounded = false;//测试用，有了完整场景后应删除
     }
+}
+
+void Player::attack() {
+    if (_attackCooldown > 0 || _isAttacking) return;
+    //多段攻击判断
+    if (_attackEngageTime > 0 && !_isAttacking)
+        _attack_num = (_attack_num + 1) % 3;
+    else 
+        _attack_num = 0;
+    _isAttacking = true;
+    _attackCooldown = _maxAttackCooldown;//攻击的冷却时间
+    _attackEngageTime = kMaxAttackEngageTime;//多段攻击的衔接
+    changeState(PlayerState::ATTACKING);
+
+    //// 创建攻击碰撞区域
+    //auto attackSize = Size(50, 30);
+    //float offsetX = (_direction == Direction::RIGHT) ? 40 : -40;
+    //auto attackRect = Rect(
+    //    this->getPositionX() + offsetX - attackSize.width / 2,
+    //    this->getPositionY() + 30,
+    //    attackSize.width,
+    //    attackSize.height
+    //);
+
+    // 这里应该通知游戏世界的碰撞检测系统
+    //SimpleAudioEngine::getInstance()->playEffect("sounds/attack.wav");
+}
+
+void Player::dodge()
+{
+    if (_dodgeCooldown > 0 || _isDodge) return;
+    _isDodge = true;
+    _dodgeCooldown = _maxDodgeCooldown;
+    _dodgeTime = 0.5;
+    changeState(PlayerState::DODGING);
 }

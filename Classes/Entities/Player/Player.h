@@ -27,6 +27,9 @@ enum class Direction {
 constexpr double kGravity = 10.0;
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
+//默认两端攻击之间最大时间差
+constexpr double kMaxAttackEngageTime = 0.7;//在0.7秒内继续攻击则衔接下一段攻击
+
 
 /**
 * @brief 储存主角的各类信息 
@@ -67,6 +70,8 @@ public:
 	void moveRight();
 	void stopMoving();
 	void jump();
+	void attack();
+	void dodge();
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -123,8 +128,14 @@ private:
 	double _speed;
 	//主角跳跃高度
 	double _jumpForce;
-	//主角闪避距离
+	//主角闪避速度
 	double _dodgeForce;
+	//主角闪避的持续时间
+	double _dodgeTime;
+	//主角攻击冷却时间
+	double _maxAttackCooldown;
+	//主角的闪避冷却时间
+	double _maxDodgeCooldown;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -137,6 +148,8 @@ private:
 	double _attackCooldown;
 	//无敌时间
 	double _invincibilityTime;
+	//两端攻击之间衔接的时间差
+	double _attackEngageTime;
 
 	/*----主角当前状态----*/
 	//是否允许控制
@@ -160,6 +173,8 @@ private:
 	//加速度
 	float _acceleration;
 	float _deceleration;
+	//攻击段数
+	int _attack_num;
 
 	/*----输入----*/
 	float _moveInput;

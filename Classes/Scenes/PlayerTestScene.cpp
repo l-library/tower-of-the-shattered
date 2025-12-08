@@ -64,14 +64,15 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_W:
             case EventKeyboard::KeyCode::KEY_UP_ARROW:
             case EventKeyboard::KeyCode::KEY_SPACE:
+            case EventKeyboard::KeyCode::KEY_K:
                 _player->jump();
                 break;
             case EventKeyboard::KeyCode::KEY_J:
-            case EventKeyboard::KeyCode::KEY_K:
-                /*_player->attack();
-                break;*/
+                _player->attack();
+                break;
             case EventKeyboard::KeyCode::KEY_SHIFT:
-                /*_player->dash();*/
+            case EventKeyboard::KeyCode::KEY_L:
+                _player->dodge();
                 break;
             case EventKeyboard::KeyCode::KEY_S:
             case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
