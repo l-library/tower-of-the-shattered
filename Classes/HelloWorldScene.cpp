@@ -23,8 +23,11 @@
  ****************************************************************************/
 
 #include "HelloWorldScene.h"
+#include "Maps.h"
+#include "ui/CocosGUI.h"
 
 USING_NS_CC;
+using namespace cocos2d::ui;
 
 Scene* HelloWorld::createScene()
 {
@@ -114,6 +117,27 @@ bool HelloWorld::init()
         // add the sprite as a child to this layer
         this->addChild(sprite, 0);
     }
+
+    auto button = Button::create("CloseNormal.png", "CloseSelected.png", "CloseSelected.png");
+
+    button->setTitleText("Map");
+    button->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 4));
+
+    button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+        switch (type)
+        {
+        case ui::Widget::TouchEventType::BEGAN:
+            break;
+        case ui::Widget::TouchEventType::ENDED:
+            Director::getInstance()->replaceScene(Maps::createScene());
+            break;
+        default:
+            break;
+        }
+        });
+
+    this->addChild(button);
+
     return true;
 }
 

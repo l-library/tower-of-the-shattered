@@ -118,6 +118,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // run
     director->runWithScene(scene);
 
+    CCLOG("Default resource root = %s",
+        FileUtils::getInstance()->getDefaultResourceRootPath().c_str());
+
     return true;
 }
 
