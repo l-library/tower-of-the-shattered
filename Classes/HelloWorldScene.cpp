@@ -81,7 +81,6 @@ bool HelloWorld::init()
 
     /////////////////////////////
     // 3. add your codes below...
-
     // add a label shows "Hello World"
     // create and initialize a label
 
