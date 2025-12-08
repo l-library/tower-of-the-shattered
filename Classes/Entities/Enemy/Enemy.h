@@ -6,65 +6,65 @@
 #include <unordered_map>
 
 
-// æ•ŒäººçŠ¶æ€æšä¸¾
+// µĞÈË×´Ì¬Ã¶¾Ù
 enum class EnemyState 
 {
-    IDLE,          // ç©ºé—²
-    ACTING,        //åŠ¨ä½œä¸­
-    RECOVERY,      // åæ‘‡
-    STAGGERED,     // éŸ§æ€§è¢«æ¸…é›¶ï¼Œç¡¬ç›´çŠ¶æ€
-    DEAD           //æ­»æ‰å•¦
+    IDLE,          // ¿ÕÏĞ
+    ACTING,        //¶¯×÷ÖĞ
+    RECOVERY,      // ºóÒ¡
+    STAGGERED,     // ÈÍĞÔ±»ÇåÁã£¬Ó²Ö±×´Ì¬
+    DEAD           //ËÀµôÀ²
 };
 
 
-// å®šä¹‰è¡Œä¸ºè¿”å›ç±»å‹ï¼šç¬¬ä¸€ä¸ªå€¼è¡¨ç¤ºè¡Œä¸ºæ˜¯å¦å®Œæˆï¼Œç¬¬äºŒä¸ªå€¼è¡¨ç¤ºåæ‘‡æŒç»­æ—¶é—´
+// ¶¨ÒåĞĞÎª·µ»ØÀàĞÍ£ºµÚÒ»¸öÖµ±íÊ¾ĞĞÎªÊÇ·ñÍê³É£¬µÚ¶ş¸öÖµ±íÊ¾ºóÒ¡³ÖĞøÊ±¼ä
 using BehaviorResult = std::pair<bool, float>;
-using Behavior = std::function<BehaviorResult(float delta)>;//å®šä¹‰è¡Œä¸ºç±»å‹
+using Behavior = std::function<BehaviorResult(float delta)>;//¶¨ÒåĞĞÎªÀàĞÍ
 
-//æ‰€æœ‰æ•Œäººçš„åŸºç±»ï¼ŒåŒ…æ‹¬å°æ€ªã€bossç­‰
+//ËùÓĞµĞÈËµÄ»ùÀà£¬°üÀ¨Ğ¡¹Ö¡¢bossµÈ
 class EnemyBase :public cocos2d::Node
 {
 protected:
-    cocos2d::Sprite* sprite_;//æ•Œäººçš„ç²¾çµï¼ˆåŠ¨ç”»/æ¸²æŸ“ï¼‰
+    cocos2d::Sprite* sprite_;//µĞÈËµÄ¾«Áé£¨¶¯»­/äÖÈ¾£©
     
-    int max_vitality_;//ç”Ÿå‘½å€¼
-    int current_vitality_;//å½“å‰ç”Ÿå‘½å€¼
-    int stagger_resistance_;//éŸ§æ€§
-    int current_stagger_resistance_;//å½“å‰éŸ§æ€§
-    EnemyState currentState_;      // å½“å‰çŠ¶æ€
-    int base_attack_power_;        // åŸºç¡€æ”»å‡»åŠ›
-    int defense_;             // é˜²å¾¡åŠ›
-    std::string currentBehavior_;  // å½“å‰æ‰§è¡Œçš„è¡Œä¸ºåç§°
-    float recoveryDuration_;       // å½“å‰åæ‘‡æŒç»­æ—¶é—´
-    float recoveryTimer_;          // å½“å‰åæ‘‡è®¡æ—¶å™¨
-    float staggerDuration_;        // éŸ§æ€§è¢«æ¸…é›¶æ—¶çš„ç¡¬ç›´æŒç»­æ—¶é—´
-    float staggerTimer_;           // ç¡¬ç›´çŠ¶æ€è®¡æ—¶å™¨
+    int max_vitality_;//ÉúÃüÖµ
+    int current_vitality_;//µ±Ç°ÉúÃüÖµ
+    int stagger_resistance_;//ÈÍĞÔ
+    int current_stagger_resistance_;//µ±Ç°ÈÍĞÔ
+    EnemyState currentState_;      // µ±Ç°×´Ì¬
+    int base_attack_power_;        // »ù´¡¹¥»÷Á¦
+    int defense_;             // ·ÀÓùÁ¦
+    std::string currentBehavior_;  // µ±Ç°Ö´ĞĞµÄĞĞÎªÃû³Æ
+    float recoveryDuration_;       // µ±Ç°ºóÒ¡³ÖĞøÊ±¼ä
+    float recoveryTimer_;          // µ±Ç°ºóÒ¡¼ÆÊ±Æ÷
+    float staggerDuration_;        // ÈÍĞÔ±»ÇåÁãÊ±µÄÓ²Ö±³ÖĞøÊ±¼ä
+    float staggerTimer_;           // Ó²Ö±×´Ì¬¼ÆÊ±Æ÷
 
-    //initåˆå§‹åŒ–å‡½æ•°
+    //init³õÊ¼»¯º¯Êı
     bool init() override;
     
 
-    std::unordered_map<std::string, Behavior> aiBehaviors_;  // AIè¡Œä¸ºæ˜ å°„è¡¨ï¼Œé€šè¿‡stringä½œä¸ºé”®åï¼Œå­˜å‚¨çš„æ˜¯è¡Œä¸ºå‡½æ•°
+    std::unordered_map<std::string, Behavior> aiBehaviors_;  // AIĞĞÎªÓ³Éä±í£¬Í¨¹ıstring×÷Îª¼üÃû£¬´æ´¢µÄÊÇĞĞÎªº¯Êı
 public:
 
 
-    //æ„é€ å‡½æ•°å’Œææ„å‡½æ•°
+    //¹¹Ôìº¯ÊıºÍÎö¹¹º¯Êı
     EnemyBase();
     virtual ~EnemyBase();
 
-    //updateæ¥å£ï¼š(åœ¨æœ¬æŠ½è±¡ç±»è¦†å†™ï¼Œå…·ä½“å­ç±»ä¸ç”¨è¦†å†™ï¼‰
+    //update½Ó¿Ú£º(ÔÚ±¾³éÏóÀà¸²Ğ´£¬¾ßÌå×ÓÀà²»ÓÃ¸²Ğ´£©
     void update(float delta) override;
 
 
-    //ä»¥ä¸‹æ˜¯æ¯ä¸ªå­ç±»è¦è‡ªè¡Œå®ç°çš„å‡½æ•°ï¼ˆä»¥åŠè®°å¾—æ·»åŠ createï¼‰
-    virtual void Hitted(int damage, int poise_damage = 0) = 0; // è¢«å‡»ä¸­ååº”
-    virtual void Dead() = 0;                                   // æ­»äº¡å¤„ç†
-    virtual void BehaviorInit() = 0;//åˆå§‹åŒ–æ•Œäººçš„è¡Œä¸ºå‡½æ•°
-    virtual std::string DecideNextBehavior(float delta) = 0; // å†³å®šä¸‹ä¸€ä¸ªè¡Œä¸ºçš„è™šå‡½æ•°ï¼Œæ¥æ”¶deltaå‚æ•°
-    virtual void InitSprite();    // ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°ï¼ŒåŒ…æ‹¬å¤§å°ã€å›¾ç‰‡ç­‰
+    //ÒÔÏÂÊÇÃ¿¸ö×ÓÀàÒª×ÔĞĞÊµÏÖµÄº¯Êı£¨ÒÔ¼°¼ÇµÃÌí¼Ócreate£©
+    virtual void Hitted(int damage, int poise_damage = 0) = 0; // ±»»÷ÖĞ·´Ó¦
+    virtual void Dead() = 0;                                   // ËÀÍö´¦Àí
+    virtual void BehaviorInit() = 0;//³õÊ¼»¯µĞÈËµÄĞĞÎªº¯Êı
+    virtual std::string DecideNextBehavior(float delta) = 0; // ¾ö¶¨ÏÂÒ»¸öĞĞÎªµÄĞéº¯Êı£¬½ÓÊÕdelta²ÎÊı
+    virtual void InitSprite();    // ¾«Áé³õÊ¼»¯Ğéº¯Êı£¬°üÀ¨´óĞ¡¡¢Í¼Æ¬µÈ
 
     
-    // Getteræ–¹æ³•
+    // Getter·½·¨
     cocos2d::Sprite* getSprite() const;
     int getMaxVitality() const;
     int getCurrentVitality() const;
@@ -75,7 +75,7 @@ public:
     int getDefense() const;
     float getStaggerDuration() const;
     
-    // Setteræ–¹æ³•
+    // Setter·½·¨
     void setMaxVitality(int maxVitality);
     void setCurrentVitality(int currentVitality);
     void setStaggerResistance(int staggerResistance);
@@ -86,13 +86,13 @@ public:
     void setStaggerDuration(float duration);
     
 
-    // AIæ›´æ–°æ–¹æ³•ï¼ˆå°è£…AIç›¸å…³é€»è¾‘ï¼‰ï¼Œç”±updateè°ƒç”¨
+    // AI¸üĞÂ·½·¨£¨·â×°AIÏà¹ØÂß¼­£©£¬ÓÉupdateµ÷ÓÃ
     void updateAI(float delta);
 
-    // AIè¡Œä¸ºç®¡ç†æ–¹æ³•
+    // AIĞĞÎª¹ÜÀí·½·¨
     void addBehavior(const std::string& name, const Behavior& behavior);
     void removeBehavior(const std::string& name);
     bool hasBehavior(const std::string& name) const;
-    BehaviorResult Execute(const std::string& name, float delta);//æ‰§è¡Œè¡Œä¸º
+    BehaviorResult Execute(const std::string& name, float delta);//Ö´ĞĞĞĞÎª
 
 };

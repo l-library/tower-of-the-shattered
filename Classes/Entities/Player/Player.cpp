@@ -18,7 +18,7 @@ bool Player::init()
 	}
 
 	//加载主角图像
-	_sprite = Sprite::create("player/magician-idle-0.png");
+	_sprite = Sprite::create("player/idle-0.png");
     _sprite->setAnchorPoint(Vec2(0.5, 0));
 	this->addChild(_sprite);
 	//播放主角待机动画

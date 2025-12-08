@@ -30,7 +30,7 @@
 USING_NS_CC;
 using namespace cocos2d::ui;
 
-// ç®€å•çš„EnemyBaseæ´¾ç”Ÿç±»ç”¨äºæµ‹è¯•
+// ¼òµ¥µÄEnemyBaseÅÉÉúÀàÓÃÓÚ²âÊÔ
 class TestEnemy : public EnemyBase
 {
 public:
@@ -44,24 +44,24 @@ public:
         return nullptr;
     }
     
-    // é‡å†™ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°
+    // ÖØĞ´¾«Áé³õÊ¼»¯Ğéº¯Êı
     virtual void InitSprite() override {
-        // åˆå§‹åŒ–ç²¾çµå¹¶è®¾ç½®é»˜è®¤å›¾åƒ
+        // ³õÊ¼»¯¾«Áé²¢ÉèÖÃÄ¬ÈÏÍ¼Ïñ
         sprite_ = Sprite::create("HelloWorld.png");
         if (sprite_) {
             this->addChild(sprite_);
-            // è®¾ç½®ç²¾çµå¤§å°
+            // ÉèÖÃ¾«Áé´óĞ¡
             sprite_->setScale(0.5f);
         }
     }
 
 
     virtual void Hitted(int damage, int poise_damage = 0) override {
-        // è¢«å‡»ä¸­ååº”
+        // ±»»÷ÖĞ·´Ó¦
         setCurrentVitality(getCurrentVitality() - damage);
         setCurrentStaggerResistance(getCurrentStaggerResistance() - poise_damage);
         
-        // ç®€å•çš„è§†è§‰åé¦ˆ
+        // ¼òµ¥µÄÊÓ¾õ·´À¡
         if (getSprite()) {
             getSprite()->setColor(Color3B::RED);
             auto resetColor = CallFunc::create([this]() {
@@ -72,38 +72,38 @@ public:
     }
 
     virtual void Dead() override {
-        // æ­»äº¡å¤„ç†
+        // ËÀÍö´¦Àí
         if (getSprite()) {
             auto fadeOut = FadeOut::create(1.0f);
-            auto removeSelf = RemoveSelf::create(true); // ç§»é™¤ç²¾çµ
+            auto removeSelf = RemoveSelf::create(true); // ÒÆ³ı¾«Áé
             auto removeEnemy = CallFunc::create([this]() {
-                // ç§»é™¤æ•Œäººå¯¹è±¡æœ¬èº«
+                // ÒÆ³ıµĞÈË¶ÔÏó±¾Éí
                 this->removeFromParent();
             });
             getSprite()->runAction(Sequence::create(fadeOut, removeSelf, removeEnemy, nullptr));
         } else {
-            // å¦‚æœæ²¡æœ‰ç²¾çµï¼Œç›´æ¥ç§»é™¤æ•Œäººå¯¹è±¡
+            // Èç¹ûÃ»ÓĞ¾«Áé£¬Ö±½ÓÒÆ³ıµĞÈË¶ÔÏó
             this->removeFromParent();
         }
     }
 
     virtual void BehaviorInit() override 
     {
-        // åˆå§‹åŒ–AIè¡Œä¸º
+        // ³õÊ¼»¯AIĞĞÎª
         addBehavior("idle", [this](float delta) -> BehaviorResult {
-            // ç©ºé—²è¡Œä¸ºï¼šè½»å¾®ç§»åŠ¨
+            // ¿ÕÏĞĞĞÎª£ºÇáÎ¢ÒÆ¶¯
             if (getSprite()) {
                 getSprite()->setPosition(getSprite()->getPosition() - Vec2(1, 0));
                 if (getSprite()->getPositionX() > Director::getInstance()->getVisibleSize().width) {
                     getSprite()->setPositionX(0);
                 }
             }
-            return {true, 0.0f}; // idleè¡Œä¸ºæ€»æ˜¯ç«‹å³å®Œæˆï¼Œæ— åæ‘‡
+            return {true, 0.0f}; // idleĞĞÎª×ÜÊÇÁ¢¼´Íê³É£¬ÎŞºóÒ¡
         });
         
-        // æ·»åŠ ä¸€ä¸ªç§»åŠ¨è¡Œä¸ºä½œä¸ºç¤ºä¾‹
+        // Ìí¼ÓÒ»¸öÒÆ¶¯ĞĞÎª×÷ÎªÊ¾Àı
         addBehavior("move", [this](float delta) -> BehaviorResult {
-            // ç§»åŠ¨è¡Œä¸ºï¼šå¿«é€Ÿå‘å³ç§»åŠ¨ä¸€æ®µè·ç¦»
+            // ÒÆ¶¯ĞĞÎª£º¿ìËÙÏòÓÒÒÆ¶¯Ò»¶Î¾àÀë
             static float moveDuration = 0.0f;
             static bool hasStarted = false;
             static Vec2 startPos;
@@ -115,7 +115,7 @@ public:
             }
             
             moveDuration += delta;
-            float totalDuration = 2.0f; // ç§»åŠ¨æŒç»­2ç§’
+            float totalDuration = 2.0f; // ÒÆ¶¯³ÖĞø2Ãë
             
             if (getSprite()) {
                 float progress = std::min(moveDuration / totalDuration, 1.0f);
@@ -124,42 +124,42 @@ public:
                 getSprite()->setPosition(newPos);
             }
             
-            // åˆ¤æ–­è¡Œä¸ºæ˜¯å¦å®Œæˆ
+            // ÅĞ¶ÏĞĞÎªÊÇ·ñÍê³É
             if (moveDuration >= totalDuration) {
                 hasStarted = false;
-                return {true, 0.5f}; // è¡Œä¸ºå®Œæˆï¼Œ0.5ç§’åæ‘‡
+                return {true, 0.5f}; // ĞĞÎªÍê³É£¬0.5ÃëºóÒ¡
             }
             
-            return {false, 0.0f}; // è¡Œä¸ºæœªå®Œæˆï¼Œæ— åæ‘‡
+            return {false, 0.0f}; // ĞĞÎªÎ´Íê³É£¬ÎŞºóÒ¡
         });
         
-        // æ·»åŠ ç¡¬ç›´è¡Œä¸ºï¼Œåæ‘‡ä¸º0
+        // Ìí¼ÓÓ²Ö±ĞĞÎª£¬ºóÒ¡Îª0
         addBehavior("staggered", [this](float delta) -> BehaviorResult {
-            // ç¡¬ç›´è¡Œä¸ºï¼šæ˜¾ç¤ºç¡¬ç›´æ•ˆæœ
+            // Ó²Ö±ĞĞÎª£ºÏÔÊ¾Ó²Ö±Ğ§¹û
             if (getSprite()) {
-                // ç®€å•çš„ç¡¬ç›´æ•ˆæœï¼šé—ªçƒ
+                // ¼òµ¥µÄÓ²Ö±Ğ§¹û£ºÉÁË¸
                 int frameCount = static_cast<int>(staggerTimer_ / delta);
                 if (frameCount % 3 == 0) {
                     getSprite()->setOpacity(frameCount % 6 < 3 ? 128 : 255);
                 }
             }
-            return {true, 0.0f}; // ç¡¬ç›´è¡Œä¸ºæ€»æ˜¯ç«‹å³å®Œæˆï¼Œæ— åæ‘‡
+            return {true, 0.0f}; // Ó²Ö±ĞĞÎª×ÜÊÇÁ¢¼´Íê³É£¬ÎŞºóÒ¡
         });
     }
 
     
     virtual std::string DecideNextBehavior(float delta) override {
-        // å®é™…é¡¹ç›®ä¸­å¯ä»¥æ ¹æ®æ¸¸æˆé€»è¾‘ã€æ•ŒäººçŠ¶æ€ã€ç©å®¶ä½ç½®ç­‰å› ç´ å†³å®š
+        // Êµ¼ÊÏîÄ¿ÖĞ¿ÉÒÔ¸ù¾İÓÎÏ·Âß¼­¡¢µĞÈË×´Ì¬¡¢Íæ¼ÒÎ»ÖÃµÈÒòËØ¾ö¶¨
         static float decisionTimer = 0.0f;
         static std::string lastDecision = "idle";
         
-        decisionTimer += delta; // ä½¿ç”¨å®é™…çš„deltaæ—¶é—´æ›´æ–°è®¡æ—¶å™¨
+        decisionTimer += delta; // Ê¹ÓÃÊµ¼ÊµÄdeltaÊ±¼ä¸üĞÂ¼ÆÊ±Æ÷
         
-        // æ¯2ç§’é‡æ–°å†³å®šä¸€æ¬¡è¡Œä¸º
+        // Ã¿2ÃëÖØĞÂ¾ö¶¨Ò»´ÎĞĞÎª
         if (decisionTimer >= 2.0f) {
             decisionTimer = 0.0f;
             
-            // 50%æ¦‚ç‡é€‰æ‹©moveè¡Œä¸ºï¼Œå¦åˆ™é€‰æ‹©idle
+            // 50%¸ÅÂÊÑ¡ÔñmoveĞĞÎª£¬·ñÔòÑ¡Ôñidle
             if (rand() % 2 == 0) {
                 lastDecision = "move";
             } else {
@@ -290,22 +290,22 @@ bool HelloWorld::init()
 
     this->addChild(button);
 
-    // åˆ›å»ºæµ‹è¯•æ•Œäºº
+    // ´´½¨²âÊÔµĞÈË
     auto testEnemy = TestEnemy::create();
     if (testEnemy) {
-        // è®¾ç½®æ•Œäººä½ç½®
+        // ÉèÖÃµĞÈËÎ»ÖÃ
         testEnemy->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/4 + origin.y));
         
-        // æ·»åŠ æ•Œäººåˆ°åœºæ™¯
+        // Ìí¼ÓµĞÈËµ½³¡¾°
         this->addChild(testEnemy, 1);
         
-        // æ·»åŠ è§¦æ‘¸äº‹ä»¶ç›‘å¬å™¨æ¥æµ‹è¯•æ•Œäººå—ä¼¤
+        // Ìí¼Ó´¥ÃşÊÂ¼ş¼àÌıÆ÷À´²âÊÔµĞÈËÊÜÉË
         auto touchListener = EventListenerTouchOneByOne::create();
         touchListener->onTouchBegan = [=](Touch* touch, Event* event) {
-            // å½“ç‚¹å‡»å±å¹•æ—¶ï¼Œæ•Œäººå—ä¼¤
+            // µ±µã»÷ÆÁÄ»Ê±£¬µĞÈËÊÜÉË
             testEnemy->Hitted(10, 5);
             
-            // æ˜¾ç¤ºæ•Œäººå½“å‰çŠ¶æ€
+            // ÏÔÊ¾µĞÈËµ±Ç°×´Ì¬
             auto statusLabel = Label::createWithTTF(
                 StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                     testEnemy->getCurrentVitality(), 
@@ -317,7 +317,7 @@ bool HelloWorld::init()
             statusLabel->setColor(Color3B::GREEN);
             this->addChild(statusLabel, 2);
             
-            // 1ç§’åç§»é™¤çŠ¶æ€æ ‡ç­¾
+            // 1ÃëºóÒÆ³ı×´Ì¬±êÇ©
             statusLabel->runAction(Sequence::create(
                 DelayTime::create(1.0f),
                 RemoveSelf::create(),
@@ -330,13 +330,13 @@ bool HelloWorld::init()
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
     }
     
-    // æ·»åŠ ä¸€ä¸ªæŒ‰é’®ç”¨äºæµ‹è¯•éŸ§æ€§è¢«æ¸…é›¶çš„æ•ˆæœ
+    // Ìí¼ÓÒ»¸ö°´Å¥ÓÃÓÚ²âÊÔÈÍĞÔ±»ÇåÁãµÄĞ§¹û
     auto breakPoiseButton = MenuItemFont::create("Break Poise", [=](Ref* pSender) {
-        // ä¸€æ¬¡æ€§æ‰“ç©ºæ•Œäººçš„éŸ§æ€§
+        // Ò»´ÎĞÔ´ò¿ÕµĞÈËµÄÈÍĞÔ
         int currentPoise = testEnemy->getCurrentStaggerResistance();
-        testEnemy->Hitted(0, currentPoise); // åªé€ æˆéŸ§æ€§ä¼¤å®³ï¼Œä¸é€ æˆç”Ÿå‘½å€¼ä¼¤å®³
+        testEnemy->Hitted(0, currentPoise); // Ö»Ôì³ÉÈÍĞÔÉËº¦£¬²»Ôì³ÉÉúÃüÖµÉËº¦
         
-        // æ˜¾ç¤ºæ•Œäººå½“å‰çŠ¶æ€
+        // ÏÔÊ¾µĞÈËµ±Ç°×´Ì¬
         auto statusLabel = Label::createWithTTF(
             StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                 testEnemy->getCurrentVitality(), 
@@ -348,7 +348,7 @@ bool HelloWorld::init()
         statusLabel->setColor(Color3B::GREEN);
         this->addChild(statusLabel, 2);
         
-        // 1ç§’åç§»é™¤çŠ¶æ€æ ‡ç­¾
+        // 1ÃëºóÒÆ³ı×´Ì¬±êÇ©
         statusLabel->runAction(Sequence::create(
             DelayTime::create(1.0f),
             RemoveSelf::create(),
@@ -356,11 +356,11 @@ bool HelloWorld::init()
         ));
     });
     
-    // è®¾ç½®æŒ‰é’®ä½ç½®
+    // ÉèÖÃ°´Å¥Î»ÖÃ
     breakPoiseButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 50));
     breakPoiseButton->setColor(Color3B::BLUE);
     
-    // åˆ›å»ºæŒ‰é’®èœå•å¹¶æ·»åŠ åˆ°åœºæ™¯
+    // ´´½¨°´Å¥²Ëµ¥²¢Ìí¼Óµ½³¡¾°
     auto buttonMenu = Menu::create(breakPoiseButton, nullptr);
     buttonMenu->setPosition(Vec2::ZERO);
     this->addChild(buttonMenu, 2);
