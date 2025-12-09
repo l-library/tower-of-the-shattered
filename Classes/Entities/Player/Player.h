@@ -22,14 +22,24 @@ enum class Direction {
 
 //规定32个像素为1米
 #define PTM_RATIO 32
+//动画标签
+#define ANIMATION_ACTION_TAG 1001
 
-//规定作用在玩家身上的重力加速度
-constexpr double kGravity = 10.0;
+// 定义物理掩码 (建议在头文件中定义常量或枚举)
+const int PLAYER_CATEGORY_BITMASK = 0x01;
+const int GROUND_CATEGORY_BITMASK = 0x02;
+const int PLATFORM_CATEGORY_BITMASK = 0x04;
+const int ENEMY_CATEGORY_BITMASK = 0x08;
+const int TRAP_CATEGORY_BITMASK = 0x10;
+const int ITEM_CATEGORY_BITMASK = 0x20;
+
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
 //默认两端攻击之间最大时间差
 constexpr double kMaxAttackEngageTime = 0.7;//在0.7秒内继续攻击则衔接下一段攻击
-
+// 定义脚部传感器Tag，用于碰撞检测区分身体和脚
+const int TAG_BODY = 10;
+const int TAG_FEET = 11;
 
 /**
 * @brief 储存主角的各类信息 
@@ -65,6 +75,14 @@ public:
 	***/
 	std::string getCurrentState();
 
+	/**
+	* @brief 获得玩家图像
+	* @return 玩家当前的图像（常量指针）
+	***/
+	const cocos2d::Sprite* Player::getSprite() const;
+
+	void Player::setupCollisionHandler();
+
 	/*----各操作实现/对外接口----*/
 	void moveLeft();
 	void moveRight();
@@ -84,29 +102,17 @@ protected:
 	void update(float dt);
 
 	/**
-	* @brief 限制速度
-	* @details 保证角色的移动速度不会超过角色的最大速度
-	***/
-	void clampVelocity();
-
-	/**
-	* @brief 应用作用力
-	* @details 模仿真实物理世界：作用力，速度，加速度，重力
-	***/
-	void applyMovementForce();
-
-	/**
-	* @brief 检查地面/墙壁/碰撞
-	* @details 该函数待完善
-	***/
-	void checkCollisions();
-
-	/**
 	* @brief 改变主角状态
 	* @details 将同时更新当前状态和前一个状态，若状态不变，则不会更新
 	* @param[in] 要更改为的状态
 	***/
 	void changeState(PlayerState newState);
+
+	/**
+	* @brief 初始化主角物理效果
+	* @details 将主角物理属性初始化
+	***/
+	void initPhysics();
 
 private:
 	/*----各个更新函数----*/
@@ -118,6 +124,10 @@ private:
 	/*----主角属性----*/
 	//主角图像_sprite（待机动作的第一帧）
 	cocos2d::Sprite* _sprite;
+	//主角物理模型
+	cocos2d::PhysicsBody* _physicsBody;
+	//主角模型大小
+	cocos2d::Size _physicsSize;
 	//主角血量
 	double _health;
 	double _maxHealth;
@@ -175,6 +185,7 @@ private:
 	float _deceleration;
 	//攻击段数
 	int _attack_num;
+	int _footContactCount;
 
 	/*----输入----*/
 	float _moveInput;

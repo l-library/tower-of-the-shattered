@@ -115,8 +115,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // 创建场景实例，自动释放
     // 此处可以更改为玩家测试场景
-    //auto scene = PlayerTestScene::createScene();
-    auto scene = HelloWorld::createScene();
+    auto scene = PlayerTestScene::createScene();
+    //auto scene = HelloWorld::createScene();
 
     // run
     director->runWithScene(scene);
