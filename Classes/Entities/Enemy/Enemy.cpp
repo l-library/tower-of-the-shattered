@@ -4,6 +4,7 @@ USING_NS_CC;
 
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
+    , physicsBody_(nullptr)
     , max_vitality_(100)
     , current_vitality_(100)
     , stagger_resistance_(10)
@@ -15,20 +16,20 @@ EnemyBase::EnemyBase()
     , currentBehavior_("")
     , recoveryDuration_(0.0f)
     , recoveryTimer_(0.0f)
-    , staggerDuration_(2.0f)  // Ä¬ÈÏÓ²Ö±³ÖĞø2Ãë
+    , staggerDuration_(2.0f)  // é»˜è®¤ç¡¬ç›´æŒç»­2ç§’
     , staggerTimer_(0.0f)
 {
 }
 
 EnemyBase::~EnemyBase()
 {
-    // ÊÍ·Å¾«Áé×ÊÔ´
+    // é‡Šæ”¾ç²¾çµèµ„æº
     if (sprite_ != nullptr)
     {
         sprite_->removeFromParent();
         sprite_ = nullptr;
     }
-    // Çå¿ÕAIĞĞÎªÓ³Éä
+    // æ¸…ç©ºAIè¡Œä¸ºæ˜ å°„
     aiBehaviors_.clear();
 }
 
@@ -39,48 +40,99 @@ bool EnemyBase::init()
         return false; 
     }
     
-    // µ÷ÓÃ¾«Áé³õÊ¼»¯Ğéº¯Êı
+    // è°ƒç”¨ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°
     this->InitSprite();
     
-    // ³õÊ¼»¯Ä¬ÈÏ×´Ì¬
+    // åˆå§‹åŒ–é»˜è®¤çŠ¶æ€
     currentState_ = EnemyState::IDLE;
     
-    // ³õÊ¼»¯ÉúÃüÖµºÍÈÍĞÔ
+    // åˆå§‹åŒ–ç”Ÿå‘½å€¼å’ŒéŸ§æ€§
     current_vitality_ = max_vitality_;
     current_stagger_resistance_ = stagger_resistance_;
     
-    // ³õÊ¼»¯AIĞĞÎª
+    // åˆå§‹åŒ–AIè¡Œä¸º
     this->BehaviorInit();
     
-    // ×¢²áupdate£¬µ±¶ÔÏó´´½¨ºó»áÃ¿Ö¡Ö´ĞĞÒ»´ÎÏÂÃæµÄupdateº¯Êı
+    // æ³¨å†Œupdateï¼Œå½“å¯¹è±¡åˆ›å»ºåä¼šæ¯å¸§æ‰§è¡Œä¸€æ¬¡ä¸‹é¢çš„updateå‡½æ•°
     this->scheduleUpdate();
     
     return true;
 }
 
-// ¾«Áé³õÊ¼»¯Ğéº¯ÊıµÄÄ¬ÈÏÊµÏÖ
+// ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°çš„é»˜è®¤å®ç°
 void EnemyBase::InitSprite()
 {
-    // ³õÊ¼»¯¾«Áé
+    // åˆå§‹åŒ–ç²¾çµ
     sprite_ = Sprite::create();
     if (sprite_ != nullptr)
     {
         this->addChild(sprite_);
+        
+        // ä¸ºç²¾çµåˆ›å»ºé»˜è®¤çš„ç¢°æ’ç®±
+        setupPhysicsBody(50.0f, 50.0f);
     }
+}
+
+// è®¾ç½®ç‰©ç†ç¢°æ’ä½“çš„å®ç°
+void EnemyBase::setupPhysicsBody(float width, float height)
+{
+    // åˆ›å»ºç‰©ç†å½¢çŠ¶ï¼ˆçŸ©å½¢ç¢°æ’ç®±ï¼‰
+    auto shape = cocos2d::PhysicsShapeBox::create(cocos2d::Size(width, height));
+    
+    // åˆ›å»ºç‰©ç†ä½“
+    physicsBody_ = cocos2d::PhysicsBody::create();
+    physicsBody_->addShape(shape);
+    
+    // è®¾ç½®ç‰©ç†ä½“å±æ€§
+    physicsBody_->setDynamic(true); // æ•Œäººæ˜¯åŠ¨æ€çš„ï¼Œå¯ä»¥ç§»åŠ¨
+    physicsBody_->setMass(1.0f); // è®¾ç½®è´¨é‡
+    physicsBody_->setRotationEnable(false); // ç¦æ­¢æ—‹è½¬
+    physicsBody_->setCategoryBitmask(0x02); // æ•Œäººçš„ç¢°æ’ç±»åˆ«
+    physicsBody_->setContactTestBitmask(0xFFFFFFFF); // æ¥æ”¶æ‰€æœ‰ç¢°æ’æ£€æµ‹
+    physicsBody_->setCollisionBitmask(0xFFFFFFFF); // å‚ä¸æ‰€æœ‰ç¢°æ’ååº”
+    
+    // å°†ç‰©ç†ä½“é™„åŠ åˆ°æ•ŒäººèŠ‚ç‚¹ä¸Š
+    this->setPhysicsBody(physicsBody_);
+    
+    // ç¡®ä¿ç²¾çµä½œä¸ºå­èŠ‚ç‚¹ä½ç½®æ­£ç¡®
+    if (sprite_ != nullptr)
+    {
+        sprite_->setPosition(Vec2::ZERO);
+    }
+    
+    // æ³¨å†Œç¢°æ’å›è°ƒ
+    auto contactListener = cocos2d::EventListenerPhysicsContact::create();
+    contactListener->onContactBegin = CC_CALLBACK_1(EnemyBase::onContactBegin, this);
+    contactListener->onContactSeparate = CC_CALLBACK_1(EnemyBase::onContactSeparate, this);
+    
+    // æ·»åŠ äº‹ä»¶ç›‘å¬å™¨åˆ°å½“å‰èŠ‚ç‚¹
+    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+}
+
+// ç¢°æ’å¼€å§‹å›è°ƒå‡½æ•°çš„é»˜è®¤å®ç°
+bool EnemyBase::onContactBegin(cocos2d::PhysicsContact& contact)
+{
+    return true;
+}
+
+// ç¢°æ’ç»“æŸå›è°ƒå‡½æ•°çš„é»˜è®¤å®ç°
+bool EnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
+{
+    return true;
 }
 
 void EnemyBase::updateAI(float delta)
 {
     if (currentState_ == EnemyState::IDLE)
     {
-        // µ÷ÓÃDecideNextBehavior()¾ö¶¨ÏÂÒ»¸öĞĞÎª
+        // è°ƒç”¨DecideNextBehavior()å†³å®šä¸‹ä¸€ä¸ªè¡Œä¸º
         currentBehavior_ = this->DecideNextBehavior(delta);
         
-        // Ö´ĞĞ¾ö¶¨µÄĞĞÎª
+        // æ‰§è¡Œå†³å®šçš„è¡Œä¸º
         BehaviorResult behaviorResult = this->Execute(currentBehavior_, delta);
         bool behaviorCompleted = behaviorResult.first;
         
-        // Èç¹ûÖ´ĞĞµÄ²»ÊÇidleĞĞÎªÇÒĞĞÎªÎ´Íê³É£¬Ôò½«×´Ì¬ÉèÎªACTING
+        // å¦‚æœæ‰§è¡Œçš„ä¸æ˜¯idleè¡Œä¸ºä¸”è¡Œä¸ºæœªå®Œæˆï¼Œåˆ™å°†çŠ¶æ€è®¾ä¸ºACTING
         if (currentBehavior_ != "idle" && !behaviorCompleted)
         {
             currentState_ = EnemyState::ACTING;
@@ -89,15 +141,15 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::ACTING)
     {
-        // Ö´ĞĞµ±Ç°¼ÇÂ¼µÄĞĞÎª
+        // æ‰§è¡Œå½“å‰è®°å½•çš„è¡Œä¸º
         BehaviorResult behaviorResult = this->Execute(currentBehavior_, delta);
         bool behaviorCompleted = behaviorResult.first;
         float recoveryTime = behaviorResult.second;
         
-        // Èç¹ûĞĞÎªÒÑÍê³É
+        // å¦‚æœè¡Œä¸ºå·²å®Œæˆ
         if (behaviorCompleted)
         {
-            // Èç¹ûÓĞºóÒ¡Ê±¼ä£¬Ôò½øÈëRECOVERY×´Ì¬
+            // å¦‚æœæœ‰åæ‘‡æ—¶é—´ï¼Œåˆ™è¿›å…¥RECOVERYçŠ¶æ€
             if (recoveryTime > 0.0f)
             {
                 currentState_ = EnemyState::RECOVERY;
@@ -106,7 +158,7 @@ void EnemyBase::updateAI(float delta)
             }
             else
             {
-                // Ã»ÓĞºóÒ¡Ê±¼ä£¬Ö±½Ó»Øµ½IDLE×´Ì¬
+                // æ²¡æœ‰åæ‘‡æ—¶é—´ï¼Œç›´æ¥å›åˆ°IDLEçŠ¶æ€
                 currentState_ = EnemyState::IDLE;
             }
         }
@@ -114,10 +166,10 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::RECOVERY)
     {
-        // ¸üĞÂºóÒ¡¼ÆÊ±Æ÷
+        // æ›´æ–°åæ‘‡è®¡æ—¶å™¨
         recoveryTimer_ += delta;
         
-        // Èç¹ûºóÒ¡Ê±¼ä½áÊø£¬½øÈëIDLE×´Ì¬
+        // å¦‚æœåæ‘‡æ—¶é—´ç»“æŸï¼Œè¿›å…¥IDLEçŠ¶æ€
         if (recoveryTimer_ >= recoveryDuration_)
         {
             currentState_ = EnemyState::IDLE;
@@ -126,17 +178,17 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::STAGGERED)
     {
-        // Ö´ĞĞÓ²Ö±ĞĞÎª
+        // æ‰§è¡Œç¡¬ç›´è¡Œä¸º
         this->Execute("staggered", delta);
         
-        // ¸üĞÂÓ²Ö±¼ÆÊ±Æ÷
+        // æ›´æ–°ç¡¬ç›´è®¡æ—¶å™¨
         staggerTimer_ += delta;
         
-        // Èç¹ûÓ²Ö±Ê±¼ä½áÊø£¬½øÈëIDLE×´Ì¬²¢ÖØÖÃÈÍĞÔ
+        // å¦‚æœç¡¬ç›´æ—¶é—´ç»“æŸï¼Œè¿›å…¥IDLEçŠ¶æ€å¹¶é‡ç½®éŸ§æ€§
         if (staggerTimer_ >= staggerDuration_)
         {
             currentState_ = EnemyState::IDLE;
-            current_stagger_resistance_ = stagger_resistance_; // ÖØÖÃÈÍĞÔ
+            current_stagger_resistance_ = stagger_resistance_; // é‡ç½®éŸ§æ€§
         }
     }
 }
@@ -150,7 +202,7 @@ BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
 }
 void EnemyBase::update(float delta)
 {
-    // Èç¹ûÒÑ¾­ËÀÍö£¬²»ÔÙ¸üĞÂ
+    // å¦‚æœå·²ç»æ­»äº¡ï¼Œä¸å†æ›´æ–°
     if (currentState_ == EnemyState::DEAD)
     {
         return;
@@ -158,12 +210,12 @@ void EnemyBase::update(float delta)
     
 
     
-    // µ÷ÓÃAI¸üĞÂ·½·¨£¬·â×°ÁËËùÓĞAIÏà¹ØÂß¼­
+    // è°ƒç”¨AIæ›´æ–°æ–¹æ³•ï¼Œå°è£…äº†æ‰€æœ‰AIç›¸å…³é€»è¾‘
     this->updateAI(delta);
 
 }
 
-// Getter·½·¨
+// Getteræ–¹æ³•
 cocos2d::Sprite* EnemyBase::getSprite() const
 {
     return sprite_;
@@ -209,16 +261,21 @@ float EnemyBase::getStaggerDuration() const
     return staggerDuration_;
 }
 
+cocos2d::PhysicsBody* EnemyBase::getPhysicsBody() const
+{
+    return physicsBody_;
+}
+
 void EnemyBase::setStaggerDuration(float duration)
 {
     staggerDuration_ = std::max(0.0f, duration);
 }
 
-// Setter·½·¨
+// Setteræ–¹æ³•
 void EnemyBase::setMaxVitality(int maxVitality)
 {
     max_vitality_ = maxVitality;
-    // È·±£µ±Ç°ÉúÃüÖµ²»³¬¹ı×î´óÖµ
+    // ç¡®ä¿å½“å‰ç”Ÿå‘½å€¼ä¸è¶…è¿‡æœ€å¤§å€¼
     if (current_vitality_ > max_vitality_)
     {
         current_vitality_ = max_vitality_;
@@ -228,7 +285,7 @@ void EnemyBase::setMaxVitality(int maxVitality)
 void EnemyBase::setCurrentVitality(int currentVitality)
 {
     current_vitality_ = std::max(0, std::min(currentVitality, max_vitality_));
-    // Èç¹ûÉúÃüÖµÎª0£¬´¥·¢ËÀÍö
+    // å¦‚æœç”Ÿå‘½å€¼ä¸º0ï¼Œè§¦å‘æ­»äº¡
     if (current_vitality_ <= 0)
     {
         currentState_ = EnemyState::DEAD;
@@ -239,7 +296,7 @@ void EnemyBase::setCurrentVitality(int currentVitality)
 void EnemyBase::setStaggerResistance(int staggerResistance)
 {
     stagger_resistance_ = staggerResistance;
-    // È·±£µ±Ç°ÈÍĞÔ²»³¬¹ı×î´óÖµ
+    // ç¡®ä¿å½“å‰éŸ§æ€§ä¸è¶…è¿‡æœ€å¤§å€¼
     if (current_stagger_resistance_ > stagger_resistance_)
     {
         current_stagger_resistance_ = stagger_resistance_;
@@ -251,10 +308,10 @@ void EnemyBase::setCurrentStaggerResistance(int currentStaggerResistance)
     int oldValue = current_stagger_resistance_;
     current_stagger_resistance_ = std::max(0, std::min(currentStaggerResistance, stagger_resistance_));
     
-    // ¼ì²éÈÍĞÔÊÇ·ñ±»ÇåÁã
+    // æ£€æŸ¥éŸ§æ€§æ˜¯å¦è¢«æ¸…é›¶
     if (oldValue > 0 && current_stagger_resistance_ <= 0)
     {
-        // ÈÍĞÔ±»ÇåÁã£¬ÎŞÂÛµ±Ç°ÊÇÊ²Ã´×´Ì¬£¬Ç¿ÖÆ½øÈëSTAGGERED×´Ì¬
+        // éŸ§æ€§è¢«æ¸…é›¶ï¼Œæ— è®ºå½“å‰æ˜¯ä»€ä¹ˆçŠ¶æ€ï¼Œå¼ºåˆ¶è¿›å…¥STAGGEREDçŠ¶æ€
         currentState_ = EnemyState::STAGGERED;
         staggerTimer_ = 0.0f;
     }
@@ -275,7 +332,7 @@ void EnemyBase::setDefense(int defense)
     defense_ = std::max(0, defense);
 }
 
-// AIĞĞÎª¹ÜÀí·½·¨
+// AIè¡Œä¸ºç®¡ç†æ–¹æ³•
 void EnemyBase::addBehavior(const std::string& name, const Behavior& behavior)
 {
     aiBehaviors_[name] = behavior;

@@ -6,65 +6,75 @@
 #include <unordered_map>
 
 
-// µĞÈË×´Ì¬Ã¶¾Ù
+// æ•ŒäººçŠ¶æ€æšä¸¾
 enum class EnemyState 
 {
-    IDLE,          // ¿ÕÏĞ
-    ACTING,        //¶¯×÷ÖĞ
-    RECOVERY,      // ºóÒ¡
-    STAGGERED,     // ÈÍĞÔ±»ÇåÁã£¬Ó²Ö±×´Ì¬
-    DEAD           //ËÀµôÀ²
+    IDLE,          // ç©ºé—²
+    ACTING,        //åŠ¨ä½œä¸­
+    RECOVERY,      // åæ‘‡
+    STAGGERED,     // éŸ§æ€§è¢«æ¸…é›¶ï¼Œç¡¬ç›´çŠ¶æ€
+    DEAD           //æ­»æ‰å•¦
 };
 
 
-// ¶¨ÒåĞĞÎª·µ»ØÀàĞÍ£ºµÚÒ»¸öÖµ±íÊ¾ĞĞÎªÊÇ·ñÍê³É£¬µÚ¶ş¸öÖµ±íÊ¾ºóÒ¡³ÖĞøÊ±¼ä
+// å®šä¹‰è¡Œä¸ºè¿”å›ç±»å‹ï¼šç¬¬ä¸€ä¸ªå€¼è¡¨ç¤ºè¡Œä¸ºæ˜¯å¦å®Œæˆï¼Œç¬¬äºŒä¸ªå€¼è¡¨ç¤ºåæ‘‡æŒç»­æ—¶é—´
 using BehaviorResult = std::pair<bool, float>;
-using Behavior = std::function<BehaviorResult(float delta)>;//¶¨ÒåĞĞÎªÀàĞÍ
+using Behavior = std::function<BehaviorResult(float delta)>;//å®šä¹‰è¡Œä¸ºç±»å‹
 
-//ËùÓĞµĞÈËµÄ»ùÀà£¬°üÀ¨Ğ¡¹Ö¡¢bossµÈ
+//æ‰€æœ‰æ•Œäººçš„åŸºç±»ï¼ŒåŒ…æ‹¬å°æ€ªã€bossç­‰
 class EnemyBase :public cocos2d::Node
 {
 protected:
-    cocos2d::Sprite* sprite_;//µĞÈËµÄ¾«Áé£¨¶¯»­/äÖÈ¾£©
+    cocos2d::Sprite* sprite_;//æ•Œäººçš„ç²¾çµï¼ˆåŠ¨ç”»/æ¸²æŸ“ï¼‰
+    cocos2d::PhysicsBody* physicsBody_; // ç‰©ç†ç¢°æ’ä½“
     
-    int max_vitality_;//ÉúÃüÖµ
-    int current_vitality_;//µ±Ç°ÉúÃüÖµ
-    int stagger_resistance_;//ÈÍĞÔ
-    int current_stagger_resistance_;//µ±Ç°ÈÍĞÔ
-    EnemyState currentState_;      // µ±Ç°×´Ì¬
-    int base_attack_power_;        // »ù´¡¹¥»÷Á¦
-    int defense_;             // ·ÀÓùÁ¦
-    std::string currentBehavior_;  // µ±Ç°Ö´ĞĞµÄĞĞÎªÃû³Æ
-    float recoveryDuration_;       // µ±Ç°ºóÒ¡³ÖĞøÊ±¼ä
-    float recoveryTimer_;          // µ±Ç°ºóÒ¡¼ÆÊ±Æ÷
-    float staggerDuration_;        // ÈÍĞÔ±»ÇåÁãÊ±µÄÓ²Ö±³ÖĞøÊ±¼ä
-    float staggerTimer_;           // Ó²Ö±×´Ì¬¼ÆÊ±Æ÷
+    int max_vitality_;//ç”Ÿå‘½å€¼
+    int current_vitality_;//å½“å‰ç”Ÿå‘½å€¼
+    int stagger_resistance_;//éŸ§æ€§
+    int current_stagger_resistance_;//å½“å‰éŸ§æ€§
+    EnemyState currentState_;      // å½“å‰çŠ¶æ€
+    int base_attack_power_;        // åŸºç¡€æ”»å‡»åŠ›
+    int defense_;             // é˜²å¾¡åŠ›
+    std::string currentBehavior_;  // å½“å‰æ‰§è¡Œçš„è¡Œä¸ºåç§°
+    float recoveryDuration_;       // å½“å‰åæ‘‡æŒç»­æ—¶é—´
+    float recoveryTimer_;          // å½“å‰åæ‘‡è®¡æ—¶å™¨
+    float staggerDuration_;        // éŸ§æ€§è¢«æ¸…é›¶æ—¶çš„ç¡¬ç›´æŒç»­æ—¶é—´
+    float staggerTimer_;           // ç¡¬ç›´çŠ¶æ€è®¡æ—¶å™¨
 
-    //init³õÊ¼»¯º¯Êı
+    //initåˆå§‹åŒ–å‡½æ•°
     bool init() override;
     
+    // ç¢°æ’æ£€æµ‹å›è°ƒå‡½æ•°
+    virtual bool onContactBegin(cocos2d::PhysicsContact& contact);
+    virtual bool onContactSeparate(cocos2d::PhysicsContact& contact);
 
-    std::unordered_map<std::string, Behavior> aiBehaviors_;  // AIĞĞÎªÓ³Éä±í£¬Í¨¹ıstring×÷Îª¼üÃû£¬´æ´¢µÄÊÇĞĞÎªº¯Êı
+    std::unordered_map<std::string, Behavior> aiBehaviors_;  // AIè¡Œä¸ºæ˜ å°„è¡¨ï¼Œé€šè¿‡stringä½œä¸ºé”®åï¼Œå­˜å‚¨çš„æ˜¯è¡Œä¸ºå‡½æ•°
 public:
 
 
-    //¹¹Ôìº¯ÊıºÍÎö¹¹º¯Êı
+    //æ„é€ å‡½æ•°å’Œææ„å‡½æ•°
     EnemyBase();
     virtual ~EnemyBase();
 
-    //update½Ó¿Ú£º(ÔÚ±¾³éÏóÀà¸²Ğ´£¬¾ßÌå×ÓÀà²»ÓÃ¸²Ğ´£©
+    //updateæ¥å£ï¼š(åœ¨æœ¬æŠ½è±¡ç±»è¦†å†™ï¼Œå…·ä½“å­ç±»ä¸ç”¨è¦†å†™ï¼‰
     void update(float delta) override;
 
 
-    //ÒÔÏÂÊÇÃ¿¸ö×ÓÀàÒª×ÔĞĞÊµÏÖµÄº¯Êı£¨ÒÔ¼°¼ÇµÃÌí¼Ócreate£©
-    virtual void Hitted(int damage, int poise_damage = 0) = 0; // ±»»÷ÖĞ·´Ó¦
-    virtual void Dead() = 0;                                   // ËÀÍö´¦Àí
-    virtual void BehaviorInit() = 0;//³õÊ¼»¯µĞÈËµÄĞĞÎªº¯Êı
-    virtual std::string DecideNextBehavior(float delta) = 0; // ¾ö¶¨ÏÂÒ»¸öĞĞÎªµÄĞéº¯Êı£¬½ÓÊÕdelta²ÎÊı
-    virtual void InitSprite();    // ¾«Áé³õÊ¼»¯Ğéº¯Êı£¬°üÀ¨´óĞ¡¡¢Í¼Æ¬µÈ
+    //ä»¥ä¸‹æ˜¯æ¯ä¸ªå­ç±»è¦è‡ªè¡Œå®ç°çš„å‡½æ•°ï¼ˆä»¥åŠè®°å¾—æ·»åŠ createï¼‰
+    virtual void Hitted(int damage, int poise_damage = 0) = 0; // è¢«å‡»ä¸­ååº”
+    virtual void Dead() = 0;                                   // æ­»äº¡å¤„ç†
+    virtual void BehaviorInit() = 0;//åˆå§‹åŒ–æ•Œäººçš„è¡Œä¸ºå‡½æ•°
+    virtual std::string DecideNextBehavior(float delta) = 0; // å†³å®šä¸‹ä¸€ä¸ªè¡Œä¸ºçš„è™šå‡½æ•°ï¼Œæ¥æ”¶deltaå‚æ•°
+    virtual void InitSprite();    // ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°ï¼ŒåŒ…æ‹¬å¤§å°ã€å›¾ç‰‡ç­‰
+    
+    // ç¢°æ’ç›¸å…³çš„Getteræ–¹æ³•
+    cocos2d::PhysicsBody* getPhysicsBody() const;
+    
+    // è®¾ç½®ç¢°æ’ç®±å°ºå¯¸çš„è™šå‡½æ•°ï¼Œå­ç±»å¯ä»¥é‡å†™
+    virtual void setupPhysicsBody(float width, float height);
 
     
-    // Getter·½·¨
+    // Getteræ–¹æ³•
     cocos2d::Sprite* getSprite() const;
     int getMaxVitality() const;
     int getCurrentVitality() const;
@@ -75,7 +85,7 @@ public:
     int getDefense() const;
     float getStaggerDuration() const;
     
-    // Setter·½·¨
+    // Setteræ–¹æ³•
     void setMaxVitality(int maxVitality);
     void setCurrentVitality(int currentVitality);
     void setStaggerResistance(int staggerResistance);
@@ -86,13 +96,13 @@ public:
     void setStaggerDuration(float duration);
     
 
-    // AI¸üĞÂ·½·¨£¨·â×°AIÏà¹ØÂß¼­£©£¬ÓÉupdateµ÷ÓÃ
+    // AIæ›´æ–°æ–¹æ³•ï¼ˆå°è£…AIç›¸å…³é€»è¾‘ï¼‰ï¼Œç”±updateè°ƒç”¨
     void updateAI(float delta);
 
-    // AIĞĞÎª¹ÜÀí·½·¨
+    // AIè¡Œä¸ºç®¡ç†æ–¹æ³•
     void addBehavior(const std::string& name, const Behavior& behavior);
     void removeBehavior(const std::string& name);
     bool hasBehavior(const std::string& name) const;
-    BehaviorResult Execute(const std::string& name, float delta);//Ö´ĞĞĞĞÎª
+    BehaviorResult Execute(const std::string& name, float delta);//æ‰§è¡Œè¡Œä¸º
 
 };

@@ -23,16 +23,21 @@
  ****************************************************************************/
 
 #include "HelloWorldScene.h"
-#include "Maps.h"
-#include "ui/CocosGUI.h"
 #include "TowerOfTheShattered.h"
+#include "Entities/Bullet.h"
 
 USING_NS_CC;
-using namespace cocos2d::ui;
 
-// �򵥵�EnemyBase���������ڲ���
+// 简单的EnemyBase派生类用于测试,一个非抽象类需要有create，Hitted，Dead，BehaviorInit，
 class TestEnemy : public EnemyBase
 {
+private:
+    bool isTouchingLeftWall_;
+    bool isTouchingRightWall_;
+    bool isTouchingTopWall_;
+    bool isTouchingGround_;
+    
+    
 public:
     static TestEnemy* create() {
         TestEnemy* enemy = new TestEnemy();
@@ -43,25 +48,30 @@ public:
         CC_SAFE_DELETE(enemy);
         return nullptr;
     }
+
+    TestEnemy() : isTouchingLeftWall_(false), isTouchingRightWall_(false), isTouchingTopWall_(false), isTouchingGround_(false) {}
     
-    // ��д�����ʼ���麯��
+    // 重写精灵初始化虚函数
     virtual void InitSprite() override {
-        // ��ʼ�����鲢����Ĭ��ͼ��
+        // 初始化精灵并设置默认图像
         sprite_ = Sprite::create("HelloWorld.png");
         if (sprite_) {
             this->addChild(sprite_);
-            // ���þ����С
+            // 设置精灵大小
             sprite_->setScale(0.5f);
+            
+            // 设置碰撞箱大小
+            setupPhysicsBody(50.0f, 50.0f);
         }
     }
 
 
     virtual void Hitted(int damage, int poise_damage = 0) override {
-        // �����з�Ӧ
+        // 被击中反应
         setCurrentVitality(getCurrentVitality() - damage);
         setCurrentStaggerResistance(getCurrentStaggerResistance() - poise_damage);
         
-        // �򵥵��Ӿ�����
+        // 简单的视觉反馈
         if (getSprite()) {
             getSprite()->setColor(Color3B::RED);
             auto resetColor = CallFunc::create([this]() {
@@ -72,94 +82,187 @@ public:
     }
 
     virtual void Dead() override {
-        // ��������
+        // 死亡处理
         if (getSprite()) {
             auto fadeOut = FadeOut::create(1.0f);
-            auto removeSelf = RemoveSelf::create(true); // �Ƴ�����
+            auto removeSelf = RemoveSelf::create(true); // 移除精灵
             auto removeEnemy = CallFunc::create([this]() {
-                // �Ƴ����˶�����
+                // 移除敌人对象本身
                 this->removeFromParent();
             });
             getSprite()->runAction(Sequence::create(fadeOut, removeSelf, removeEnemy, nullptr));
         } else {
-            // ���û�о��飬ֱ���Ƴ����˶���
+            // 如果没有精灵，直接移除敌人对象
             this->removeFromParent();
         }
     }
 
+    // 重写碰撞开始回调
+    virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override {
+        // 获取碰撞双方的碰撞箱
+        auto shapeA = contact.getShapeA();
+        auto shapeB = contact.getShapeB();
+        
+        // 获取碰撞双方的物理体
+        auto bodyA = shapeA->getBody();
+        auto bodyB = shapeB->getBody();
+        
+        // 检测是否与边框碰撞（边框的碰撞类别是0x01）
+        if (bodyA->getCategoryBitmask() == 0x01) {
+            // 根据位置判断是哪个边框
+            Vec2 bodyPos = bodyA->getNode()->getPosition();
+            auto visibleSize = Director::getInstance()->getVisibleSize();
+            auto origin = Director::getInstance()->getVisibleOrigin();
+            
+            if (bodyPos.x < origin.x + 50) {
+                isTouchingLeftWall_ = true;
+            } else if (bodyPos.x > origin.x + visibleSize.width - 50) {
+                isTouchingRightWall_ = true;
+            } else if (bodyPos.y > origin.y + visibleSize.height - 50) {
+                isTouchingTopWall_ = true;
+            } else {
+                isTouchingGround_ = true;
+            }
+        } else if (bodyB->getCategoryBitmask() == 0x01) {
+            // 根据位置判断是哪个边框
+            Vec2 bodyPos = bodyB->getNode()->getPosition();
+            auto visibleSize = Director::getInstance()->getVisibleSize();
+            auto origin = Director::getInstance()->getVisibleOrigin();
+            
+            if (bodyPos.x < origin.x + 50) {
+                isTouchingLeftWall_ = true;
+            } else if (bodyPos.x > origin.x + visibleSize.width - 50) {
+                isTouchingRightWall_ = true;
+            } else if (bodyPos.y > origin.y + visibleSize.height - 50) {
+                isTouchingTopWall_ = true;
+            } else {
+                isTouchingGround_ = true;
+            }
+        }
+        
+        return true;
+    }
+    
+    // 重写碰撞结束回调
+    virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override {
+        // 获取碰撞双方的碰撞箱
+        auto shapeA = contact.getShapeA();
+        auto shapeB = contact.getShapeB();
+        
+        // 获取碰撞双方的物理体
+        auto bodyA = shapeA->getBody();
+        auto bodyB = shapeB->getBody();
+        
+        // 检测是否与边框碰撞结束（边框的碰撞类别是0x01）
+        if (bodyA->getCategoryBitmask() == 0x01 || bodyB->getCategoryBitmask() == 0x01) {
+            // 根据位置判断是哪个边框
+            Vec2 wallPos;
+            if (bodyA->getCategoryBitmask() == 0x01) {
+                wallPos = bodyA->getNode()->getPosition();
+            } else {
+                wallPos = bodyB->getNode()->getPosition();
+            }
+            
+            auto visibleSize = Director::getInstance()->getVisibleSize();
+            auto origin = Director::getInstance()->getVisibleOrigin();
+            
+            if (wallPos.x < origin.x + 50) {
+                isTouchingLeftWall_ = false;
+            } else if (wallPos.x > origin.x + visibleSize.width - 50) {
+                isTouchingRightWall_ = false;
+            } else if (wallPos.y > origin.y + visibleSize.height - 50) {
+                isTouchingTopWall_ = false;
+            } else {
+                isTouchingGround_ = false;
+            }
+        }
+        
+        return true;
+    }
+    
     virtual void BehaviorInit() override 
     {
-        // ��ʼ��AI��Ϊ
+        // 初始化AI行为
         addBehavior("idle", [this](float delta) -> BehaviorResult {
-            // ������Ϊ����΢�ƶ�
-            if (getSprite()) {
-                getSprite()->setPosition(getSprite()->getPosition() - Vec2(1, 0));
-                if (getSprite()->getPositionX() > Director::getInstance()->getVisibleSize().width) {
-                    getSprite()->setPositionX(0);
-                }
+            // 空闲行为：轻微移动
+            Vec2 currentPos = this->getPosition();
+            Vec2 newPos = currentPos;
+            
+            // 只有当没有碰到左右边界时才移动
+            if (!isTouchingRightWall_ && !isTouchingLeftWall_) {
+                newPos = currentPos - Vec2(10, 0);
             }
-            return {true, 0.0f}; // idle��Ϊ����������ɣ��޺�ҡ
+            
+            // 更新位置
+            this->setPosition(newPos);
+            
+            return {true, 0.0f}; // idle行为总是立即完成，无后摇
         });
         
-        // ����һ���ƶ���Ϊ��Ϊʾ��
+        // 添加一个移动行为作为示例
         addBehavior("move", [this](float delta) -> BehaviorResult {
-            // �ƶ���Ϊ�����������ƶ�һ�ξ���
+            // 移动行为：向右移动
             static float moveDuration = 0.0f;
             static bool hasStarted = false;
             static Vec2 startPos;
             
             if (!hasStarted) {
-                startPos = getSprite()->getPosition();
+                startPos = this->getPosition(); // 获取敌人节点本身的位置
                 hasStarted = true;
                 moveDuration = 0.0f;
             }
             
             moveDuration += delta;
-            float totalDuration = 2.0f; // �ƶ�����2��
+            float totalDuration = 2.0f; // 移动持续2秒
             
-            if (getSprite()) {
-                float progress = std::min(moveDuration / totalDuration, 1.0f);
-                float moveDistance = 100.0f;
-                Vec2 newPos = startPos + Vec2(moveDistance * progress, 0);
-                getSprite()->setPosition(newPos);
+            float progress = std::min(moveDuration / totalDuration, 1.0f);
+            float moveDistance = 100.0f;
+            Vec2 newPos = startPos;
+            
+            // 只有当没有碰到右边界时才移动
+            if (!isTouchingRightWall_) {
+                newPos = startPos + Vec2(moveDistance * progress, 0);
             }
             
-            // �ж���Ϊ�Ƿ����
-            if (moveDuration >= totalDuration) {
+            // 移动敌人节点本身，这样精灵和碰撞箱都会一起移动
+            this->setPosition(newPos);
+            
+            // 判断行为是否完成
+            if (moveDuration >= totalDuration || isTouchingRightWall_) {
                 hasStarted = false;
-                return {true, 0.5f}; // ��Ϊ��ɣ�0.5���ҡ
+                return {true, 0.5f}; // 行为完成，0.5秒后摇
             }
             
-            return {false, 0.0f}; // ��Ϊδ��ɣ��޺�ҡ
+            return {false, 0.0f}; // 行为未完成，无后摇
         });
         
-        // ����Ӳֱ��Ϊ����ҡΪ0
+        // 添加硬直行为，后摇为0
         addBehavior("staggered", [this](float delta) -> BehaviorResult {
-            // Ӳֱ��Ϊ����ʾӲֱЧ��
+            // 硬直行为：显示硬直效果
             if (getSprite()) {
-                // �򵥵�ӲֱЧ������˸
+                // 简单的硬直效果：闪烁
                 int frameCount = static_cast<int>(staggerTimer_ / delta);
                 if (frameCount % 3 == 0) {
                     getSprite()->setOpacity(frameCount % 6 < 3 ? 128 : 255);
                 }
             }
-            return {true, 0.0f}; // Ӳֱ��Ϊ����������ɣ��޺�ҡ
+            return {true, 0.0f}; // 硬直行为总是立即完成，无后摇
         });
     }
 
     
     virtual std::string DecideNextBehavior(float delta) override {
-        // ʵ����Ŀ�п��Ը�����Ϸ�߼�������״̬�����λ�õ����ؾ���
+        // 实际项目中可以根据游戏逻辑、敌人状态、玩家位置等因素决定
         static float decisionTimer = 0.0f;
         static std::string lastDecision = "idle";
         
-        decisionTimer += delta; // ʹ��ʵ�ʵ�deltaʱ����¼�ʱ��
+        decisionTimer += delta; // 使用实际的delta时间更新计时器
         
-        // ÿ2�����¾���һ����Ϊ
+        // 每2秒重新决定一次行为
         if (decisionTimer >= 2.0f) {
             decisionTimer = 0.0f;
             
-            // 50%����ѡ��move��Ϊ������ѡ��idle
+            // 50%概率选择move行为，否则选择idle
             if (rand() % 2 == 0) {
                 lastDecision = "move";
             } else {
@@ -169,13 +272,47 @@ public:
         
         return lastDecision;
     }
+    
+    // 发射子弹的方法实现
+    void shootBullet() {
+        // 创建远程子弹
+        auto bullet = RangedBullet::create();
+        if (bullet) {
+            // 设置子弹属性
+            bullet->setDamage(5);
+            bullet->setCollisionBoxWidth(10.0f);
+            bullet->setCollisionBoxHeight(10.0f);
+            bullet->setSpeed(500.0f);
+            
+            // 设置子弹方向为正上方
+            bullet->setDirection(Vec2(0, 1));
+            
+            // 设置子弹的碰撞掩码
+            bullet->setCategoryBitmask(0x04); // 子弹的碰撞类别
+            bullet->setCollisionBitmask(0x02); // 与敌人碰撞
+            bullet->setContactTestBitmask(0x02); // 检测与敌人的接触
+            
+            // 设置子弹位置为敌人位置上方
+            Vec2 enemyPos = this->getPosition();
+            bullet->setPosition(enemyPos);
+            
+            // 获取场景并添加子弹
+            Scene* scene = this->getScene();
+            if (scene) {
+                scene->addChild(bullet, 10);
+            }
+        }
+    }
 };
 
 
 Scene* HelloWorld::createScene()
 {
-    // 'scene' is an autorelease object
-    auto scene = Scene::create();
+    // 'scene' is an autorelease object with physics world
+    auto scene = Scene::createWithPhysics();
+    
+    // 设置物理世界参数
+    scene->getPhysicsWorld()->setGravity(Vec2(0, -980)); // 与Maps场景相同的重力设置
     
     // 'layer' is an autorelease object
     auto layer = HelloWorld::create();
@@ -237,6 +374,7 @@ bool HelloWorld::init()
 
     /////////////////////////////
     // 3. add your codes below...
+
     // add a label shows "Hello World"
     // create and initialize a label
 
@@ -270,42 +408,31 @@ bool HelloWorld::init()
         this->addChild(sprite, 0);
     }
 
-    auto button = Button::create("CloseNormal.png", "CloseSelected.png", "CloseSelected.png");
-
-    button->setTitleText("Map");
-    button->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 4));
-
-    button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-        switch (type)
-        {
-        case ui::Widget::TouchEventType::BEGAN:
-            break;
-        case ui::Widget::TouchEventType::ENDED:
-            Director::getInstance()->replaceScene(Maps::createScene());
-            break;
-        default:
-            break;
-        }
-        });
-
-    this->addChild(button);
-
-    // �������Ե���
+    // 创建测试敌人
     auto testEnemy = TestEnemy::create();
     if (testEnemy) {
-        // ���õ���λ��
+        // 获取敌人的精灵并设置图像（使用HelloWorld.png作为临时图像）
+        auto enemySprite = testEnemy->getSprite();
+        if (enemySprite) {
+            // 设置精灵图像
+            enemySprite->setTexture("HelloWorld.png");
+            // 缩小精灵以便区分
+            enemySprite->setScale(0.5f);
+        }
+        
+        // 设置敌人位置
         testEnemy->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/4 + origin.y));
         
-        // ���ӵ��˵�����
+        // 添加敌人到场景
         this->addChild(testEnemy, 1);
         
-        // ���Ӵ����¼������������Ե�������
+        // 添加触摸事件监听器来测试敌人受伤
         auto touchListener = EventListenerTouchOneByOne::create();
         touchListener->onTouchBegan = [=](Touch* touch, Event* event) {
-            // �������Ļʱ����������
+            // 当点击屏幕时，敌人受伤
             testEnemy->Hitted(10, 5);
             
-            // ��ʾ���˵�ǰ״̬
+            // 显示敌人当前状态
             auto statusLabel = Label::createWithTTF(
                 StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                     testEnemy->getCurrentVitality(), 
@@ -317,7 +444,7 @@ bool HelloWorld::init()
             statusLabel->setColor(Color3B::GREEN);
             this->addChild(statusLabel, 2);
             
-            // 1����Ƴ�״̬��ǩ
+            // 1秒后移除状态标签
             statusLabel->runAction(Sequence::create(
                 DelayTime::create(1.0f),
                 RemoveSelf::create(),
@@ -330,13 +457,13 @@ bool HelloWorld::init()
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
     }
     
-    // ����һ����ť���ڲ������Ա������Ч��
+    // 添加一个按钮用于测试韧性被清零的效果
     auto breakPoiseButton = MenuItemFont::create("Break Poise", [=](Ref* pSender) {
-        // һ���Դ�յ��˵�����
+        // 一次性打空敌人的韧性
         int currentPoise = testEnemy->getCurrentStaggerResistance();
-        testEnemy->Hitted(0, currentPoise); // ֻ��������˺������������ֵ�˺�
+        testEnemy->Hitted(0, currentPoise); // 只造成韧性伤害，不造成生命值伤害
         
-        // ��ʾ���˵�ǰ״̬
+        // 显示敌人当前状态
         auto statusLabel = Label::createWithTTF(
             StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                 testEnemy->getCurrentVitality(), 
@@ -348,7 +475,7 @@ bool HelloWorld::init()
         statusLabel->setColor(Color3B::GREEN);
         this->addChild(statusLabel, 2);
         
-        // 1����Ƴ�״̬��ǩ
+        // 1秒后移除状态标签
         statusLabel->runAction(Sequence::create(
             DelayTime::create(1.0f),
             RemoveSelf::create(),
@@ -356,14 +483,132 @@ bool HelloWorld::init()
         ));
     });
     
-    // ���ð�ťλ��
+    // 设置按钮位置
     breakPoiseButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 50));
     breakPoiseButton->setColor(Color3B::BLUE);
     
-    // ������ť�˵������ӵ�����
-    auto buttonMenu = Menu::create(breakPoiseButton, nullptr);
+    // 添加一个按钮用于测试敌人发射子弹
+    auto shootButton = MenuItemFont::create("Shoot Bullet", [=](Ref* pSender) {
+        // 调用敌人的发射子弹方法
+        testEnemy->shootBullet();
+        
+        // 显示发射提示
+        auto shootLabel = Label::createWithTTF("Enemy Shot a Bullet!", "fonts/Marker Felt.ttf", 16);
+        shootLabel->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height - 80));
+        shootLabel->setColor(Color3B::RED);
+        this->addChild(shootLabel, 2);
+        
+        // 1秒后移除提示
+        shootLabel->runAction(Sequence::create(
+            DelayTime::create(1.0f),
+            RemoveSelf::create(),
+            nullptr
+        ));
+    });
+    
+    // 设置按钮位置
+    shootButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 100));
+    shootButton->setColor(Color3B::YELLOW);
+    
+    // 创建按钮菜单并添加到场景
+    auto buttonMenu = Menu::create(breakPoiseButton, shootButton, nullptr);
     buttonMenu->setPosition(Vec2::ZERO);
     this->addChild(buttonMenu, 2);
+    
+    // 添加地板碰撞箱
+    // 创建一个地板节点
+    auto ground = Node::create();
+    // 设置地板位置在屏幕底部
+    ground->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y));
+    
+    // 创建物理形状和物理体
+    auto groundSize = Size(visibleSize.width, 20); // 地板宽度与屏幕相同，高度20像素
+    auto groundShape = PhysicsShapeBox::create(groundSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
+    auto groundBody = PhysicsBody::create();
+    groundBody->addShape(groundShape);
+    
+    // 设置地板为静态物理体
+    groundBody->setDynamic(false);
+    
+    // 设置物理体和碰撞掩码
+    groundBody->setCategoryBitmask(0x01); // 地板的碰撞类别
+    groundBody->setCollisionBitmask(0x02); // 与敌人碰撞
+    groundBody->setContactTestBitmask(0x02); // 检测与敌人的接触
+    
+    // 将物理体附加到地板节点
+    ground->setPhysicsBody(groundBody);
+    
+    // 添加地板到场景
+    this->addChild(ground);
+    
+    // 可选：为了调试，可以添加一个可见的地板精灵
+    auto groundSprite = Sprite::create();
+    groundSprite->setColor(Color3B::BLACK);
+    groundSprite->setTextureRect(Rect(0, 0, groundSize.width, groundSize.height));
+    groundSprite->setPosition(ground->getPosition());
+    this->addChild(groundSprite, 0); // 添加到最底层
+    
+    // 添加屏幕边框碰撞箱
+    // 1. 左边界
+    auto leftWall = Node::create();
+    auto leftWallSize = Size(20, visibleSize.height);
+    auto leftWallShape = PhysicsShapeBox::create(leftWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
+    auto leftWallBody = PhysicsBody::create();
+    leftWallBody->addShape(leftWallShape);
+    leftWallBody->setDynamic(false);
+    leftWallBody->setCategoryBitmask(0x01);
+    leftWallBody->setCollisionBitmask(0x02);
+    leftWallBody->setContactTestBitmask(0x02);
+    leftWall->setPhysicsBody(leftWallBody);
+    leftWall->setPosition(Vec2(origin.x - leftWallSize.width/2, origin.y + visibleSize.height/2));
+    this->addChild(leftWall);
+    
+    // 2. 右边界
+    auto rightWall = Node::create();
+    auto rightWallSize = Size(20, visibleSize.height);
+    auto rightWallShape = PhysicsShapeBox::create(rightWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
+    auto rightWallBody = PhysicsBody::create();
+    rightWallBody->addShape(rightWallShape);
+    rightWallBody->setDynamic(false);
+    rightWallBody->setCategoryBitmask(0x01);
+    rightWallBody->setCollisionBitmask(0x02);
+    rightWallBody->setContactTestBitmask(0x02);
+    rightWall->setPhysicsBody(rightWallBody);
+    rightWall->setPosition(Vec2(origin.x + visibleSize.width + rightWallSize.width/2, origin.y + visibleSize.height/2));
+    this->addChild(rightWall);
+    
+    // 3. 上边界
+    auto topWall = Node::create();
+    auto topWallSize = Size(visibleSize.width, 20);
+    auto topWallShape = PhysicsShapeBox::create(topWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
+    auto topWallBody = PhysicsBody::create();
+    topWallBody->addShape(topWallShape);
+    topWallBody->setDynamic(false);
+    topWallBody->setCategoryBitmask(0x01);
+    topWallBody->setCollisionBitmask(0x02);
+    topWallBody->setContactTestBitmask(0x02);
+    topWall->setPhysicsBody(topWallBody);
+    topWall->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height + topWallSize.height/2));
+    this->addChild(topWall);
+    
+    // 为调试添加可见的边框精灵
+    auto leftWallSprite = Sprite::create();
+    leftWallSprite->setColor(Color3B::BLACK);
+    leftWallSprite->setTextureRect(Rect(0, 0, leftWallSize.width, leftWallSize.height));
+    leftWallSprite->setPosition(leftWall->getPosition());
+    this->addChild(leftWallSprite, 0);
+    
+    auto rightWallSprite = Sprite::create();
+    rightWallSprite->setColor(Color3B::BLACK);
+    rightWallSprite->setTextureRect(Rect(0, 0, rightWallSize.width, rightWallSize.height));
+    rightWallSprite->setPosition(rightWall->getPosition());
+    this->addChild(rightWallSprite, 0);
+    
+    auto topWallSprite = Sprite::create();
+    topWallSprite->setColor(Color3B::BLACK);
+    topWallSprite->setTextureRect(Rect(0, 0, topWallSize.width, topWallSize.height));
+    topWallSprite->setPosition(topWall->getPosition());
+    this->addChild(topWallSprite, 0);
     
     return true;
 }
