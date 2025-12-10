@@ -29,36 +29,36 @@ bool BulletBase::init()
         return false;
     }
     
-    // åŸºç±»åˆå§‹åŒ–é€»è¾‘
+    // »ùÀà³õÊ¼»¯Âß¼­
     return true;
 }
 
 void BulletBase::setupPhysicsBody()
 {
-    // åˆ›å»ºç‰©ç†å½¢çŠ¶
+    // ´´½¨ÎïÀíĞÎ×´
     auto shape = PhysicsShapeBox::create(Size(collisionBoxWidth_, collisionBoxHeight_));
     
-    // åˆ›å»ºç‰©ç†ä½“
+    // ´´½¨ÎïÀíÌå
     physicsBody_ = PhysicsBody::create();
     physicsBody_->addShape(shape);
     
-    // è®¾ç½®ç‰©ç†ä½“å±æ€§
+    // ÉèÖÃÎïÀíÌåÊôĞÔ
     physicsBody_->setDynamic(true);
     physicsBody_->setMass(0.01f);
     physicsBody_->setRotationEnable(false);
     
-    // è®¾ç½®ç¢°æ’è¿‡æ»¤æ©ç 
+    // ÉèÖÃÅö×²¹ıÂËÑÚÂë
     physicsBody_->setCategoryBitmask(categoryBitmask_);
     physicsBody_->setContactTestBitmask(contactTestBitmask_);
     physicsBody_->setCollisionBitmask(collisionBitmask_);
     
-    // è®¾ç½®ç‰©ç†ä½“çš„æ ‡ç­¾ä¸ºå½“å‰å­å¼¹å¯¹è±¡çš„æŒ‡é’ˆå€¼ï¼ˆä½œä¸ºæ›¿ä»£æ–¹æ¡ˆï¼‰
+    // ÉèÖÃÎïÀíÌåµÄ±êÇ©Îªµ±Ç°×Óµ¯¶ÔÏóµÄÖ¸ÕëÖµ£¨×÷ÎªÌæ´ú·½°¸£©
     physicsBody_->setTag(reinterpret_cast<uintptr_t>(this));
     
-    // é™„åŠ ç‰©ç†ä½“åˆ°èŠ‚ç‚¹
+    // ¸½¼ÓÎïÀíÌåµ½½Úµã
     this->setPhysicsBody(physicsBody_);
     
-    // æ³¨å†Œç¢°æ’å›è°ƒ
+    // ×¢²áÅö×²»Øµ÷
     auto contactListener = EventListenerPhysicsContact::create();
     contactListener->onContactBegin = CC_CALLBACK_1(BulletBase::onContactBegin, this);
     contactListener->onContactSeparate = CC_CALLBACK_1(BulletBase::onContactSeparate, this);
@@ -68,15 +68,15 @@ void BulletBase::setupPhysicsBody()
 
 bool BulletBase::onContactBegin(PhysicsContact& contact)
 {
-    // ç¢°æ’å¼€å§‹å›è°ƒçš„é»˜è®¤å®ç°
+    // Åö×²¿ªÊ¼»Øµ÷µÄÄ¬ÈÏÊµÏÖ
     auto bodyA = contact.getShapeA()->getBody();
     auto bodyB = contact.getShapeB()->getBody();
     
-    // ä»æ ‡ç­¾ä¸­è·å–å­å¼¹å¯¹è±¡
+    // ´Ó±êÇ©ÖĞ»ñÈ¡×Óµ¯¶ÔÏó
     BulletBase* bulletA = reinterpret_cast<BulletBase*>(bodyA->getTag());
     BulletBase* bulletB = reinterpret_cast<BulletBase*>(bodyB->getTag());
     
-    // å¤„ç†ç¢°æ’é€»è¾‘
+    // ´¦ÀíÅö×²Âß¼­
     // ...
     
     return true;
@@ -84,15 +84,15 @@ bool BulletBase::onContactBegin(PhysicsContact& contact)
 
 bool BulletBase::onContactSeparate(PhysicsContact& contact)
 {
-    // ç¢°æ’ç»“æŸå›è°ƒçš„é»˜è®¤å®ç°
+    // Åö×²½áÊø»Øµ÷µÄÄ¬ÈÏÊµÏÖ
     auto bodyA = contact.getShapeA()->getBody();
     auto bodyB = contact.getShapeB()->getBody();
     
-    // ä»æ ‡ç­¾ä¸­è·å–å­å¼¹å¯¹è±¡
+    // ´Ó±êÇ©ÖĞ»ñÈ¡×Óµ¯¶ÔÏó
     BulletBase* bulletA = reinterpret_cast<BulletBase*>(bodyA->getTag());
     BulletBase* bulletB = reinterpret_cast<BulletBase*>(bodyB->getTag());
     
-    // å¤„ç†ç¢°æ’ç»“æŸé€»è¾‘
+    // ´¦ÀíÅö×²½áÊøÂß¼­
     // ...
     return true;
 }
@@ -105,23 +105,23 @@ bool MeleeBullet::init()
         return false;
     }
     
-    // è¿‘æˆ˜å­å¼¹é»˜è®¤è®¾ç½®
+    // ½üÕ½×Óµ¯Ä¬ÈÏÉèÖÃ
     collisionBoxWidth_ = 50.0f;
     collisionBoxHeight_ = 50.0f;
     damage_ = 20;
-    duration_ = 0.2f; // æ”»å‡»æŒç»­0.2ç§’
+    duration_ = 0.2f; // ¹¥»÷³ÖĞø0.2Ãë
     attackRange_ = 60.0f;
     timer_ = 0.0f;
     
-    // è®¾ç½®ç¢°æ’æ©ç 
+    // ÉèÖÃÅö×²ÑÚÂë
     categoryBitmask_ = BULLET_MASK;
     contactTestBitmask_ = ENEMY_MASK | PLAYER_MASK;
-    collisionBitmask_ = 0; // è¿‘æˆ˜å­å¼¹ä¸å‚ä¸ç‰©ç†ç¢°æ’ï¼Œä»…ç”¨äºæ£€æµ‹
+    collisionBitmask_ = 0; // ½üÕ½×Óµ¯²»²ÎÓëÎïÀíÅö×²£¬½öÓÃÓÚ¼ì²â
     
-    // åˆ›å»ºç‰©ç†ç¢°æ’ç®±
+    // ´´½¨ÎïÀíÅö×²Ïä
     setupPhysicsBody();
     
-    // å®‰æ’ç§»é™¤è‡ªèº«
+    // °²ÅÅÒÆ³ı×ÔÉí
     this->scheduleOnce([this](float) {
         this->removeFromParent();
     }, duration_, "removeBullet");
@@ -137,43 +137,43 @@ bool RangedBullet::init()
         return false;
     }
     
-    // è¿œç¨‹å­å¼¹é»˜è®¤è®¾ç½®
+    // Ô¶³Ì×Óµ¯Ä¬ÈÏÉèÖÃ
     collisionBoxWidth_ = 15.0f;
     collisionBoxHeight_ = 15.0f;
     damage_ = 15;
     speed_ = 300.0f;
-    direction_ = Vec2(1, 0); // é»˜è®¤å‘å³
-    gravityScale_ = 0.0f; // é»˜è®¤ä¸è€ƒè™‘é‡åŠ›
+    direction_ = Vec2(1, 0); // Ä¬ÈÏÏòÓÒ
+    gravityScale_ = 0.0f; // Ä¬ÈÏ²»¿¼ÂÇÖØÁ¦
     sprite_ = nullptr;
-    trajectoryType_ = 0; // é»˜è®¤ç›´çº¿è½¨è¿¹
+    trajectoryType_ = 0; // Ä¬ÈÏÖ±Ïß¹ì¼£
     
-    // è®¾ç½®ç¢°æ’æ©ç 
+    // ÉèÖÃÅö×²ÑÚÂë
     categoryBitmask_ = BULLET_MASK;
     contactTestBitmask_ = ENEMY_MASK | PLAYER_MASK | WALL_MASK | BORDER_MASK;
     collisionBitmask_ = WALL_MASK | BORDER_MASK;
     
-    // åˆ›å»ºç‰©ç†ç¢°æ’ç®±
+    // ´´½¨ÎïÀíÅö×²Ïä
     setupPhysicsBody();
     
-    // è®¾ç½®æ˜¯å¦å—é‡åŠ›å½±å“
+    // ÉèÖÃÊÇ·ñÊÜÖØÁ¦Ó°Ïì
     physicsBody_->setGravityEnable(gravityScale_ > 0.0f);
     
-    // è®¾ç½®åˆå§‹é€Ÿåº¦
+    // ÉèÖÃ³õÊ¼ËÙ¶È
     physicsBody_->setVelocity(direction_ * speed_);
     
-    // åˆ›å»ºé»˜è®¤ç²¾çµ
+    // ´´½¨Ä¬ÈÏ¾«Áé
     if (sprite_ == nullptr) {
         sprite_ = Sprite::create();
         sprite_->setTextureRect(Rect(0, 0, collisionBoxWidth_, collisionBoxHeight_));
-        sprite_->setColor(Color3B(255, 0, 0)); // é»˜è®¤çº¢è‰²
-        sprite_->setPosition(Vec2(0, 0)); // ç²¾çµç›¸å¯¹äºèŠ‚ç‚¹çš„ä½ç½®è®¾ç½®ä¸º(0,0)
+        sprite_->setColor(Color3B(255, 0, 0)); // Ä¬ÈÏºìÉ«
+        sprite_->setPosition(Vec2(0, 0)); // ¾«ÁéÏà¶ÔÓÚ½ÚµãµÄÎ»ÖÃÉèÖÃÎª(0,0)
         this->addChild(sprite_);
     }
     
-    // å®‰æ’æ›´æ–°
+    // °²ÅÅ¸üĞÂ
     this->scheduleUpdate();
     
-    // é˜²æ­¢å­å¼¹å­˜åœ¨æ—¶é—´è¿‡é•¿
+    // ·ÀÖ¹×Óµ¯´æÔÚÊ±¼ä¹ı³¤
     this->scheduleOnce([this](float) {
         this->removeFromParent();
     }, 5.0f, "removeBullet");
@@ -185,7 +185,7 @@ void RangedBullet::setSpeed(float speed)
 {
     speed_ = speed;
     
-    // å¦‚æœç‰©ç†ä½“å­˜åœ¨ï¼Œæ›´æ–°é€Ÿåº¦
+    // Èç¹ûÎïÀíÌå´æÔÚ£¬¸üĞÂËÙ¶È
     if (physicsBody_ != nullptr) {
         physicsBody_->setVelocity(direction_.getNormalized() * speed_);
     }
@@ -195,7 +195,7 @@ void RangedBullet::setDirection(const Vec2& direction)
 {
     direction_ = direction;
     
-    // å¦‚æœç‰©ç†ä½“å­˜åœ¨ï¼Œæ›´æ–°é€Ÿåº¦
+    // Èç¹ûÎïÀíÌå´æÔÚ£¬¸üĞÂËÙ¶È
     if (physicsBody_ != nullptr) {
         physicsBody_->setVelocity(direction_.getNormalized() * speed_);
     }
@@ -203,21 +203,21 @@ void RangedBullet::setDirection(const Vec2& direction)
 
 void RangedBullet::update(float delta)
 {
-    // æ ¹æ®è½¨è¿¹ç±»å‹æ›´æ–°å­å¼¹
+    // ¸ù¾İ¹ì¼£ÀàĞÍ¸üĞÂ×Óµ¯
     switch (trajectoryType_) {
-        case 0: // ç›´çº¿
-            // å·²ç»ç”±ç‰©ç†å¼•æ“å¤„ç†
+        case 0: // Ö±Ïß
+            // ÒÑ¾­ÓÉÎïÀíÒıÇæ´¦Àí
             break;
-        case 1: // æŠ›ç‰©çº¿
-            // å·²ç»ç”±é‡åŠ›å¤„ç†
+        case 1: // Å×ÎïÏß
+            // ÒÑ¾­ÓÉÖØÁ¦´¦Àí
             break;
-        case 2: // æ›²çº¿
-            // å¯ä»¥æ·»åŠ æ›´å¤æ‚çš„è½¨è¿¹è®¡ç®—
+        case 2: // ÇúÏß
+            // ¿ÉÒÔÌí¼Ó¸ü¸´ÔÓµÄ¹ì¼£¼ÆËã
             break;
         default:
             break;
     }
     
-    // å¦‚æœæœ‰ç²¾çµï¼Œç¡®ä¿ç²¾çµä¸ç‰©ç†ä½“åŒæ­¥ï¼ˆä½œä¸ºå­èŠ‚ç‚¹ï¼Œè‡ªåŠ¨è·ŸéšèŠ‚ç‚¹ç§»åŠ¨ï¼‰
-    // ä¸éœ€è¦é¢å¤–è®¾ç½®ä½ç½®ï¼Œå› ä¸ºç²¾çµå·²ç»æ˜¯èŠ‚ç‚¹çš„å­èŠ‚ç‚¹ï¼Œä¸”ä½ç½®è®¾ä¸º(0,0)
+    // Èç¹ûÓĞ¾«Áé£¬È·±£¾«ÁéÓëÎïÀíÌåÍ¬²½£¨×÷Îª×Ó½Úµã£¬×Ô¶¯¸úËæ½ÚµãÒÆ¶¯£©
+    // ²»ĞèÒª¶îÍâÉèÖÃÎ»ÖÃ£¬ÒòÎª¾«ÁéÒÑ¾­ÊÇ½ÚµãµÄ×Ó½Úµã£¬ÇÒÎ»ÖÃÉèÎª(0,0)
 }

@@ -7,21 +7,21 @@
 
 USING_NS_CC;
 
-// å­å¼¹åŸºç±» - æŠ½è±¡ç±»
+// ×Óµ¯»ùÀà - ³éÏóÀà
 class BulletBase : public Node
 {
 public:
     BulletBase();
     virtual ~BulletBase();
     
-    // åˆå§‹åŒ–è™šå‡½æ•°
+    // ³õÊ¼»¯Ğéº¯Êı
     virtual bool init();
     
-    // ç¢°æ’å›è°ƒå‡½æ•°
+    // Åö×²»Øµ÷º¯Êı
     virtual bool onContactBegin(PhysicsContact& contact);
     virtual bool onContactSeparate(PhysicsContact& contact);
     
-    // Getter å’Œ Setter æ–¹æ³•
+    // Getter ºÍ Setter ·½·¨
     float getCollisionBoxWidth() const { return collisionBoxWidth_; }
     void setCollisionBoxWidth(float width) { collisionBoxWidth_ = width; }
     
@@ -40,48 +40,48 @@ public:
     uint32_t getCollisionBitmask() const { return collisionBitmask_; }
     void setCollisionBitmask(uint32_t mask) { collisionBitmask_ = mask; }
     
-    // è®¾ç½®å‘å°„è€…ç±»å‹ (ç©å®¶æˆ–æ•Œäºº)
+    // ÉèÖÃ·¢ÉäÕßÀàĞÍ (Íæ¼Ò»òµĞÈË)
     void setIsPlayerBullet(bool isPlayer) { isPlayerBullet_ = isPlayer; }
     bool getIsPlayerBullet() const { return isPlayerBullet_; }
     
-    // è®¾ç½®æ˜¯å¦å¯ä»¥ç©¿å¢™
+    // ÉèÖÃÊÇ·ñ¿ÉÒÔ´©Ç½
     void setCanPenetrateWall(bool canPenetrate) { canPenetrateWall_ = canPenetrate; }
     bool getCanPenetrateWall() const { return canPenetrateWall_; }
     
-    // è®¾ç½®æ˜¯å¦å¯ä»¥åå¼¹
+    // ÉèÖÃÊÇ·ñ¿ÉÒÔ·´µ¯
     void setCanBounce(bool canBounce) { canBounce_ = canBounce; }
     bool getCanBounce() const { return canBounce_; }
     
 protected:
-    // åˆ›å»ºç‰©ç†ç¢°æ’ç®±
+    // ´´½¨ÎïÀíÅö×²Ïä
     virtual void setupPhysicsBody();
     
-    // ç¢°æ’ç®±å¤§å°
+    // Åö×²Ïä´óĞ¡
     float collisionBoxWidth_;
     float collisionBoxHeight_;
     
-    // ä¼¤å®³å€¼
+    // ÉËº¦Öµ
     int damage_;
     
-    // ç¢°æ’è¿‡æ»¤æ©ç 
+    // Åö×²¹ıÂËÑÚÂë
     uint32_t categoryBitmask_;
     uint32_t contactTestBitmask_;
     uint32_t collisionBitmask_;
     
-    // ç‰©ç†ä½“
+    // ÎïÀíÌå
     PhysicsBody* physicsBody_;
     
-    // å‘å°„è€…ç±»å‹
+    // ·¢ÉäÕßÀàĞÍ
     bool isPlayerBullet_;
     
-    // æ˜¯å¦å¯ä»¥ç©¿å¢™
+    // ÊÇ·ñ¿ÉÒÔ´©Ç½
     bool canPenetrateWall_;
     
-    // æ˜¯å¦å¯ä»¥åå¼¹
+    // ÊÇ·ñ¿ÉÒÔ·´µ¯
     bool canBounce_;
 };
 
-// è¿‘æˆ˜å­å¼¹ç±» - ä¸´æ—¶ç¢°æ’æ¡†
+// ½üÕ½×Óµ¯Àà - ÁÙÊ±Åö×²¿ò
 class MeleeBullet : public BulletBase
 {
 public:
@@ -89,33 +89,33 @@ public:
     
     virtual bool init() override;
     
-    // è®¾ç½®æ”»å‡»æ–¹å‘ (ç”¨äºå†³å®šç¢°æ’ç®±ä½ç½®)
+    // ÉèÖÃ¹¥»÷·½Ïò (ÓÃÓÚ¾ö¶¨Åö×²ÏäÎ»ÖÃ)
     void setAttackDirection(const Vec2& direction) { attackDirection_ = direction; }
     Vec2 getAttackDirection() const { return attackDirection_; }
     
-    // è®¾ç½®æ”»å‡»æŒç»­æ—¶é—´
+    // ÉèÖÃ¹¥»÷³ÖĞøÊ±¼ä
     void setDuration(float duration) { duration_ = duration; }
     float getDuration() const { return duration_; }
     
-    // è®¾ç½®æ”»å‡»èŒƒå›´
+    // ÉèÖÃ¹¥»÷·¶Î§
     void setAttackRange(float range) { attackRange_ = range; }
     float getAttackRange() const { return attackRange_; }
     
 private:
-    // æ”»å‡»æ–¹å‘
+    // ¹¥»÷·½Ïò
     Vec2 attackDirection_;
     
-    // æ”»å‡»æŒç»­æ—¶é—´
+    // ¹¥»÷³ÖĞøÊ±¼ä
     float duration_;
     
-    // æ”»å‡»èŒƒå›´
+    // ¹¥»÷·¶Î§
     float attackRange_;
     
-    // æ›´æ–°è®¡æ—¶å™¨
+    // ¸üĞÂ¼ÆÊ±Æ÷
     float timer_;
 };
 
-// è¿œç¨‹å­å¼¹ç±»
+// Ô¶³Ì×Óµ¯Àà
 class RangedBullet : public BulletBase
 {
 public:
@@ -123,7 +123,7 @@ public:
     
     virtual bool init() override;
     
-    // Getter å’Œ Setter æ–¹æ³•
+    // Getter ºÍ Setter ·½·¨
     float getSpeed() const { return speed_; }
     void setSpeed(float speed);
     
@@ -136,27 +136,27 @@ public:
     Sprite* getSprite() const { return sprite_; }
     void setSprite(Sprite* sprite) { sprite_ = sprite; }
     
-    // è®¾ç½®å­å¼¹è½¨è¿¹
+    // ÉèÖÃ×Óµ¯¹ì¼£
     void setTrajectoryType(int type) { trajectoryType_ = type; }
     int getTrajectoryType() const { return trajectoryType_; }
     
 private:
-    // é£è¡Œé€Ÿåº¦
+    // ·ÉĞĞËÙ¶È
     float speed_;
     
-    // é£è¡Œæ–¹å‘
+    // ·ÉĞĞ·½Ïò
     Vec2 direction_;
     
-    // é‡åŠ›ç¼©æ”¾å› å­
+    // ÖØÁ¦Ëõ·ÅÒò×Ó
     float gravityScale_;
     
-    // ç²¾çµå¯è§†åŒ–éƒ¨åˆ†
+    // ¾«Áé¿ÉÊÓ»¯²¿·Ö
     Sprite* sprite_;
     
-    // è½¨è¿¹ç±»å‹ (0: ç›´çº¿, 1: æŠ›ç‰©çº¿, 2: æ›²çº¿ç­‰)
+    // ¹ì¼£ÀàĞÍ (0: Ö±Ïß, 1: Å×ÎïÏß, 2: ÇúÏßµÈ)
     int trajectoryType_;
     
-    // æ›´æ–°å‡½æ•°
+    // ¸üĞÂº¯Êı
     void update(float delta);
 };
 

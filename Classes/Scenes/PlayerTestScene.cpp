@@ -7,7 +7,8 @@ Scene* PlayerTestScene::createScene()
 {
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    //¿ªÆôÅö×²ÏäÏÔÊ¾
+    /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
@@ -42,7 +43,7 @@ bool PlayerTestScene::init()
     {
         for (int x = 0; x < mapsize.width; ++x)
         {
-            int gid = layer->getTileGIDAt(Vec2(x, y));
+            int gid = layer->getTileGIDAt(Vec2(static_cast<float>(x), static_cast<float>(y)));
             if (gid == 0)
                 continue;          // Ìø¹ý¿Õ°×¸ñ
 
@@ -55,9 +56,9 @@ bool PlayerTestScene::init()
                 x * tilesize.width + tilesize.width / 2,
                 (mapsize.height - 1 - y) * tilesize.height + tilesize.height / 2));
             node->setScale(siz);
-            body->setCategoryBitmask(GROUND_CATEGORY_BITMASK);
-            body->setCollisionBitmask(PLAYER_CATEGORY_BITMASK);
-            body->setContactTestBitmask(PLAYER_CATEGORY_BITMASK);
+            body->setCategoryBitmask(BORDER_MASK);
+            body->setCollisionBitmask(PLAYER_MASK);
+            body->setContactTestBitmask(PLAYER_MASK);
             node->setPhysicsBody(body);
             this->addChild(node);
         }

@@ -1,16 +1,16 @@
-/* О©╫О©╫О©╫м╥О©╫д╪О©╫О©╫О©╫е©О©╫О©╫О©╫О©╫ъ╢О©╫О©╫О©╫О©╫О©╫О©╫д╪О©╫б╥О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫ж╝О©╫О©╫О©╫О©╫О©╫О©╫О©╫ */
+//вт╤╗рЕюЮ╣дм╥нд╪Ч╟Э╨╛тзуБ╦Жм╥нд╪Чжп
 
-// Г╒╟Ф▓·Ф▌╘Г═│Е╝▐Е╝ Д╧┴
-#define ENEMY_MASK          0x00000001  // Ф∙▄Д╨╨
-#define PLAYER_MASK         0x00000002  // Д╦╩Х╖▓
-#define BORDER_MASK         0x00000004  // Ф╦╦Ф┬▐Х╬╧Ф║├
-#define WALL_MASK           0x00000008  // Ф╦╦Ф┬▐Е°╨Ф≥╞Д╦╜Г └Е╒≥Её│
-#define DAMAGE_WALL_MASK    0x00000010  // Ф╦╦Ф┬▐Е°╨Ф≥╞Д╦╜Е▐╞И─═Ф┬░Д╪╓Е╝ЁГ └Е╒≥Её│
-#define BULLET_MASK         0x00000020  // Е╜░Е╪╧
-#define PLAYER_BULLET_MASK  0x00000040  // Г▌╘Е╝╤Д╨╖Г■÷Г └Е╜░Е╪╧
-#define ENEMY_BULLET_MASK   0x00000080  // Ф∙▄Д╨╨Д╨╖Г■÷Г └Е╜░Е╪╧
-#define PENETRATE_MASK      0x00000100  // Е▐╞Д╩╔Г╘©Е╒≥Г └Г┴╘Д╫⌠
-#define BOUNCE_MASK         0x00000200  // Е▐╞Д╩╔Е▐█Е╪╧Г └Г┴╘Д╫⌠
+// еЖв╡язбК╨Й╤╗рЕ
+#define ENEMY_MASK          0x00000001  // ╣пхк
+#define PLAYER_MASK         0x00000002  // жВ╫г
+#define BORDER_MASK         0x00000004  // сно╥╠ъ©Р
+#define WALL_MASK           0x00000008  // сно╥Ё║╬╟жп╣дг╫╠з
+#define DAMAGE_WALL_MASK    0x00000010  // сно╥Ё║╬╟жп©итЛЁиик╨╕╣дг╫╠з
+#define BULLET_MASK         0x00000020  // вс╣╞
+#define PLAYER_BULLET_MASK  0x00000040  // мФ╪р╡ЗиЗ╣двс╣╞
+#define ENEMY_BULLET_MASK   0x00000080  // ╣пхк╡ЗиЗ╣двс╣╞
+#define PENETRATE_MASK      0x00000100  // ©ирт╢╘г╫╣днОлЕ
+#define BOUNCE_MASK         0x00000200  // ©ирт╥╢╣╞╣днОлЕ
 
 #include "Entities/Enemy/Enemy.h"
 #include "Entities/Player/Player.h"

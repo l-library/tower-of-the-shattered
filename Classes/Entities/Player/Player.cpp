@@ -1,5 +1,5 @@
 #include <cmath>
-#include "Player.h"
+#include "TowerOfTheShattered.h"
 #include "AudioEngine.h"
 
 USING_NS_CC;
@@ -41,22 +41,23 @@ bool Player::init()
 
     // 基础属性
     Size contentSize = _sprite->getContentSize();
-    _physicsSize = Size(contentSize.width * 0.5, contentSize.height * 0.85); // 碰撞体通常比贴图稍小
+    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.85f); // 碰撞体通常比贴图稍小
 
     _maxHealth = 100.0;
     _health = _maxHealth;
     _speed = 300.0;     // 水平移动最大速度
-    _jumpForce = 600.0; // 跳跃冲量 
+    _jumpForce = 500.0; // 跳跃冲量 
     _dodgeForce = 800.0;
-    _acceleration = 2000.0;
-    _deceleration = 3000.0; 
+    _acceleration = 1000.0;
+    _deceleration = 2000.0; 
+    _maxDodgeTime = 0.5;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
     _dodgeTime = 0;
 
     // 状态标志
-    _isGrounded = false; // 默认为false，由物理回调决定
+    _isGrounded = false;
     _isDodge = false;
     _isAttacking = false;
     _isInvincible = false;
@@ -79,7 +80,7 @@ bool Player::init()
     // 初始化物理身体
     initPhysics();
 
-    // 初始化碰撞监听 (用于检测地面)
+    // 初始化碰撞监听
     setupCollisionHandler();
 
     // 播放初始动画
@@ -87,6 +88,7 @@ bool Player::init()
 
     // 启用update函数
     this->scheduleUpdate();
+
     return true;
 }
 
@@ -95,41 +97,43 @@ void Player::initPhysics()
     //创建偏移量（碰撞箱对应图片）
     Size originalSize = _sprite->getContentSize();
     Vec2 offset = Vec2(0, originalSize.height / 2);
-    // 创建主身体（矩形或胶囊体），材质：摩擦力0(防止卡墙)，弹性0
+    //创建主身体,材质：摩擦力1.0(防止卡墙)，弹性0
     auto bodyMaterial = PhysicsMaterial(0.0f, 1.0f, 0.0f);
+    //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
     _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
 
-    // 禁止旋转
+    //禁止旋转
     _physicsBody->setRotationEnable(false);
+    //设置质量
     _physicsBody->setMass(1.0f);
 
-    // 设置掩码
-    _physicsBody->setCategoryBitmask(PLAYER_CATEGORY_BITMASK);
-    _physicsBody->setCollisionBitmask(GROUND_CATEGORY_BITMASK | PLATFORM_CATEGORY_BITMASK | ENEMY_CATEGORY_BITMASK);
-    _physicsBody->setContactTestBitmask(GROUND_CATEGORY_BITMASK | PLATFORM_CATEGORY_BITMASK | ENEMY_CATEGORY_BITMASK | TRAP_CATEGORY_BITMASK);
+    //设置掩码
+    _physicsBody->setCategoryBitmask(PLAYER_MASK);
+    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK);
 
-    // 给主身体一个Tag
+    //给主身体一个Tag
     _physicsBody->getShape(0)->setTag(TAG_BODY);
 
-    // 添加“脚部传感器”
-    // 这是一个比身体底部略小且略低的矩形，专门用于检测是否站在地上
-    // 传感器(Sensor)只检测碰撞但不产生物理推力
+    //添加“脚部传感器”
+    //这是一个比身体底部略小且略低的矩形，用于检测是否站在地上
+    //只检测碰撞，不产生物理推力
     Size footSize = Size(_physicsSize.width * 0.8f, 10);
-    Vec2 footOffset = Vec2(0, 5); // 位于身体底部
+    Vec2 footOffset = Vec2(0, 2); // 位于身体底部
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
-    footShape->setCategoryBitmask(PLAYER_CATEGORY_BITMASK);
-    footShape->setCollisionBitmask(GROUND_CATEGORY_BITMASK | PLATFORM_CATEGORY_BITMASK);
-    footShape->setContactTestBitmask(GROUND_CATEGORY_BITMASK | PLATFORM_CATEGORY_BITMASK);
+    footShape->setCategoryBitmask(PLAYER_MASK);
+    footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK);
+    footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK);
     footShape->setTag(TAG_FEET); // 标记为脚
 
     _physicsBody->addShape(footShape);
 
     this->setPhysicsBody(_physicsBody);
-    this->setAnchorPoint(Vec2(0.5f, 0.5f)); // 物理刚体通常中心对齐
+    this->setAnchorPoint(Vec2(0.5f, 0.5f)); // 物理刚体中心对齐
 }
 
-// 建立碰撞监听，核心逻辑：处理 _isGrounded
+// 建立碰撞监听，处理 _isGrounded
 void Player::setupCollisionHandler()
 {
     auto contactListener = EventListenerPhysicsContact::create();
@@ -184,7 +188,7 @@ void Player::setupCollisionHandler()
 void Player::update(float dt) {
     if (!_controlEnabled) return;
 
-    // 1. 同步物理引擎的速度到逻辑变量 (这一步很重要，让逻辑基于真实物理)
+    // 同步物理引擎的速度到逻辑变量
     if (_physicsBody) {
         _velocity = _physicsBody->getVelocity();
     }
@@ -218,7 +222,7 @@ void Player::updateTimers(float dt) {
         _dodgeTime -= dt;
         if (_dodgeTime <= 0) {
             _isDodge = false;
-            // 闪避结束，恢复掩码（如果闪避期间穿墙）
+            // 闪避结束，恢复掩码（如果闪避期间穿墙）（可以考虑后续加入穿过实体）
             // _physicsBody->setCollisionBitmask(originalMask); 
         }
     }
@@ -236,13 +240,13 @@ void Player::updateTimers(float dt) {
         if (_invincibilityTime <= 0)
         {
             _isInvincible = false;
-            this->setOpacity(255);
+            _sprite->setOpacity(255);
         }
         else
         {
             // 闪烁效果
-            float blink = sin(_invincibilityTime * 20) * 0.5f + 0.5f;
-            this->setOpacity(blink * 255);
+            double blink = sin(_invincibilityTime * 20) * 0.5f + 0.5f;
+            _sprite->setOpacity(static_cast<uint8_t>(blink * 255));
         }
     }
 }
@@ -256,15 +260,15 @@ void Player::updatePhysics(float dt) {
 
     float targetX = 0;
     
-    //决定目标速度
+    // 决定目标速度
     if (_isAttacking) {
         targetX = 0; // 攻击时目标速度为0
     }
     else if (_isDodge) {
-        targetX = (_direction == Direction::RIGHT ? 1 : -1) * _dodgeForce;
+        targetX = (_direction == Direction::RIGHT ? 1 : -1) * static_cast<float>(_dodgeForce);
     }
     else {
-        targetX = _moveInput * _speed;
+        targetX = _moveInput * static_cast<float>(_speed);
     }
 
     // 计算水平速度 (加速/减速)
@@ -274,14 +278,14 @@ void Player::updatePhysics(float dt) {
         newX = currentX * 0.9f; //若在攻击，给予摩檫力
     }
     else {
-        if (fabs(targetX) > 0.01f) {
+        if (fabs(targetX) > 0.01f) {//加速
             float direction = (targetX > currentX) ? 1.0f : -1.0f;
             newX = currentX + direction * _acceleration * dt;
             if ((direction > 0 && newX > targetX) || (direction < 0 && newX < targetX)) {
                 newX = targetX;
             }
         }
-        else {
+        else {//减速
             if (fabs(currentX) > 0.01f) {
                 float direction = (currentX > 0) ? -1.0f : 1.0f;
                 newX = currentX + direction * _deceleration * dt;
@@ -301,7 +305,7 @@ void Player::updatePhysics(float dt) {
 
     // 跳跃逻辑
     if (_jumpBufferTime > 0 && (_isGrounded || _coyoteTime > 0) && !_isAttacking) {
-        newY = _jumpForce;
+        newY = static_cast<float>(_jumpForce);
         _isGrounded = false;
         _coyoteTime = 0;
         _jumpBufferTime = 0;
@@ -311,6 +315,7 @@ void Player::updatePhysics(float dt) {
 }
 
 void Player::updateState() {
+    //根据标识确定攻击/闪避
     if (_isAttacking) {
         changeState(PlayerState::ATTACKING);
         return;
@@ -322,6 +327,7 @@ void Player::updateState() {
 
     // 使用物理引擎判定的 _isGrounded
     if (!_isGrounded) {
+        //根据垂直速度方向判定跳跃/下落
         if (_velocity.y > 0.1f) {
             changeState(PlayerState::JUMPING);
         }
@@ -330,6 +336,7 @@ void Player::updateState() {
         }
     }
     else {
+        //根据水平速度大小判定奔跑/待机
         if (fabs(_velocity.x) > 10.0f) {
             changeState(PlayerState::RUNNING);
         }
@@ -346,8 +353,8 @@ void Player::changeState(PlayerState newState) {
     _currentState = newState;
 
     // 状态进入逻辑
+    // 可以考虑后续加入切换状态时的操作
     if (newState == PlayerState::FALLING) {
-        // 这里不重置土狼时间，土狼时间在离地瞬间开始倒计时
     }
 }
 
@@ -356,6 +363,7 @@ void Player::updateAnimation() {
     std::string animationName;
     bool loop = true;
 
+    //跳跃、坠落、闪避动画待完善
     switch (_currentState) {
         case PlayerState::IDLE: animationName = "idle"; break;
         case PlayerState::RUNNING: animationName = "run"; break;
@@ -368,13 +376,13 @@ void Player::updateAnimation() {
         case PlayerState::DODGING: animationName = "dodge"; loop = false; break;
         default: animationName = "idle"; break;
     }
-
+    //如果状态变化，更新动画
     if (_currentState != _previousState) {
         playAnimation(animationName, loop);
         _previousState = _currentState;
     }
 
-    // 翻转逻辑：根据输入或速度方向翻转
+    //根据输入或速度方向翻转
     if (_moveInput > 0.1f) {
         _direction = Direction::RIGHT;
         _sprite->setFlippedX(false);
@@ -418,7 +426,7 @@ void Player::playAnimation(const std::string& name, bool loop)
     }
 }
 
-// --- 对外接口 ---
+/*---部分对外接口---*/
 
 const Sprite* Player::getSprite() const {
     return _sprite;
@@ -437,7 +445,6 @@ void Player::stopMoving() {
 }
 
 void Player::jump() {
-    // 只设置缓冲时间，实际起跳在 updatePhysics 中处理
     _jumpBufferTime = 0.1f;
 }
 
@@ -463,9 +470,49 @@ void Player::dodge() {
 
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;
-    _dodgeTime = 0.3; // 闪避持续时间
+    _dodgeTime = _maxDodgeTime; // 闪避持续时间
 
-    // 可选：闪避时无敌
-    // _isInvincible = true;
-    // _invincibilityTime = 0.3f;
+    //闪避时无敌
+    _isInvincible = true;
+    _invincibilityTime = _dodgeTime;
+}
+
+const std::string Player::getCurrentState() const
+{
+    std::string current;
+    switch (_currentState)
+    {
+        case PlayerState::IDLE:
+            current = "idle";
+            break;
+        case PlayerState::RUNNING:
+            current = "run";
+            break;
+        case PlayerState::JUMPING:
+            current = "jump";
+            break;
+        case PlayerState::FALLING:
+            current = "fall";
+            break;
+        case PlayerState::ATTACKING:
+            char tmp[20]; // 存放攻击段数名
+            sprintf(tmp, "attack-%d", _attack_num + 1);
+            current = tmp;
+            break;
+        case PlayerState::DODGING:
+            current = "dodge";
+            break;
+        case PlayerState::LANDING:
+            current = "land";
+            break;
+        case PlayerState::HURT:
+            current = "hurt";
+            break;
+        case PlayerState::DEAD:
+            current = "dead";
+            break;
+        default:
+            current = "idle";
+    }
+    return current;
 }

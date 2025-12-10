@@ -25,13 +25,14 @@ enum class Direction {
 //动画标签
 #define ANIMATION_ACTION_TAG 1001
 
-// 定义物理掩码 (建议在头文件中定义常量或枚举)
-const int PLAYER_CATEGORY_BITMASK = 0x01;
-const int GROUND_CATEGORY_BITMASK = 0x02;
-const int PLATFORM_CATEGORY_BITMASK = 0x04;
-const int ENEMY_CATEGORY_BITMASK = 0x08;
-const int TRAP_CATEGORY_BITMASK = 0x10;
-const int ITEM_CATEGORY_BITMASK = 0x20;
+// 定义物理掩码
+//const int PLAYER_CATEGORY_BITMASK = 0x01;
+//const int GROUND_CATEGORY_BITMASK = 0x02;
+//const int PLATFORM_CATEGORY_BITMASK = 0x04;
+//const int ENEMY_CATEGORY_BITMASK = 0x08;
+//const int TRAP_CATEGORY_BITMASK = 0x10;
+//const int ITEM_CATEGORY_BITMASK = 0x20;
+//当前使用TowerOfTheShattered头文件的掩码
 
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
@@ -68,21 +69,6 @@ public:
 	***/
 	void playAnimation(const std::string& name, bool loop = false);
 
-	/**
-	* @brief 获得玩家当前状态
-	* @param[in] void
-	* @return 玩家当前状态: idle, run, dodge, jump, fall, attack, hurt, dead
-	***/
-	std::string getCurrentState();
-
-	/**
-	* @brief 获得玩家图像
-	* @return 玩家当前的图像（常量指针）
-	***/
-	const cocos2d::Sprite* Player::getSprite() const;
-
-	void Player::setupCollisionHandler();
-
 	/*----各操作实现/对外接口----*/
 	void moveLeft();
 	void moveRight();
@@ -90,6 +76,19 @@ public:
 	void jump();
 	void attack();
 	void dodge();
+
+	/**
+	* @brief 获得玩家当前状态
+	* @param[in] void
+	* @return (const)玩家当前状态: idle, run, dodge, jump, fall, attack, hurt, dead
+	***/
+	const std::string getCurrentState() const;
+
+	/**
+	* @brief 获得玩家图像
+	* @return 玩家当前的图像（常量指针）
+	***/
+	const cocos2d::Sprite* Player::getSprite() const;
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -100,6 +99,12 @@ protected:
 	* @details 每帧调用一次
 	***/
 	void update(float dt);
+
+	/**
+	* @brief 初始化碰撞监听
+	* @details 主要初始化与地面的交互，调整is_grounded
+	***/
+	void Player::setupCollisionHandler();
 
 	/**
 	* @brief 改变主角状态
@@ -134,6 +139,8 @@ private:
 	//主角法力值
 	double _magic;
 	double _maxMagic;
+	//主角闪避时间（无敌时间）
+	double _maxDodgeTime;
 	//主角移动速度
 	double _speed;
 	//主角跳跃高度
