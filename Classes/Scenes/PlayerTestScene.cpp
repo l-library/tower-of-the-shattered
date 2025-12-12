@@ -86,6 +86,7 @@ bool PlayerTestScene::init()
     return true;
 }
 
+
 void PlayerTestScene::setupInput() {
     // ¼üÅÌ¼àÌı
     auto keyboardListener = EventListenerKeyboard::create();

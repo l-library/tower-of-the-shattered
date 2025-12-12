@@ -119,6 +119,8 @@ protected:
 	***/
 	void initPhysics();
 
+	void shootBullet();
+
 private:
 	/*----各个更新函数----*/
 	void updateTimers(float dt);//更新计时器
@@ -193,6 +195,7 @@ private:
 	//攻击段数
 	int _attack_num;
 	int _footContactCount;
+
 
 	/*----输入----*/
 	float _moveInput;

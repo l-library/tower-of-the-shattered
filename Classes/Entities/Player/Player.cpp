@@ -1,6 +1,7 @@
 #include <cmath>
-#include "TowerOfTheShattered.h"
+#include "Player.h"
 #include "AudioEngine.h"
+#include "TowerOfTheShattered.h"
 
 USING_NS_CC;
 
@@ -41,7 +42,7 @@ bool Player::init()
 
     // 基础属性
     Size contentSize = _sprite->getContentSize();
-    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.85f); // 碰撞体通常比贴图稍小
+    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.8f); // 碰撞体通常比贴图稍小
 
     _maxHealth = 100.0;
     _health = _maxHealth;
@@ -233,7 +234,7 @@ void Player::updateTimers(float dt) {
         _attackEngageTime -= dt;
     }
     
-    // 无敌时间
+    // 无敌时间（冲刺，受击）
     if (_isInvincible)
     {
         _invincibilityTime -= dt;
@@ -302,7 +303,7 @@ void Player::updatePhysics(float dt) {
     // 垂直速度 (重力逻辑）
     float newY = currentY;
     if (newY < -800.0f) newY = -800.0f;
-
+    if (_isDodge) newY = 0;
     // 跳跃逻辑
     if (_jumpBufferTime > 0 && (_isGrounded || _coyoteTime > 0) && !_isAttacking) {
         newY = static_cast<float>(_jumpForce);
@@ -448,6 +449,39 @@ void Player::jump() {
     _jumpBufferTime = 0.1f;
 }
 
+
+void Player::shootBullet()
+{
+    RangedBullet* attack_1;
+    //初始化攻击
+    attack_1 = RangedBullet::create();///创建远程子弹火球
+    Sprite* bullet = Sprite::create("player/fireball.png");
+    bullet->setScale(4);
+    if (_direction == Direction::RIGHT) {
+        attack_1->setDirection(Vec2(1, 0));
+        bullet->setFlippedX(false);
+    }
+    else {
+        attack_1->setDirection(Vec2(-1, 0));
+        bullet->setFlippedX(true);
+    }
+    attack_1->addChild(bullet);
+    attack_1->setSprite(bullet);
+    // 设置子弹的碰撞掩码
+    attack_1->setCategoryBitmask(0x04); // 子弹的碰撞类别
+    attack_1->setCollisionBitmask(0x01); // 与敌人碰撞
+    attack_1->setContactTestBitmask(0x01); // 检测与敌人的接触
+    attack_1->setGravityScale(0);
+
+    // 设置子弹位置为敌人位置上方
+    Vec2 cuurent_pos = _sprite->getPosition();
+    cuurent_pos.y += _sprite->getContentSize().height *3 / 4;
+    Vec2 worldPos = this->convertToWorldSpace(cuurent_pos);
+    attack_1->setPosition(worldPos);
+    // 添加子弹
+    auto gameScene = Director::getInstance()->getRunningScene();
+    gameScene->addChild(attack_1, 10);
+}
 void Player::attack() {
     if (_attackCooldown > 0 || _isAttacking) return;
 
@@ -461,6 +495,8 @@ void Player::attack() {
     _attackCooldown = _maxAttackCooldown;
     _attackEngageTime = kMaxAttackEngageTime; // 多段攻击的衔接
 
+    shootBullet();
+
     // 生成伤害判定框（Hitbox）通常在动画的特定帧回调中生成，或者在这里生成一个瞬时的Sensor
     // 这里留空，视具体Combat系统实现
 }
@@ -471,6 +507,11 @@ void Player::dodge() {
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;
     _dodgeTime = _maxDodgeTime; // 闪避持续时间
+
+    //闪避忽略初始速度
+    Vec2 current_velocity = _physicsBody->getVelocity();
+    current_velocity.x = 0;
+    _physicsBody->setVelocity(current_velocity);
 
     //闪避时无敌
     _isInvincible = true;

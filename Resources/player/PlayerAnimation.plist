@@ -352,6 +352,63 @@
                     </dict>
                 </array>
             </dict>
+            <key>dodge</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>dodge-0.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>dodge-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>dodge-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>dodge-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>dodge-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
         </dict>
         <key>properties</key>
         <dict>
@@ -360,6 +417,7 @@
                 <string>Idle.plist</string>
                 <string>Walk.plist</string>
                 <string>Attack.plist</string>
+                <string>Dodge.plist</string>
             </array>
             <key>format</key>
             <integer>2</integer>
