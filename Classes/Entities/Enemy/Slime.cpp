@@ -11,14 +11,14 @@ bool Slime::init()
         return false;
     }
     
-    // è®¾ç½®Slimeçš„åŸºæœ¬å±æ€§
+    // ÉèÖÃSlimeµÄ»ù±¾ÊôĞÔ
     this->setMaxVitality(100);
     this->setCurrentVitality(100);
-    this->setStaggerResistance(INT_MAX); // éŸ§æ€§ä¸ºæ— é™å¤§
+    this->setStaggerResistance(INT_MAX); // ÈÍĞÔÎªÎŞÏŞ´ó
     this->setBaseAttackPower(10);
     this->setDefense(0);
     
-    // è®¾ç½®Slimeç‰¹æœ‰çš„å±æ€§
+    // ÉèÖÃSlimeÌØÓĞµÄÊôĞÔ
     attackRange_ = 100.0f;
     movementSpeed_ = 150.0f;
     jumpSpeed_ = 300.0f;
@@ -26,13 +26,13 @@ bool Slime::init()
     attackTimer_ = 0.0f;
     detectionRange_ = 200.0f;
     
-    // åˆå§‹åŒ–è¡Œä¸ºçŠ¶æ€
+    // ³õÊ¼»¯ĞĞÎª×´Ì¬
     isJumping_ = false;
     isCharging_ = false;
     isJumpAttackCollided_ = false;
     isChargeAttackCollided_ = false;
     
-    // è®¾ç½®ç¢°æ’ç®±ä¿¡æ¯ï¼ˆ32x32åƒç´ ï¼Œä¸€ä¸ªæ ¼å­å¤§å°ï¼‰
+    // ÉèÖÃÅö×²ÏäĞÅÏ¢£¨32x32ÏñËØ£¬Ò»¸ö¸ñ×Ó´óĞ¡£©
     CollisionBoxInfo collisionInfo;
     collisionInfo.width = GRID_SIZE;
     collisionInfo.height = GRID_SIZE;
@@ -43,13 +43,13 @@ bool Slime::init()
     collisionInfo.mass = 1.0f;
     this->setCollisionBoxInfo(collisionInfo);
     
-    // åˆå§‹åŒ–ç²¾çµ
+    // ³õÊ¼»¯¾«Áé
     this->InitSprite();
     
-    // åˆå§‹åŒ–ç‰©ç†ç¢°æ’ä½“
+    // ³õÊ¼»¯ÎïÀíÅö×²Ìå
     this->InitPhysicsBody();
     
-    // åˆå§‹åŒ–è¡Œä¸º
+    // ³õÊ¼»¯ĞĞÎª
     this->BehaviorInit();
     
     return true;
@@ -57,10 +57,10 @@ bool Slime::init()
 
 void Slime::Hitted(int damage, int poise_damage)
 {
-    // æ‰£é™¤ç”Ÿå‘½å€¼
+    // ¿Û³ıÉúÃüÖµ
     this->setCurrentVitality(this->getCurrentVitality() - damage);
     
-    // è¢«å‡»ä¸­æ—¶çº¢ä¸€ä¸‹
+    // ±»»÷ÖĞÊ±ºìÒ»ÏÂ
     if (sprite_ != nullptr)
     {
         auto redAction = TintTo::create(0.1f, 255, 0, 0);
@@ -68,12 +68,12 @@ void Slime::Hitted(int damage, int poise_damage)
         sprite_->runAction(Sequence::create(redAction, restoreAction, nullptr));
     }
     
-    // éŸ§æ€§æ— é™å¤§ï¼Œä¸å¤„ç†ç ´éŸ§
+    // ÈÍĞÔÎŞÏŞ´ó£¬²»´¦ÀíÆÆÈÍ
 }
 
 void Slime::Dead()
 {
-    // æ·¡å‡ºæ•ˆæœ
+    // µ­³öĞ§¹û
     if (sprite_ != nullptr)
     {
         auto fadeOut = FadeOut::create(1.0f);
@@ -81,7 +81,7 @@ void Slime::Dead()
         sprite_->runAction(Sequence::create(fadeOut, removeSelf, nullptr));
     }
     
-    // ç«‹å³ç§»é™¤ç¢°æ’ç®±
+    // Á¢¼´ÒÆ³ıÅö×²Ïä
     if (physicsBody_ != nullptr)
     {
         this->removeComponent(physicsBody_);
@@ -91,31 +91,31 @@ void Slime::Dead()
 
 void Slime::BehaviorInit()
 {
-    // æ³¨å†Œè¡Œä¸ºå‡½æ•°
+    // ×¢²áĞĞÎªº¯Êı
     this->addBehavior("idle", std::bind(&Slime::idle, this, std::placeholders::_1));
     this->addBehavior("recovery", std::bind(&Slime::recovery, this, std::placeholders::_1));
     this->addBehavior("jumpAttack", std::bind(&Slime::jumpAttack, this, std::placeholders::_1));
     this->addBehavior("chargeAttack", std::bind(&Slime::chargeAttack, this, std::placeholders::_1));
     
-    // è®¾ç½®åˆå§‹è¡Œä¸º
+    // ÉèÖÃ³õÊ¼ĞĞÎª
     this->currentBehavior_ = "idle";
 }
 
 std::string Slime::DecideNextBehavior(float delta)
 {
-    // æŸ¥æ‰¾ç©å®¶
+    // ²éÕÒÍæ¼Ò
     this->findPlayer();
     
-    // æ›´æ–°æ”»å‡»è®¡æ—¶å™¨
+    // ¸üĞÂ¹¥»÷¼ÆÊ±Æ÷
     attackTimer_ += delta;
     
-    // å¦‚æœæ£€æµ‹åˆ°ç©å®¶ä¸”æ”»å‡»å†·å´ç»“æŸ
+    // Èç¹û¼ì²âµ½Íæ¼ÒÇÒ¹¥»÷ÀäÈ´½áÊø
     if (this->getPlayer() != nullptr && attackTimer_ >= attackCooldown_)
     {
-        // æ£€æµ‹ç©å®¶æ˜¯å¦å¯è§ã€åœ¨æ”»å‡»èŒƒå›´å†…ä¸”æ°´å¹³
+        // ¼ì²âÍæ¼ÒÊÇ·ñ¿É¼û¡¢ÔÚ¹¥»÷·¶Î§ÄÚÇÒË®Æ½
         if (this->isPlayerVisible() && this->isPlayerInRange() && this->isPlayerHorizontal())
         {
-            // éšæœºé€‰æ‹©è·³è·ƒæ”»å‡»æˆ–å†²æ’æ”»å‡»
+            // Ëæ»úÑ¡ÔñÌøÔ¾¹¥»÷»ò³å×²¹¥»÷
             int random = rand() % 2;
             attackTimer_ = 0.0f;
             
@@ -130,32 +130,32 @@ std::string Slime::DecideNextBehavior(float delta)
         }
     }
     
-    // é»˜è®¤è¿”å›å¾…æœºè¡Œä¸º
+    // Ä¬ÈÏ·µ»Ø´ı»úĞĞÎª
     return "idle";
 }
 
 void Slime::InitSprite()
 {
-    // ä½¿ç”¨ç°æœ‰å›¾ç‰‡ä½œä¸ºSlimeçš„ç²¾çµ
-    sprite_ = Sprite::create("HelloWorld.png"); // æš‚æ—¶ä½¿ç”¨ç°æœ‰å›¾ç‰‡
+    // Ê¹ÓÃÏÖÓĞÍ¼Æ¬×÷ÎªSlimeµÄ¾«Áé
+    sprite_ = Sprite::create("HelloWorld.png"); // ÔİÊ±Ê¹ÓÃÏÖÓĞÍ¼Æ¬
     if (sprite_ != nullptr)
     {
-        // è®¾ç½®ç²¾çµå¤§å°ä¸º32x32åƒç´ 
+        // ÉèÖÃ¾«Áé´óĞ¡Îª32x32ÏñËØ
         sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
-        sprite_->setPosition(Vec2::ZERO); // è®¾ç½®ç²¾çµåœ¨èŠ‚ç‚¹ä¸­å¿ƒ
+        sprite_->setPosition(Vec2::ZERO); // ÉèÖÃ¾«ÁéÔÚ½ÚµãÖĞĞÄ
         this->addChild(sprite_);
     }
 }
 
 BehaviorResult Slime::idle(float delta)
 {
-    // å¾…æœºè¡Œä¸ºï¼šåŸåœ°ä¸åŠ¨
+    // ´ı»úĞĞÎª£ºÔ­µØ²»¶¯
     return { true, 0.0f };
 }
 
 BehaviorResult Slime::recovery(float delta)
 {
-    // åæ‘‡è¡Œä¸ºï¼šåŸåœ°ä¸åŠ¨ï¼ŒæŒç»­0.5ç§’
+    // ºóÒ¡ĞĞÎª£ºÔ­µØ²»¶¯£¬³ÖĞø0.5Ãë
     static float recoveryTimer = 0.0f;
     recoveryTimer += delta;
     
@@ -170,72 +170,72 @@ BehaviorResult Slime::recovery(float delta)
 
 BehaviorResult Slime::jumpAttack(float delta)
 {
-    // è·³è·ƒæ”»å‡»è¡Œä¸º
+    // ÌøÔ¾¹¥»÷ĞĞÎª
     if (!isJumping_)
     {
-        // å¼€å§‹è·³è·ƒ
+        // ¿ªÊ¼ÌøÔ¾
         isJumping_ = true;
-        // é‡ç½®ç¢°æ’æ ‡å¿—
+        // ÖØÖÃÅö×²±êÖ¾
         isJumpAttackCollided_ = false;
         
-        // è®¡ç®—å‘ç©å®¶çš„æ–¹å‘
+        // ¼ÆËãÏòÍæ¼ÒµÄ·½Ïò
         Vec2 direction = Vec2::ZERO;
         if (this->getPlayer() != nullptr)
         {
             direction = (this->getPlayer()->getPosition() - this->getPosition()).getNormalized();
         }
         
-        // è®¾ç½®è·³è·ƒé€Ÿåº¦ï¼ˆå‘ä¸Šè·³è·ƒï¼ŒåŒæ—¶å‘ç©å®¶æ–¹å‘ç§»åŠ¨ï¼‰
+        // ÉèÖÃÌøÔ¾ËÙ¶È£¨ÏòÉÏÌøÔ¾£¬Í¬Ê±ÏòÍæ¼Ò·½ÏòÒÆ¶¯£©
         Vec2 jumpVelocity = Vec2(direction.x * movementSpeed_, jumpSpeed_);
         physicsBody_->setVelocity(jumpVelocity);
         
-        // åˆ›å»ºè¿‘æˆ˜bulletæ›¿ä»£è‡ªèº«ç¢°æ’ç®±
+        // ´´½¨½üÕ½bulletÌæ´ú×ÔÉíÅö×²Ïä
         auto meleeBullet = MeleeBullet::create();
         if (meleeBullet != nullptr)
         {
-            // è®¾ç½®bulletå¤§å°ä¸Slimeç›¸åŒï¼ˆGRID_SIZE x GRID_SIZEï¼‰
+            // ÉèÖÃbullet´óĞ¡ÓëSlimeÏàÍ¬£¨GRID_SIZE x GRID_SIZE£©
             meleeBullet->setCollisionBoxWidth(GRID_SIZE);
             meleeBullet->setCollisionBoxHeight(GRID_SIZE);
             
-            // è®¾ç½®bulletä½ç½®ä¸Slimeç›¸åŒ
+            // ÉèÖÃbulletÎ»ÖÃÓëSlimeÏàÍ¬
             meleeBullet->setPosition(this->getPosition());
             
-            // è®¾ç½®bulletä¼¤å®³ä¸Slimeçš„æ”»å‡»ä¼¤å®³ç›¸åŒ
+            // ÉèÖÃbulletÉËº¦ÓëSlimeµÄ¹¥»÷ÉËº¦ÏàÍ¬
             meleeBullet->setDamage(this->getBaseAttackPower());
             
-            // è®¾ç½®bulletæŒç»­æ—¶é—´
+            // ÉèÖÃbullet³ÖĞøÊ±¼ä
             meleeBullet->setDuration(0.5f);
             
-            // è®¾ç½®bulletçš„æ”»å‡»æ–¹å‘
+            // ÉèÖÃbulletµÄ¹¥»÷·½Ïò
             meleeBullet->setAttackDirection(direction);
             
-            // è®¾ç½®ä¸ºæ•Œäººå­å¼¹
+            // ÉèÖÃÎªµĞÈË×Óµ¯
             meleeBullet->setIsPlayerBullet(false);
             
             
-            // å°†bulletæ·»åŠ åˆ°åœºæ™¯ä¸­
+            // ½«bulletÌí¼Óµ½³¡¾°ÖĞ
             this->getParent()->addChild(meleeBullet);
         }
         
-        // æ”»å‡»æ—¶è®©ç²¾çµå˜çº¢
+        // ¹¥»÷Ê±ÈÃ¾«Áé±äºì
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 0, 0));
         }
     }
     
-    // æ£€æŸ¥æ˜¯å¦è½åœ°æˆ–æ’åˆ°å…¶ä»–ç¢°æ’ç®±
+    // ¼ì²éÊÇ·ñÂäµØ»ò×²µ½ÆäËûÅö×²Ïä
     if (isJumping_ && (physicsBody_->getVelocity().y == 0 || isJumpAttackCollided_))
     {
         isJumping_ = false;
         
-        // æ”»å‡»ç»“æŸåæ¢å¤åŸè‰²
+        // ¹¥»÷½áÊøºó»Ö¸´Ô­É«
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
         
-        return { true, 0.5f }; // æ”»å‡»å®Œæˆï¼Œåæ‘‡0.5ç§’
+        return { true, 0.5f }; // ¹¥»÷Íê³É£¬ºóÒ¡0.5Ãë
     }
     
     return { false, 0.0f };
@@ -243,58 +243,58 @@ BehaviorResult Slime::jumpAttack(float delta)
 
 BehaviorResult Slime::chargeAttack(float delta)
 {
-    // å†²æ’æ”»å‡»è¡Œä¸º
+    // ³å×²¹¥»÷ĞĞÎª
     if (!isCharging_)
     {
-        // å¼€å§‹å†²æ’
+        // ¿ªÊ¼³å×²
         isCharging_ = true;
-        // é‡ç½®ç¢°æ’æ ‡å¿—
+        // ÖØÖÃÅö×²±êÖ¾
         isChargeAttackCollided_ = false;
         
-        // è®¡ç®—å‘ç©å®¶çš„æ–¹å‘
+        // ¼ÆËãÏòÍæ¼ÒµÄ·½Ïò
         Vec2 direction = Vec2::ZERO;
         if (this->getPlayer() != nullptr)
         {
             direction = (this->getPlayer()->getPosition() - this->getPosition()).getNormalized();
         }
         
-        // è®¾ç½®å†²æ’é€Ÿåº¦ï¼ˆå‘ç©å®¶æ–¹å‘å¿«é€Ÿç§»åŠ¨ï¼‰
+        // ÉèÖÃ³å×²ËÙ¶È£¨ÏòÍæ¼Ò·½Ïò¿ìËÙÒÆ¶¯£©
         Vec2 chargeVelocity = Vec2(direction.x * movementSpeed_ * 2, 0);
         physicsBody_->setVelocity(chargeVelocity);
         
-        // åˆ›å»ºè¿‘æˆ˜bulletæ›¿ä»£è‡ªèº«ç¢°æ’ç®±
+        // ´´½¨½üÕ½bulletÌæ´ú×ÔÉíÅö×²Ïä
         auto meleeBullet = MeleeBullet::create();
         if (meleeBullet != nullptr)
         {
-            // è®¾ç½®bulletå¤§å°ä¸Slimeç›¸åŒï¼ˆGRID_SIZE x GRID_SIZEï¼‰
+            // ÉèÖÃbullet´óĞ¡ÓëSlimeÏàÍ¬£¨GRID_SIZE x GRID_SIZE£©
             meleeBullet->setCollisionBoxWidth(GRID_SIZE);
             meleeBullet->setCollisionBoxHeight(GRID_SIZE);
             
-            // è®¾ç½®bulletä½ç½®ä¸Slimeç›¸åŒ
+            // ÉèÖÃbulletÎ»ÖÃÓëSlimeÏàÍ¬
             meleeBullet->setPosition(this->getPosition());
             
-            // è®¾ç½®bulletä¼¤å®³ä¸Slimeçš„æ”»å‡»ä¼¤å®³ç›¸åŒ
+            // ÉèÖÃbulletÉËº¦ÓëSlimeµÄ¹¥»÷ÉËº¦ÏàÍ¬
             meleeBullet->setDamage(this->getBaseAttackPower());
             
-            // è®¾ç½®bulletæŒç»­æ—¶é—´
+            // ÉèÖÃbullet³ÖĞøÊ±¼ä
             meleeBullet->setDuration(1.0f);
             
-            // è®¾ç½®bulletçš„æ”»å‡»æ–¹å‘
+            // ÉèÖÃbulletµÄ¹¥»÷·½Ïò
             meleeBullet->setAttackDirection(direction);
             
             
-            // å°†bulletæ·»åŠ åˆ°åœºæ™¯ä¸­
+            // ½«bulletÌí¼Óµ½³¡¾°ÖĞ
             this->getParent()->addChild(meleeBullet);
         }
         
-        // æ”»å‡»æ—¶è®©ç²¾çµå˜çº¢
+        // ¹¥»÷Ê±ÈÃ¾«Áé±äºì
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 0, 0));
         }
     }
     
-    // å†²æ’æŒç»­ä¸€æ®µæ—¶é—´åç»“æŸæˆ–æ’åˆ°å…¶ä»–ç¢°æ’ç®±
+    // ³å×²³ÖĞøÒ»¶ÎÊ±¼äºó½áÊø»ò×²µ½ÆäËûÅö×²Ïä
     static float chargeTimer = 0.0f;
     chargeTimer += delta;
     
@@ -303,16 +303,16 @@ BehaviorResult Slime::chargeAttack(float delta)
         chargeTimer = 0.0f;
         isCharging_ = false;
         
-        // åœæ­¢å†²æ’
+        // Í£Ö¹³å×²
         physicsBody_->setVelocity(Vec2::ZERO);
         
-        // æ”»å‡»ç»“æŸåæ¢å¤åŸè‰²
+        // ¹¥»÷½áÊøºó»Ö¸´Ô­É«
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
         
-        return { true, 0.5f }; // æ”»å‡»å®Œæˆï¼Œåæ‘‡0.5ç§’
+        return { true, 0.5f }; // ¹¥»÷Íê³É£¬ºóÒ¡0.5Ãë
     }
     
     return { false, 0.0f };
@@ -320,24 +320,24 @@ BehaviorResult Slime::chargeAttack(float delta)
 
 Player* Slime::findPlayer()
 {
-    // æŸ¥æ‰¾ç©å®¶èŠ‚ç‚¹ï¼ˆä½¿ç”¨typeidæ£€æµ‹ç©å®¶ç±»å‹ï¼‰
+    // ²éÕÒÍæ¼Ò½Úµã£¨Ê¹ÓÃtypeid¼ì²âÍæ¼ÒÀàĞÍ£©
     auto parent = this->getParent();
     if (parent != nullptr)
     {
         auto children = parent->getChildren();
         for (auto child : children)
         {
-            // ä½¿ç”¨typeidæ£€æµ‹èŠ‚ç‚¹æ˜¯å¦ä¸ºPlayerç±»å‹
+            // Ê¹ÓÃtypeid¼ì²â½ÚµãÊÇ·ñÎªPlayerÀàĞÍ
             if (typeid(*child) == typeid(Player))
             {
                 Player* player = static_cast<Player*>(child);
-                this->setPlayer(player); // å­˜å‚¨ç©å®¶æŒ‡é’ˆåˆ°åŸºç±»
+                this->setPlayer(player); // ´æ´¢Íæ¼ÒÖ¸Õëµ½»ùÀà
                 return player;
             }
         }
     }
     
-    this->setPlayer(nullptr); // å¦‚æœæ²¡æœ‰æ‰¾åˆ°ç©å®¶ï¼Œå°†åŸºç±»çš„ç©å®¶æŒ‡é’ˆè®¾ä¸ºnullptr
+    this->setPlayer(nullptr); // Èç¹ûÃ»ÓĞÕÒµ½Íæ¼Ò£¬½«»ùÀàµÄÍæ¼ÒÖ¸ÕëÉèÎªnullptr
     return nullptr;
 }
 
@@ -348,7 +348,7 @@ bool Slime::isPlayerInRange()
         return false;
     }
     
-    // æ£€æµ‹ç©å®¶æ˜¯å¦åœ¨æ”»å‡»èŒƒå›´å†…
+    // ¼ì²âÍæ¼ÒÊÇ·ñÔÚ¹¥»÷·¶Î§ÄÚ
     float distance = this->getPosition().distance(this->getPlayer()->getPosition());
     return distance <= detectionRange_;
 }
@@ -360,7 +360,7 @@ bool Slime::isPlayerHorizontal()
         return false;
     }
     
-    // æ£€æµ‹ç©å®¶æ˜¯å¦åœ¨åŒä¸€æ°´å¹³çº¿ä¸Šï¼ˆYåæ ‡å·®å°äºä¸€å®šå€¼ï¼‰
+    // ¼ì²âÍæ¼ÒÊÇ·ñÔÚÍ¬Ò»Ë®Æ½ÏßÉÏ£¨Y×ø±ê²îĞ¡ÓÚÒ»¶¨Öµ£©
     float yDiff = abs(this->getPosition().y - this->getPlayer()->getPosition().y);
     return yDiff <= GRID_SIZE * 2;
 }
@@ -370,7 +370,7 @@ bool Slime::onContactBegin(PhysicsContact& contact)
     auto nodeA = contact.getShapeA()->getBody()->getNode();
     auto nodeB = contact.getShapeB()->getBody()->getNode();
     
-    // ç¡®å®šå½“å‰SlimeèŠ‚ç‚¹å’Œå¯¹æ–¹èŠ‚ç‚¹
+    // È·¶¨µ±Ç°Slime½ÚµãºÍ¶Ô·½½Úµã
     Node* slimeNode = nullptr;
     Node* otherNode = nullptr;
     
@@ -390,13 +390,13 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         return true;
     }
     
-    // æ£€æµ‹æ˜¯å¦åœ¨è·³è·ƒæ”»å‡»æˆ–å†²æ’æ”»å‡»ä¸­
+    // ¼ì²âÊÇ·ñÔÚÌøÔ¾¹¥»÷»ò³å×²¹¥»÷ÖĞ
     if (isJumping_ || isCharging_)
     {
-        // æ£€æµ‹æ˜¯å¦æ’åˆ°äº†å…¶ä»–ç¢°æ’ç®±ï¼ˆé™¤äº†è‡ªèº«ï¼‰
+        // ¼ì²âÊÇ·ñ×²µ½ÁËÆäËûÅö×²Ïä£¨³ıÁË×ÔÉí£©
         if (otherNode != this)
         {
-            // è®¾ç½®ç›¸åº”çš„ç¢°æ’æ ‡å¿—
+            // ÉèÖÃÏàÓ¦µÄÅö×²±êÖ¾
             if (isJumping_)
             {
                 isJumpAttackCollided_ = true;
@@ -408,21 +408,21 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         }
     }
     
-    // æ£€æµ‹æ˜¯å¦ç¢°åˆ°å¢™
+    // ¼ì²âÊÇ·ñÅöµ½Ç½
     if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
     {
-        // ç¢°åˆ°å¢™ï¼Œä¸å¤„ç†ç‰¹æ®Šé€»è¾‘ï¼ˆç‰©ç†å¼•æ“ä¼šè‡ªåŠ¨å¤„ç†ç©¿å¢™é—®é¢˜ï¼‰
+        // Åöµ½Ç½£¬²»´¦ÀíÌØÊâÂß¼­£¨ÎïÀíÒıÇæ»á×Ô¶¯´¦Àí´©Ç½ÎÊÌâ£©
         return true;
     }
     
-    // æ£€æµ‹æ˜¯å¦ç¢°åˆ°ä¸»è§’
+    // ¼ì²âÊÇ·ñÅöµ½Ö÷½Ç
     if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
     {
-        // ç»™äºˆä¸»è§’ä¼¤å®³
-        // è¿™é‡Œå‡è®¾ä¸»è§’æœ‰ä¸€ä¸ªHittedæ–¹æ³•
+        // ¸øÓèÖ÷½ÇÉËº¦
+        // ÕâÀï¼ÙÉèÖ÷½ÇÓĞÒ»¸öHitted·½·¨
         // otherNode->Hitted(this->getBaseAttackPower());
         
-        // åæ–¹å‘å¼¹å¼€ä¸€ç‚¹è·ç¦»
+        // ·´·½Ïòµ¯¿ªÒ»µã¾àÀë
         Vec2 direction = (otherNode->getPosition() - slimeNode->getPosition()).getNormalized();
         otherNode->getPhysicsBody()->setVelocity(direction * 100);
         

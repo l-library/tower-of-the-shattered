@@ -452,36 +452,65 @@ void Player::jump() {
 
 void Player::shootBullet()
 {
-    RangedBullet* attack_1;
+    //创建子弹类
+    RangedBullet* attack;
     //初始化攻击
-    attack_1 = RangedBullet::create();///创建远程子弹火球
-    Sprite* bullet = Sprite::create("player/fireball.png");
-    bullet->setScale(4);
+    attack = RangedBullet::create();///创建远程子弹火球
+    Sprite* bullet = Sprite::create("player/FireBall-0.png");
+    bullet->setAnchorPoint(Vec2(0.5, 0));///设置位置
+    //加载对应攻击动画
+    char attack_name[20];
+    sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
+    auto animation = AnimationCache::getInstance()->getAnimation(attack_name);
+    // 设置子弹位置
+    Vec2 current_pos = _sprite->getPosition();
+    // 如果成功获取动画
+    if (animation)
+    {
+        // 创建action
+        auto action = Animate::create(animation);
+        if (_attack_num == 0) {
+            bullet->setScale(3);
+            bullet->runAction(RepeatForever::create(action));
+        }
+        else {
+            attack->setSpeed(0);
+            bullet->runAction(Sequence::create(
+                action,
+                CallFunc::create([bullet]()
+                    { bullet->removeFromParent(); }),//播放完动画删除
+                nullptr));
+        }
+    }
+    //设置子弹方向
     if (_direction == Direction::RIGHT) {
-        attack_1->setDirection(Vec2(1, 0));
+        attack->setDirection(Vec2(1, 0));
         bullet->setFlippedX(false);
     }
     else {
-        attack_1->setDirection(Vec2(-1, 0));
+        attack->setDirection(Vec2(-1, 0));
         bullet->setFlippedX(true);
     }
-    attack_1->addChild(bullet);
-    attack_1->setSprite(bullet);
+    //设置子弹精灵
+    attack->setSprite(bullet);
     // 设置子弹的碰撞掩码
-    attack_1->setCategoryBitmask(0x04); // 子弹的碰撞类别
-    attack_1->setCollisionBitmask(0x01); // 与敌人碰撞
-    attack_1->setContactTestBitmask(0x01); // 检测与敌人的接触
-    attack_1->setGravityScale(0);
-
-    // 设置子弹位置为敌人位置上方
-    Vec2 cuurent_pos = _sprite->getPosition();
-    cuurent_pos.y += _sprite->getContentSize().height *3 / 4;
-    Vec2 worldPos = this->convertToWorldSpace(cuurent_pos);
-    attack_1->setPosition(worldPos);
+    attack->setCategoryBitmask(0x04); // 子弹的碰撞类别
+    attack->setCollisionBitmask(0x01); // 与敌人碰撞
+    attack->setContactTestBitmask(0x01); // 检测与敌人的接触
+    attack->setGravityScale(0);
     // 添加子弹
-    auto gameScene = Director::getInstance()->getRunningScene();
-    gameScene->addChild(attack_1, 10);
+    if (_attack_num == 0) {//只有第一次攻击（火球）是场景的child
+        Vec2 worldPos = this->convertToWorldSpace(current_pos);
+        attack->setPosition(worldPos);
+        auto gameScene = Director::getInstance()->getRunningScene();
+        gameScene->addChild(attack, 10);
+    }
+    else {//第二次和第三次攻击都是不移动的玩家child
+        attack->setPosition(current_pos);
+        this->addChild(attack, 10);
+    }
 }
+
 void Player::attack() {
     if (_attackCooldown > 0 || _isAttacking) return;
 

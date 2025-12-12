@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef __BULLET_H__
 #define __BULLET_H__
 

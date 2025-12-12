@@ -1,8 +1,8 @@
 #pragma once
 #include "EnemyBase.h"
-#include "TowerOfTheShattered.h" // åŒ…å«GRID_SIZEå®
+#include "TowerOfTheShattered.h" // °üº¬GRID_SIZEºê
 
-// Slimeç±» - ç¬¬ä¸€ä¸ªå…·ä½“çš„å°å…µç±»ï¼Œç»§æ‰¿è‡ªSoldierEnemyBase
+// SlimeÀà - µÚÒ»¸ö¾ßÌåµÄĞ¡±øÀà£¬¼Ì³Ğ×ÔSoldierEnemyBase
 class Slime : public SoldierEnemyBase
 {
 public:
@@ -10,42 +10,42 @@ public:
     
     virtual bool init() override;
     
-    // å®ç°çˆ¶ç±»çš„çº¯è™šå‡½æ•°
+    // ÊµÏÖ¸¸ÀàµÄ´¿Ğéº¯Êı
     virtual void Hitted(int damage, int poise_damage = 0) override;
     virtual void Dead() override;
     virtual void BehaviorInit() override;
     virtual std::string DecideNextBehavior(float delta) override;
     virtual void InitSprite() override;
     
-    // å®ç°ç¢°æ’å›è°ƒå‡½æ•°
+    // ÊµÏÖÅö×²»Øµ÷º¯Êı
     virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
     virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;
     
 private:
-    // Slimeç‰¹æœ‰çš„å±æ€§
-    float attackRange_;        // æ”»å‡»èŒƒå›´
-    float movementSpeed_;      // ç§»åŠ¨é€Ÿåº¦
-    float jumpSpeed_;          // è·³è·ƒé€Ÿåº¦
-    float attackCooldown_;     // æ”»å‡»å†·å´æ—¶é—´
-    float attackTimer_;        // æ”»å‡»è®¡æ—¶å™¨
+    // SlimeÌØÓĞµÄÊôĞÔ
+    float attackRange_;        // ¹¥»÷·¶Î§
+    float movementSpeed_;      // ÒÆ¶¯ËÙ¶È
+    float jumpSpeed_;          // ÌøÔ¾ËÙ¶È
+    float attackCooldown_;     // ¹¥»÷ÀäÈ´Ê±¼ä
+    float attackTimer_;        // ¹¥»÷¼ÆÊ±Æ÷
     
-    // è¡Œä¸ºçŠ¶æ€
-    bool isJumping_;           // æ˜¯å¦æ­£åœ¨è·³è·ƒ
-    bool isCharging_;          // æ˜¯å¦æ­£åœ¨å†²æ’
-    bool isJumpAttackCollided_;  // è·³è·ƒæ”»å‡»æ˜¯å¦å‘ç”Ÿç¢°æ’
-    bool isChargeAttackCollided_; // å†²æ’æ”»å‡»æ˜¯å¦å‘ç”Ÿç¢°æ’
+    // ĞĞÎª×´Ì¬
+    bool isJumping_;           // ÊÇ·ñÕıÔÚÌøÔ¾
+    bool isCharging_;          // ÊÇ·ñÕıÔÚ³å×²
+    bool isJumpAttackCollided_;  // ÌøÔ¾¹¥»÷ÊÇ·ñ·¢ÉúÅö×²
+    bool isChargeAttackCollided_; // ³å×²¹¥»÷ÊÇ·ñ·¢ÉúÅö×²
     
-    // æ£€æµ‹ç©å®¶çš„è·ç¦»
-    float detectionRange_;     // æ£€æµ‹ç©å®¶çš„è·ç¦»
+    // ¼ì²âÍæ¼ÒµÄ¾àÀë
+    float detectionRange_;     // ¼ì²âÍæ¼ÒµÄ¾àÀë
     
-    // Slimeç‰¹æœ‰çš„è¡Œä¸º
-    BehaviorResult idle(float delta);       // å¾…æœºè¡Œä¸º
-    BehaviorResult recovery(float delta);    // åæ‘‡è¡Œä¸º
-    BehaviorResult jumpAttack(float delta);  // è·³è·ƒæ”»å‡»è¡Œä¸º
-    BehaviorResult chargeAttack(float delta); // å†²æ’æ”»å‡»è¡Œä¸º
+    // SlimeÌØÓĞµÄĞĞÎª
+    BehaviorResult idle(float delta);       // ´ı»úĞĞÎª
+    BehaviorResult recovery(float delta);    // ºóÒ¡ĞĞÎª
+    BehaviorResult jumpAttack(float delta);  // ÌøÔ¾¹¥»÷ĞĞÎª
+    BehaviorResult chargeAttack(float delta); // ³å×²¹¥»÷ĞĞÎª
     
-    // è¾…åŠ©æ–¹æ³•
-      Player* findPlayer();             // æŸ¥æ‰¾ç©å®¶
-      bool isPlayerInRange();                  // æ£€æµ‹ç©å®¶æ˜¯å¦åœ¨æ”»å‡»èŒƒå›´å†…
-    bool isPlayerHorizontal();               // æ£€æµ‹ç©å®¶æ˜¯å¦åœ¨åŒä¸€æ°´å¹³çº¿ä¸Š
+    // ¸¨Öú·½·¨
+      Player* findPlayer();             // ²éÕÒÍæ¼Ò
+      bool isPlayerInRange();                  // ¼ì²âÍæ¼ÒÊÇ·ñÔÚ¹¥»÷·¶Î§ÄÚ
+    bool isPlayerHorizontal();               // ¼ì²âÍæ¼ÒÊÇ·ñÔÚÍ¬Ò»Ë®Æ½ÏßÉÏ
 };

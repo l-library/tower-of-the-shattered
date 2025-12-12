@@ -1,4 +1,4 @@
-ï»¿#include "PlayerTestScene.h"
+#include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 
@@ -8,14 +8,13 @@ Scene* PlayerTestScene::createScene()
 {
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½Ê¾
     /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ó£¬´ï¿½Ó¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -29,9 +28,7 @@ bool PlayerTestScene::init()
         return false;
     }
 
-    //ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÚµÄ¿É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    //ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Úµï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     
     auto map_1 = TMXTiledMap::create("maps/maps.tmx");
@@ -46,7 +43,7 @@ bool PlayerTestScene::init()
         {
             int gid = layer->getTileGIDAt(Vec2(static_cast<float>(x), static_cast<float>(y)));
             if (gid == 0)
-                continue;          // ï¿½ï¿½ï¿½ï¿½ï¿½Õ°×¸ï¿½
+                continue;          
 
             auto shape = PhysicsShapeBox::create(tilesize);
             auto body = PhysicsBody::create();
@@ -66,25 +63,25 @@ bool PlayerTestScene::init()
     }
 
 
-    ////ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½
     //Sprite* background = Sprite::create("player/PlayerTest.jpg");
     //background->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     //this->addChild(background);
 
-    //ï¿½Ú»ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ë¶¯ï¿½ï¿½
+    //¼ÓÔØ¶¯»­ÎÄ¼þ
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
+    cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    //ï¿½Þ¸ï¿½playerï¿½ï¿½ï¿½ï¿½
+    //´´½¨playerÀà
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
     _player->setScale(2*32/contentSize.width);
-    this->addChild(_player, 1);///ï¿½ï¿½È¾player
+    this->addChild(_player, 1);///äÖÈ¾player
     setupInput();
     
-    // æ·»åŠ ä¸¤ä¸ªSlimeå®žä¾‹ç”¨äºŽæµ‹è¯•
+    // Ìí¼ÓÁ½¸öSlimeÊµÀýÓÃÓÚ²âÊÔ
     auto slime1 = Slime::create();
     slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime1, 1);
@@ -98,7 +95,7 @@ bool PlayerTestScene::init()
 
 
 void PlayerTestScene::setupInput() {
-    // ï¿½ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½
+    // ´´½¨ÊäÈë¼àÌý
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
