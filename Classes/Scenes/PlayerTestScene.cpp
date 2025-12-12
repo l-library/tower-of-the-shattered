@@ -1,5 +1,6 @@
-#include "PlayerTestScene.h"
+ï»¿#include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
+#include "Entities/Enemy/Slime.h"
 
 USING_NS_CC;
 
@@ -7,14 +8,14 @@ Scene* PlayerTestScene::createScene()
 {
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    //¿ªÆôÅö×²ÏäÏÔÊ¾
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½Ê¾
     /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
 }
 
-// Èç¹û¼ÓÔØ´íÎó£¬´òÓ¡´íÎóÐÅÏ¢
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ó£¬´ï¿½Ó¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -28,9 +29,9 @@ bool PlayerTestScene::init()
         return false;
     }
 
-    //»ñÈ¡µ±Ç°´°¿ÚµÄ¿É¼ûÇøÓò´óÐ¡
+    //ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÚµÄ¿É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    //»ñÈ¡µ±Ç°´°¿ÚµÄÔ­µã×ø±ê
+    //ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Úµï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     
     auto map_1 = TMXTiledMap::create("maps/maps.tmx");
@@ -45,7 +46,7 @@ bool PlayerTestScene::init()
         {
             int gid = layer->getTileGIDAt(Vec2(static_cast<float>(x), static_cast<float>(y)));
             if (gid == 0)
-                continue;          // Ìø¹ý¿Õ°×¸ñ
+                continue;          // ï¿½ï¿½ï¿½ï¿½ï¿½Õ°×¸ï¿½
 
             auto shape = PhysicsShapeBox::create(tilesize);
             auto body = PhysicsBody::create();
@@ -57,38 +58,47 @@ bool PlayerTestScene::init()
                 (mapsize.height - 1 - y) * tilesize.height + tilesize.height / 2));
             node->setScale(siz);
             body->setCategoryBitmask(BORDER_MASK);
-            body->setCollisionBitmask(PLAYER_MASK);
-            body->setContactTestBitmask(PLAYER_MASK);
+            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK);
+            body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK);
             node->setPhysicsBody(body);
             this->addChild(node);
         }
     }
 
 
-    ////ÉèÖÃ±³¾°
+    ////ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½
     //Sprite* background = Sprite::create("player/PlayerTest.jpg");
     //background->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     //this->addChild(background);
 
-    //ÔÚ»º´æÖÐ´æÈë¶¯»­
+    //ï¿½Ú»ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ë¶¯ï¿½ï¿½
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
 
-    //ÐÞ¸Äplayer¶ÔÏó
+    //ï¿½Þ¸ï¿½playerï¿½ï¿½ï¿½ï¿½
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
     _player->setScale(2*32/contentSize.width);
-    this->addChild(_player, 1);///äÖÈ¾player
+    this->addChild(_player, 1);///ï¿½ï¿½È¾player
     setupInput();
+    
+    // æ·»åŠ ä¸¤ä¸ªSlimeå®žä¾‹ç”¨äºŽæµ‹è¯•
+    auto slime1 = Slime::create();
+    slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+    this->addChild(slime1, 1);
+    
+    auto slime2 = Slime::create();
+    slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
+    this->addChild(slime2, 1);
 
     return true;
 }
 
 
 void PlayerTestScene::setupInput() {
-    // ¼üÅÌ¼àÌý
+    // ï¿½ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {

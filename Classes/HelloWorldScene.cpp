@@ -24,7 +24,7 @@
 
 #include "HelloWorldScene.h"
 #include "TowerOfTheShattered.h"
-#include "Entities/Bullet.h"
+#include "Entities/Bullet/Bullet.h"
 
 USING_NS_CC;
 
@@ -59,9 +59,6 @@ public:
             this->addChild(sprite_);
             // 设置精灵大小
             sprite_->setScale(0.5f);
-            
-            // 设置碰撞箱大小
-            setupPhysicsBody(50.0f, 50.0f);
         }
     }
 
