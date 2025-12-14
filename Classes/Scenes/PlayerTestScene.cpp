@@ -11,7 +11,7 @@ Scene* PlayerTestScene::createScene()
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
     // ÏÔÊ¾Åö×²Ïä
-    /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
@@ -53,15 +53,18 @@ bool PlayerTestScene::init()
             body->addShape(shape);
             body->setDynamic(false);
             //ÉèÖÃÑÚÂë
-            body->setCategoryBitmask(WALL_MASK);
-            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
-            body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
+            //body->setCategoryBitmask(WALL_MASK);
+            //body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+            //body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
             auto node = Sprite::create("maps/platform.png");
             node->setPosition(siz * Vec2(
                 x * tilesize.width + tilesize.width / 2,
                 (mapsize.height - 1 - y) * tilesize.height + tilesize.height / 2));
             node->setScale(siz);
-            body->setCategoryBitmask(BORDER_MASK);
+            //body->setCategoryBitmask(WALL_MASK);
+            //body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+            //body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
+            body->setCategoryBitmask(BORDER_MASK | WALL_MASK);
             body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK);
             body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK);
             node->setPhysicsBody(body);

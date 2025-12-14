@@ -58,12 +58,27 @@ endif()
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/HelloWorldScene.cpp
+     Classes/Entities/Bullet/Bullet.cpp
      Classes/Entities/Enemy/Enemy.cpp
+     Classes/Entities/Enemy/EnemyBase.cpp
+     Classes/Entities/Enemy/Slime.cpp
+     Classes/Entities/Enemy/SoldierEnemy.cpp
+     Classes/Entities/Player/Player.cpp
+     Classes/Scenes/PlayerTestScene.cpp
+     Classes/Maps.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/HelloWorldScene.h
+     Classes/Entities/Bullet/Bullet.h
      Classes/Entities/Enemy/Enemy.h
+     Classes/Entities/Enemy/EnemyBase.h
+     Classes/Entities/Enemy/Slime.h
+     Classes/Entities/Enemy/SoldierEnemy.h
+     Classes/Entities/Player/Player.h
+     Classes/Scenes/PlayerTestScene.h
+     Classes/Maps.h
+     Classes/TowerOfTheShattered.h
      )
 
 if(ANDROID)

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef __BULLET_H__
 #define __BULLET_H__
 
@@ -7,159 +7,93 @@
 
 USING_NS_CC;
 
-// �ӵ����� - ������
-class BulletBase : public Node
+class Bullet : public Node
 {
+private:
+    int damage_;                     // 伤害值
+    Sprite* sprite_;                 // 子弹精灵
+    bool isVisible_;                 // 是否可视
+    PhysicsBody* physicsBody_;       // 物理碰撞体
+    std::function<void(Bullet*, float)> updateLogic_;  // 更新逻辑函数指针
+    EventListenerPhysicsContact* contactListener_;  // 物理碰撞监听器
+
+    // 碰撞相关属性
+    float collisionWidth_;           // 碰撞体宽度
+    float collisionHeight_;          // 碰撞体高度
+    int categoryBitmask_;            // 类别掩码
+    int contactTestBitmask_;         // 接触测试掩码
+    int collisionBitmask_;           // 碰撞掩码
+    
+    // 存在时间相关属性
+    float existTime_;                // 当前存在时间
+    float maxExistTime_;             // 最大存在时间
+
 public:
-    BulletBase();
-    virtual ~BulletBase();
+    // 静态创建方法
+    static Bullet* create(const std::string& spriteFrameName, int damage, 
+                         const std::function<void(Bullet*, float)>& updateLogic);
     
-    // ��ʼ���麯��
-    virtual bool init();
+    // 设置最大存在时间
+    void setMaxExistTime(float time) { maxExistTime_ = time; }
+    float getMaxExistTime() const { return maxExistTime_; }
+
+    virtual bool init(const std::string& spriteFrameName, int damage, 
+                     const std::function<void(Bullet*, float)>& updateLogic);
+
+    // 更新方法
+    virtual void update(float delta) override;
     
-    // ��ײ�ص�����
-    virtual bool onContactBegin(PhysicsContact& contact);
-    virtual bool onContactSeparate(PhysicsContact& contact);
-    
-    // Getter �� Setter ����
-    float getCollisionBoxWidth() const { return collisionBoxWidth_; }
-    void setCollisionBoxWidth(float width) { collisionBoxWidth_ = width; }
-    
-    float getCollisionBoxHeight() const { return collisionBoxHeight_; }
-    void setCollisionBoxHeight(float height) { collisionBoxHeight_ = height; }
-    
+    // 碰撞结束回调函数
+    bool onContactSeparate(PhysicsContact& contact);
+
+    // 清理方法
+    void cleanupBullet();
+
+    // Getter和Setter方法
     int getDamage() const { return damage_; }
     void setDamage(int damage) { damage_ = damage; }
-    
-    uint32_t getCategoryBitmask() const { return categoryBitmask_; }
-    void setCategoryBitmask(uint32_t mask) { categoryBitmask_ = mask; }
-    
-    uint32_t getContactTestBitmask() const { return contactTestBitmask_; }
-    void setContactTestBitmask(uint32_t mask) { contactTestBitmask_ = mask; }
-    
-    uint32_t getCollisionBitmask() const { return collisionBitmask_; }
-    void setCollisionBitmask(uint32_t mask) { collisionBitmask_ = mask; }
-    
-    // ���÷��������� (��һ����)
-    void setIsPlayerBullet(bool isPlayer) { isPlayerBullet_ = isPlayer; }
-    bool getIsPlayerBullet() const { return isPlayerBullet_; }
-    
-    // �����Ƿ���Դ�ǽ
-    void setCanPenetrateWall(bool canPenetrate) { canPenetrateWall_ = canPenetrate; }
-    bool getCanPenetrateWall() const { return canPenetrateWall_; }
-    
-    // �����Ƿ���Է���
-    void setCanBounce(bool canBounce) { canBounce_ = canBounce; }
-    bool getCanBounce() const { return canBounce_; }
-    
-    
+
+    Sprite* getSprite() const { return sprite_; }
+
+    bool isVisible() const { return isVisible_; }
+    void setVisible(bool visible);
+
+    PhysicsBody* getPhysicsBody() const { return physicsBody_; }
+
+    // 碰撞体相关属性的Getter和Setter
+    float getCollisionWidth() const { return collisionWidth_; }
+    void setCollisionWidth(float width);
+
+    float getCollisionHeight() const { return collisionHeight_; }
+    void setCollisionHeight(float height);
+
+    int getCategoryBitmask() const { return categoryBitmask_; }
+    void setCategoryBitmask(int bitmask);
+
+    int getContactTestBitmask() const { return contactTestBitmask_; }
+    void setContactTestBitmask(int bitmask);
+
+    int getCollisionBitmask() const { return collisionBitmask_; }
+    void setCollisionBitmask(int bitmask);
+
+    // 更新逻辑函数指针的Setter
+    void setUpdateLogic(const std::function<void(Bullet*, float)>& updateLogic)
+    {
+        updateLogic_ = updateLogic;
+    }
+
 protected:
-    // ����������ײ��
-    virtual void setupPhysicsBody();
+    // 重新创建物理碰撞体
+    void recreatePhysicsBody();
     
-    // ��ײ���С
-    float collisionBoxWidth_;
-    float collisionBoxHeight_;
+    // 注册碰撞监听器
+    void registerContactListener();
     
-    // �˺�ֵ
-    int damage_;
-    
-    // ��ײ��������
-    uint32_t categoryBitmask_;
-    uint32_t contactTestBitmask_;
-    uint32_t collisionBitmask_;
-    
-    // ������
-    PhysicsBody* physicsBody_;
-    
-    // ����������
-    bool isPlayerBullet_;
-    
-    // �Ƿ���Դ�ǽ
-    bool canPenetrateWall_;
-    
-    // �Ƿ���Է���
-    bool canBounce_;
-    
-};
+    // 碰撞回调函数
+    bool onContactBegin(PhysicsContact& contact);
 
-// ��ս�ӵ��� - ��ʱ��ײ��
-class MeleeBullet : public BulletBase
-{
-public:
-    CREATE_FUNC(MeleeBullet);
-    
-    virtual bool init() override;
-    
-    // ���ù������� (���ھ�����ײ��λ��)
-    void setAttackDirection(const Vec2& direction) { attackDirection_ = direction; }
-    Vec2 getAttackDirection() const { return attackDirection_; }
-    
-    // ���ù�������ʱ��
-    void setDuration(float duration) { duration_ = duration; }
-    float getDuration() const { return duration_; }
-    
-    // ���ù�����Χ
-    void setAttackRange(float range) { attackRange_ = range; }
-    float getAttackRange() const { return attackRange_; }
-    
-private:
-    // ��������
-    Vec2 attackDirection_;
-    
-    // ��������ʱ��
-    float duration_;
-    
-    // ������Χ
-    float attackRange_;
-    
-    // ���¼�ʱ��
-    float timer_;
-};
-
-// Զ���ӵ���
-class RangedBullet : public BulletBase
-{
-public:
-    CREATE_FUNC(RangedBullet);
-    
-    virtual bool init() override;
-    
-    // Getter �� Setter ����
-    float getSpeed() const { return speed_; }
-    void setSpeed(float speed);
-    
-    Vec2 getDirection() const { return direction_; }
-    void setDirection(const Vec2& direction);
-    
-    float getGravityScale() const { return gravityScale_; }
-    void setGravityScale(float scale) { gravityScale_ = scale; }
-    
-    Sprite* getSprite() const;
-    void setSprite(Sprite* sprite);
-    
-    // �����ӵ��켣
-    void setTrajectoryType(int type) { trajectoryType_ = type; }
-    int getTrajectoryType() const { return trajectoryType_; }
-    
-private:
-    // �����ٶ�
-    float speed_;
-    
-    // ���з���
-    Vec2 direction_;
-    
-    // ������������
-    float gravityScale_;
-    
-    // ������ӻ�����
-    Sprite* sprite_;
-    
-    // �켣���� (0: ֱ��, 1: ������, 2: ���ߵ�)
-    int trajectoryType_;
-    
-    // ���º���
-    void update(float delta);
+    Bullet();
+    virtual ~Bullet();
 };
 
 #endif // __BULLET_H__

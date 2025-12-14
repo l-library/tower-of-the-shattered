@@ -1,299 +1,286 @@
-ï»¿#include "Bullet.h"
+#include "Bullet.h"
 
 USING_NS_CC;
 
-BulletBase::BulletBase()
-    : collisionBoxWidth_(20.0f)
-    , collisionBoxHeight_(20.0f)
-    , damage_(10)
-    , categoryBitmask_(0)
-    , contactTestBitmask_(0)
-    , collisionBitmask_(0)
+Bullet::Bullet()
+    : damage_(0)
+    , sprite_(nullptr)
+    , isVisible_(true)
     , physicsBody_(nullptr)
-    , isPlayerBullet_(false)
-    , canPenetrateWall_(false)
-    , canBounce_(false)
-{}
-
-BulletBase::~BulletBase()
+    , updateLogic_(nullptr)
+    , contactListener_(nullptr)
+    , collisionWidth_(0.0f)
+    , collisionHeight_(0.0f)
+    , categoryBitmask_(BULLET_MASK)
+    , contactTestBitmask_(PLAYER_MASK | ENEMY_MASK | WALL_MASK)
+    , collisionBitmask_(BORDER_MASK | WALL_MASK | DAMAGE_WALL_MASK)
+    , existTime_(0.0f)
+    , maxExistTime_(5.0f) // Ä¬ÈÏ×î´ó´æÔÚÊ±¼äÎª5Ãë
 {
-    if (physicsBody_ != nullptr) {
-        physicsBody_->removeFromWorld();
-        physicsBody_ = nullptr;
+}
+
+Bullet::~Bullet()
+{
+    // ÊÍ·Å×ÊÔ´
+    if (sprite_) {
+        sprite_->release();
+    }
+    if (physicsBody_) {
+        physicsBody_->release();
+    }
+    if (contactListener_) {
+        Director::getInstance()->getEventDispatcher()->removeEventListener(contactListener_);
+        contactListener_->release();
     }
 }
 
-bool BulletBase::init()
+Bullet* Bullet::create(const std::string& spriteFrameName, int damage, 
+                      const std::function<void(Bullet*, float)>& updateLogic)
+{
+    Bullet* bullet = new (std::nothrow) Bullet();
+    if (bullet && bullet->init(spriteFrameName, damage, updateLogic)) {
+        bullet->autorelease();
+        return bullet;
+    }
+    CC_SAFE_DELETE(bullet);
+    return nullptr;
+}
+
+bool Bullet::init(const std::string& spriteFrameName, int damage, 
+                 const std::function<void(Bullet*, float)>& updateLogic)
 {
     if (!Node::init()) {
         return false;
     }
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ß¼ï¿½
+
+    // ÉèÖÃÉËº¦Öµ
+    damage_ = damage;
+
+    // ´´½¨¾«Áé
+    sprite_ = Sprite::create(spriteFrameName);
+    if (!sprite_) {
+        CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
+        return false;
+    }
+    sprite_->retain();
+    sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
+    sprite_->setPosition(Vec2::ZERO); // ÉèÖÃ¾«ÁéÔÚ½ÚµãÖĞĞÄ
+    this->addChild(sprite_);
+    // ³õÊ¼Åö×²Ìå´óĞ¡ÉèÎª¾«Áé´óĞ¡
+    collisionWidth_ = sprite_->getContentSize().width;
+    collisionHeight_ = sprite_->getContentSize().height;
+
+    // ´´½¨ÎïÀíÅö×²Ìå
+    recreatePhysicsBody();
+
+    // ÉèÖÃ¸üĞÂÂß¼­
+    updateLogic_ = updateLogic;
+
+    // ×¢²áÅö×²¼àÌıÆ÷
+    registerContactListener();
+
+    // Æô¶¯¸üĞÂ
+    this->scheduleUpdate();
+
     return true;
 }
 
-void BulletBase::setupPhysicsBody()
+void Bullet::update(float delta)
 {
-    // åˆ›å»ºç‰©ç†å½¢çŠ¶
-    auto shape = PhysicsShapeBox::create(Size(collisionBoxWidth_, collisionBoxHeight_));
+    Node::update(delta);
+
+    // ¸üĞÂ´æÔÚÊ±¼ä
+    existTime_ += delta;
     
-    // åˆ›å»ºç‰©ç†ä½“
-    physicsBody_ = PhysicsBody::create();
-    physicsBody_->addShape(shape);
-    
-    // è®¾ç½®ç‰©ç†å±æ€§
-    physicsBody_->setDynamic(true);
-    physicsBody_->setMass(0.01f);
-    physicsBody_->setRotationEnable(false);
-    
-    // æ ¹æ®å­å¼¹ç±»å‹è®¾ç½®åˆ†ç±»æ©ç 
-    if (isPlayerBullet_) {
-        categoryBitmask_ = PLAYER_BULLET_MASK;
-        // ç©å®¶å­å¼¹åº”è¯¥ä¸æ•Œäººå’Œæ•Œäººçš„å¢™ç¢°æ’
-        contactTestBitmask_ |= ENEMY_MASK | DAMAGE_WALL_MASK;
-    } else {
-        categoryBitmask_ = ENEMY_BULLET_MASK;
-        // æ•Œäººå­å¼¹åº”è¯¥ä¸ç©å®¶å’Œç©å®¶çš„å¢™ç¢°æ’
-        contactTestBitmask_ |= PLAYER_MASK;
+    // ¼ì²éÊÇ·ñ³¬¹ı×î´ó´æÔÚÊ±¼ä
+    if (existTime_ >= maxExistTime_) {
+        CCLOG("Bullet expired by exist time!");
+        cleanupBullet();
+        return;
     }
-    
-    // è®¾ç½®ç¢°æ’æ©ç 
+
+    // Ö´ĞĞ×Ô¶¨Òå¸üĞÂÂß¼­
+    if (updateLogic_) {
+        updateLogic_(this, delta);
+    }
+}
+
+void Bullet::setVisible(bool visible)
+{
+    isVisible_ = visible;
+    if (sprite_) {
+        sprite_->setVisible(visible);
+    }
+    if (physicsBody_) {
+        // ÎïÀíÅö×²Ìå²»¿É¼ûÊ±½ûÓÃÅö×²
+        physicsBody_->setEnabled(visible);
+    }
+}
+
+void Bullet::setCollisionWidth(float width)
+{
+    if (collisionWidth_ != width) {
+        collisionWidth_ = width;
+        recreatePhysicsBody();
+    }
+}
+
+void Bullet::setCollisionHeight(float height)
+{
+    if (collisionHeight_ != height) {
+        collisionHeight_ = height;
+        recreatePhysicsBody();
+    }
+}
+
+void Bullet::setCategoryBitmask(int bitmask)
+{
+    if (categoryBitmask_ != bitmask) {
+        categoryBitmask_ = bitmask;
+        if (physicsBody_) {
+            physicsBody_->setCategoryBitmask(bitmask);
+        }
+    }
+}
+
+void Bullet::setContactTestBitmask(int bitmask)
+{
+    if (contactTestBitmask_ != bitmask) {
+        contactTestBitmask_ = bitmask;
+        if (physicsBody_) {
+            physicsBody_->setContactTestBitmask(bitmask);
+        }
+    }
+}
+
+void Bullet::setCollisionBitmask(int bitmask)
+{
+    if (collisionBitmask_ != bitmask) {
+        collisionBitmask_ = bitmask;
+        if (physicsBody_) {
+            physicsBody_->setCollisionBitmask(bitmask);
+        }
+    }
+}
+
+void Bullet::recreatePhysicsBody()
+{
+    // ÒÆ³ı¾ÉµÄÎïÀíÅö×²Ìå
+    if (physicsBody_) {
+        this->removeComponent(physicsBody_);
+        physicsBody_->release();
+        physicsBody_ = nullptr;
+    }
+
+    // ´´½¨ĞÂµÄÎïÀíÅö×²Ìå
+    physicsBody_ = PhysicsBody::createBox(Size(collisionWidth_, collisionHeight_), 
+                                         PhysicsMaterial(0.0f, 0.0f, 0.0f));
+    if (!physicsBody_) {
+        CCLOG("Failed to create physics body for bullet");
+        return;
+    }
+
+    physicsBody_->retain();
+    physicsBody_->setDynamic(true);
+    physicsBody_->setGravityEnable(false);
+    physicsBody_->setLinearDamping(0.0f);
+    physicsBody_->setAngularDamping(0.0f);
+    physicsBody_->setRotationEnable(false);
+
+    // ÉèÖÃÅö×²ÑÚÂë
     physicsBody_->setCategoryBitmask(categoryBitmask_);
     physicsBody_->setContactTestBitmask(contactTestBitmask_);
     physicsBody_->setCollisionBitmask(collisionBitmask_);
-    
-    // å°†ç‰©ç†ä½“çš„æ ‡ç­¾è®¾ç½®ä¸ºå½“å‰å­å¼¹å¯¹è±¡çš„æŒ‡é’ˆå€¼ï¼Œä»¥ä¾¿äºè¯†åˆ«
-    physicsBody_->setTag(reinterpret_cast<uintptr_t>(this));
-    
-    // å°†ç‰©ç†ä½“é™„åŠ åˆ°èŠ‚ç‚¹
-    this->setPhysicsBody(physicsBody_);
-    
-    // æ³¨å†Œç¢°æ’å›è°ƒ
-    auto contactListener = EventListenerPhysicsContact::create();
-    contactListener->onContactBegin = CC_CALLBACK_1(BulletBase::onContactBegin, this);
-    contactListener->onContactSeparate = CC_CALLBACK_1(BulletBase::onContactSeparate, this);
-    
-    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+    // Ìí¼ÓÎïÀíÅö×²Ìåµ½½Úµã
+    this->addComponent(physicsBody_);
 }
 
-bool BulletBase::onContactBegin(PhysicsContact& contact)
+void Bullet::registerContactListener()
 {
-    // ç¢°æ’å¼€å§‹å›è°ƒå‡½æ•°å®ç°
-    auto bodyA = contact.getShapeA()->getBody();
-    auto bodyB = contact.getShapeB()->getBody();
-    
-    // ä»æ ‡ç­¾è·å–å­å¼¹å¯¹è±¡
-    BulletBase* bulletA = reinterpret_cast<BulletBase*>(bodyA->getTag());
-    BulletBase* bulletB = reinterpret_cast<BulletBase*>(bodyB->getTag());
-    
-    // ç¡®å®šå½“å‰å­å¼¹å¯¹è±¡
-    BulletBase* currentBullet = (this == bulletA) ? bulletA : (this == bulletB) ? bulletB : nullptr;
-    if (currentBullet == nullptr) {
-        return true;
+    // ´´½¨Åö×²¼àÌıÆ÷
+    contactListener_ = EventListenerPhysicsContact::create();
+    if (!contactListener_) {
+        CCLOG("Failed to create contact listener for bullet");
+        return;
     }
+
+    // ×¢²áÅö×²¿ªÊ¼»Øµ÷
+    contactListener_->onContactBegin = CC_CALLBACK_1(Bullet::onContactBegin, this);
     
-    // è·å–ç¢°æ’çš„å¦ä¸€ä¸ªå¯¹è±¡
-    PhysicsBody* otherBody = (this == bulletA) ? bodyB : bodyA;
-    Node* otherNode = otherBody->getNode();
-    
-    // å¤„ç†ä¸å¢™çš„ç¢°æ’
-    if (otherBody->getCategoryBitmask() & WALL_MASK) {
-        if (!currentBullet->getCanPenetrateWall()) {
-            // å¦‚æœå­å¼¹ä¸èƒ½ç©¿å¢™ï¼Œåˆ™ç§»é™¤å­å¼¹
-            currentBullet->removeFromParent();
-        }
-    }
-    
-    // å¤„ç†ä¸è¾¹ç•Œçš„ç¢°æ’
-    if (otherBody->getCategoryBitmask() & BORDER_MASK) {
-        currentBullet->removeFromParent();
-    }
-    
-    // å¤„ç†ä¸ç©å®¶çš„ç¢°æ’
-    if (otherBody->getCategoryBitmask() & PLAYER_MASK) {
-        // ç©å®¶å—åˆ°ä¼¤å®³çš„é€»è¾‘åº”è¯¥åœ¨ç©å®¶ç±»ä¸­å¤„ç†
-    }
-    
-    // å¤„ç†ä¸æ•Œäººçš„ç¢°æ’
-    if (otherBody->getCategoryBitmask() & ENEMY_MASK) {
-        // æ•Œäººå—åˆ°ä¼¤å®³çš„é€»è¾‘åº”è¯¥åœ¨æ•Œäººç±»ä¸­å¤„ç†
-    }
-    
-    return true;
+    // ×¢²áÅö×²½áÊø»Øµ÷
+    contactListener_->onContactSeparate = CC_CALLBACK_1(Bullet::onContactSeparate, this);
+
+    // Ìí¼Ó¼àÌıÆ÷µ½ÊÂ¼ş·Ö·¢Æ÷
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener_, this);
+    contactListener_->retain();
 }
 
-bool BulletBase::onContactSeparate(PhysicsContact& contact)
+bool Bullet::onContactBegin(PhysicsContact& contact)
 {
-    // ç¢°æ’ç»“æŸå›è°ƒå‡½æ•°å®ç°
-    auto bodyA = contact.getShapeA()->getBody();
-    auto bodyB = contact.getShapeB()->getBody();
+    PhysicsBody* bodyA = contact.getShapeA()->getBody();
+    PhysicsBody* bodyB = contact.getShapeB()->getBody();
     
-    // ä»æ ‡ç­¾è·å–å­å¼¹å¯¹è±¡
-    BulletBase* bulletA = reinterpret_cast<BulletBase*>(bodyA->getTag());
-    BulletBase* bulletB = reinterpret_cast<BulletBase*>(bodyB->getTag());
-    
-    // ç¡®å®šå½“å‰å­å¼¹å¯¹è±¡
-    BulletBase* currentBullet = (this == bulletA) ? bulletA : (this == bulletB) ? bulletB : nullptr;
-    if (currentBullet == nullptr) {
-        return true;
-    }
-    
-    // è·å–ç¢°æ’çš„å¦ä¸€ä¸ªå¯¹è±¡
-    PhysicsBody* otherBody = (this == bulletA) ? bodyB : bodyA;
-    
-    // å¤„ç†åå¼¹é€»è¾‘
-    if (currentBullet->getCanBounce() && (otherBody->getCategoryBitmask() & (WALL_MASK | BORDER_MASK))) {
-        // è®¡ç®—åå¼¹æ–¹å‘
-        Vec2 velocity = currentBullet->getPhysicsBody()->getVelocity();
-        Vec2 normal = contact.getContactData()->normal;
-        Vec2 reflectedVelocity = velocity - 2 * velocity.dot(normal) * normal;
+    // ¼ì²éÅö×²ÊÇ·ñÉæ¼°µ±Ç°×Óµ¯
+    if (bodyA == physicsBody_ || bodyB == physicsBody_) {
+        PhysicsBody* otherBody = (bodyA == physicsBody_) ? bodyB : bodyA;
         
-        // è®¾ç½®åå¼¹åçš„é€Ÿåº¦
-        currentBullet->getPhysicsBody()->setVelocity(reflectedVelocity);
+        // Ö»ÓĞµ±ÓëPlayerÅö×²Ê±²ÅÇåÀí×Óµ¯
+        if (otherBody->getCategoryBitmask() == PLAYER_MASK) {
+            CCLOG("Bullet collided with Player!");
+            cleanupBullet();
+            return true;
+        }
+        
+        // ¶ÔÓÚÆäËûÅö×²£¬Ö»¼ÇÂ¼ÈÕÖ¾²»ÇåÀí
+        CCLOG("Bullet collided with non-Player object!");
+    }
+
+    return true;
+}
+
+bool Bullet::onContactSeparate(PhysicsContact& contact)
+{
+    PhysicsBody* bodyA = contact.getShapeA()->getBody();
+    PhysicsBody* bodyB = contact.getShapeB()->getBody();
+    
+    // ¼ì²é·ÖÀëÊÇ·ñÉæ¼°µ±Ç°×Óµ¯
+    if (bodyA == physicsBody_ || bodyB == physicsBody_) {
+        CCLOG("Bullet separated from object!");
+        return true;
     }
     
     return true;
 }
 
-// ============================== MeleeBullet ==============================
-
-bool MeleeBullet::init()
+void Bullet::cleanupBullet()
 {
-    if (!BulletBase::init()) {
-        return false;
-    }
-    
-    // ï¿½ï¿½Õ½ï¿½Óµï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    collisionBoxWidth_ = 50.0f;
-    collisionBoxHeight_ = 50.0f;
-    damage_ = 20;
-    duration_ = 0.2f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0.2ï¿½ï¿½
-    attackRange_ = 60.0f;
-    timer_ = 0.0f;
-    
-    // è®¾ç½®ç¢°æ’æ©ç 
-    contactTestBitmask_ = ENEMY_MASK | PLAYER_MASK;
-    collisionBitmask_ = 0; // è¿‘æˆ˜bulletä¸éœ€è¦ç‰©ç†ç¢°æ’ï¼Œåªç”¨äºæ£€æµ‹
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½
-    setupPhysicsBody();
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½
-    this->scheduleOnce([this](float) {
-        this->removeFromParent();
-    }, duration_, "removeBullet");
-    
-    return true;
-}
+    // Í£Ö¹¸üĞÂ
+    this->unscheduleUpdate();
 
-// ============================== RangedBullet ==============================
+    // ÒÆ³ıÅö×²¼àÌıÆ÷
+    if (contactListener_) {
+        Director::getInstance()->getEventDispatcher()->removeEventListener(contactListener_);
+        contactListener_->release();
+        contactListener_ = nullptr;
+    }
 
-bool RangedBullet::init()
-{
-    if (!BulletBase::init()) {
-        return false;
+    // ÒÆ³ıÎïÀíÅö×²Ìå
+    if (physicsBody_) {
+        this->removeComponent(physicsBody_);
+        physicsBody_->release();
+        physicsBody_ = nullptr;
     }
-    
-    // Ô¶ï¿½ï¿½ï¿½Óµï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    collisionBoxWidth_ = 15.0f;
-    collisionBoxHeight_ = 15.0f;
-    damage_ = 15;
-    speed_ = 300.0f;
-    direction_ = Vec2(1, 0); // Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    gravityScale_ = 0.0f; // Ä¬ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    sprite_ = nullptr;
-    trajectoryType_ = 0; // Ä¬ï¿½ï¿½Ö±ï¿½ß¹ì¼£
-    
-    // è®¾ç½®ç¢°æ’æ©ç 
-    contactTestBitmask_ = ENEMY_MASK | PLAYER_MASK | WALL_MASK | BORDER_MASK;
-    collisionBitmask_ = WALL_MASK | BORDER_MASK;
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½
-    setupPhysicsBody();
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½
-    physicsBody_->setGravityEnable(gravityScale_ > 0.0f);
-    
-    // ï¿½ï¿½ï¿½Ã³ï¿½Ê¼ï¿½Ù¶ï¿½
-    physicsBody_->setVelocity(direction_ * speed_);
-    
-    // ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ï¾ï¿½ï¿½ï¿½
-    if (sprite_ == nullptr) {
-        sprite_ = Sprite::create();
-        sprite_->setTextureRect(Rect(0, 0, collisionBoxWidth_, collisionBoxHeight_));
-        sprite_->setColor(Color3B(255, 0, 0)); // Ä¬ï¿½Ïºï¿½É«
-        sprite_->setPosition(Vec2(0, 0)); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú½Úµï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª(0,0)
-        this->addChild(sprite_);
-    }
-    
-    // ï¿½ï¿½ï¿½Å¸ï¿½ï¿½ï¿½
-    this->scheduleUpdate();
-    
-    // ï¿½ï¿½Ö¹ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½
-    this->scheduleOnce([this](float) {
-        this->removeFromParent();
-    }, 5.0f, "removeBullet");
-    
-    return true;
-}
 
-void RangedBullet::setSpeed(float speed)
-{
-    speed_ = speed;
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
-    if (physicsBody_ != nullptr) {
-        physicsBody_->setVelocity(direction_.getNormalized() * speed_);
+    // ÒÆ³ı¾«Áé
+    if (sprite_) {
+        this->removeChild(sprite_, true);
+        sprite_->release();
+        sprite_ = nullptr;
     }
-}
 
-void RangedBullet::setDirection(const Vec2& direction)
-{
-    direction_ = direction;
-    
-    // å¦‚æœç‰©ç†ä½“å­˜åœ¨ï¼Œæ›´æ–°é€Ÿåº¦
-    if (physicsBody_ != nullptr) {
-        physicsBody_->setVelocity(direction_.getNormalized() * speed_);
+    // ´Ó¸¸½ÚµãÒÆ³ı×Óµ¯
+    if (this->getParent()) {
+        this->getParent()->removeChild(this, true);
     }
-}
-
-Sprite* RangedBullet::getSprite() const { return sprite_; }
-
-void RangedBullet::setSprite(Sprite* sprite)
-{
-    // ç§»é™¤æ—§çš„sprite
-    if (sprite_ != nullptr) {
-        sprite_->removeFromParent();
-    }
-    
-    // è®¾ç½®æ–°çš„sprite
-    sprite_ = sprite;
-    
-    // æ·»åŠ æ–°çš„spriteåˆ°èŠ‚ç‚¹
-    if (sprite_ != nullptr) {
-        sprite_->setPosition(Vec2(0, 0)); // è®¾ç½®åœ¨èŠ‚ç‚¹ä¸­å¿ƒ
-        this->addChild(sprite_);
-    }
-}
-
-void RangedBullet::update(float delta)
-{
-    // ï¿½ï¿½ï¿½İ¹ì¼£ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½Óµï¿½
-    switch (trajectoryType_) {
-        case 0: // Ö±ï¿½ï¿½
-            // ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ´¦ï¿½ï¿½
-            break;
-        case 1: // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-            // ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-            break;
-        case 2: // ï¿½ï¿½ï¿½ï¿½
-            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ÓµÄ¹ì¼£ï¿½ï¿½ï¿½ï¿½
-            break;
-        default:
-            break;
-    }
-    
-    // ï¿½ï¿½ï¿½ï¿½Ğ¾ï¿½ï¿½é£¬È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ó½Úµã£¬ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½Æ¶ï¿½ï¿½ï¿½
-    // ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½Ç½Úµï¿½ï¿½ï¿½Ó½Úµã£¬ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Îª(0,0)
 }

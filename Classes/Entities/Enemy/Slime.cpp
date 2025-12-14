@@ -1,6 +1,7 @@
 #include "Slime.h"
 #include "TowerOfTheShattered.h"
 #include "cocos2d.h"
+#include "Entities/Bullet/Bullet.h"
 
 using namespace cocos2d;
 
@@ -189,38 +190,26 @@ BehaviorResult Slime::jumpAttack(float delta)
         Vec2 jumpVelocity = Vec2(direction.x * movementSpeed_, jumpSpeed_);
         physicsBody_->setVelocity(jumpVelocity);
         
-        // 创建近战bullet替代自身碰撞箱
-        auto meleeBullet = MeleeBullet::create();
-        if (meleeBullet != nullptr)
-        {
-            // 设置bullet大小与Slime相同（GRID_SIZE x GRID_SIZE）
-            meleeBullet->setCollisionBoxWidth(GRID_SIZE);
-            meleeBullet->setCollisionBoxHeight(GRID_SIZE);
-            
-            // 设置bullet位置与Slime相同
-            meleeBullet->setPosition(this->getPosition());
-            
-            // 设置bullet伤害与Slime的攻击伤害相同
-            meleeBullet->setDamage(this->getBaseAttackPower());
-            
-            // 设置bullet持续时间
-            meleeBullet->setDuration(0.5f);
-            
-            // 设置bullet的攻击方向
-            meleeBullet->setAttackDirection(direction);
-            
-            // 设置为敌人子弹
-            meleeBullet->setIsPlayerBullet(false);
-            
-            
-            // 将bullet添加到场景中
-            this->getParent()->addChild(meleeBullet);
-        }
-        
         // 攻击时让精灵变红
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 0, 0));
+        }
+        
+        // 创建跳跃攻击子弹，碰撞箱为Slime的1.2倍
+        auto jumpBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+            bullet->setPosition(this->getPosition());  // 同步位置
+        });
+        if (jumpBullet)
+        {
+            jumpBullet->setCollisionWidth(GRID_SIZE * 1.2f);
+            jumpBullet->setCollisionHeight(GRID_SIZE * 1.2f);
+            jumpBullet->setPosition(this->getPosition());
+            jumpBullet->setCategoryBitmask(ENEMY_BULLET_MASK);
+            jumpBullet->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
+            jumpBullet->setCollisionBitmask(WALL_MASK | PLAYER_MASK | BORDER_MASK);
+            jumpBullet->setDamage(50);
+            this->getParent()->addChild(jumpBullet);
         }
     }
     
@@ -235,7 +224,7 @@ BehaviorResult Slime::jumpAttack(float delta)
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
         
-        return { true, 0.5f }; // 攻击完成，后摇0.5秒
+        return { true, 2.0f }; // 攻击完成，后摇2秒
     }
     
     return { false, 0.0f };
@@ -262,35 +251,26 @@ BehaviorResult Slime::chargeAttack(float delta)
         Vec2 chargeVelocity = Vec2(direction.x * movementSpeed_ * 2, 0);
         physicsBody_->setVelocity(chargeVelocity);
         
-        // 创建近战bullet替代自身碰撞箱
-        auto meleeBullet = MeleeBullet::create();
-        if (meleeBullet != nullptr)
-        {
-            // 设置bullet大小与Slime相同（GRID_SIZE x GRID_SIZE）
-            meleeBullet->setCollisionBoxWidth(GRID_SIZE);
-            meleeBullet->setCollisionBoxHeight(GRID_SIZE);
-            
-            // 设置bullet位置与Slime相同
-            meleeBullet->setPosition(this->getPosition());
-            
-            // 设置bullet伤害与Slime的攻击伤害相同
-            meleeBullet->setDamage(this->getBaseAttackPower());
-            
-            // 设置bullet持续时间
-            meleeBullet->setDuration(1.0f);
-            
-            // 设置bullet的攻击方向
-            meleeBullet->setAttackDirection(direction);
-            
-            
-            // 将bullet添加到场景中
-            this->getParent()->addChild(meleeBullet);
-        }
-        
         // 攻击时让精灵变红
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 0, 0));
+        }
+        
+        // 创建冲撞攻击子弹，碰撞箱为Slime的1.2倍
+        auto chargeBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+            bullet->setPosition(this->getPosition());  // 同步位置
+        });
+        if (chargeBullet)
+        {
+            chargeBullet->setCollisionWidth(GRID_SIZE * 1.2f);
+            chargeBullet->setCollisionHeight(GRID_SIZE * 1.2f);
+            chargeBullet->setPosition(this->getPosition());
+            chargeBullet->setCategoryBitmask(ENEMY_BULLET_MASK);
+            chargeBullet->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
+            chargeBullet->setCollisionBitmask(WALL_MASK | PLAYER_MASK | BORDER_MASK);
+            chargeBullet->setDamage(50);
+            this->getParent()->addChild(chargeBullet);
         }
     }
     
@@ -311,10 +291,9 @@ BehaviorResult Slime::chargeAttack(float delta)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
-        
-        return { true, 0.5f }; // 攻击完成，后摇0.5秒
+        return { true, 2.0f }; // 攻击完成，后摇2秒
     }
-    
+
     return { false, 0.0f };
 }
 

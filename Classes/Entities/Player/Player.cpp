@@ -123,9 +123,9 @@ void Player::initPhysics()
 
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
-    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
-    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK);
-    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK;
+    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | BULLET_MASK);
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | BULLET_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK;
     _dodgeMask = WALL_MASK | BORDER_MASK;
 
     //给主身体一个Tag
@@ -633,7 +633,7 @@ void Player::jump() {
 
 
 void Player::shootBullet()
-{
+{/*
     // 创建子弹对象
     RangedBullet* attack = RangedBullet::create();
     if (!attack) return;
@@ -749,7 +749,7 @@ void Player::shootBullet()
         attack->setPosition(current_pos + offset);
 
         this->addChild(attack, 10);
-    }
+    }*/
 }
 
 void Player::attack() {

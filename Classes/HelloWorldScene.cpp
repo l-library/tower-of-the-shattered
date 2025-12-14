@@ -272,33 +272,7 @@ public:
     
     // 发射子弹的方法实现
     void shootBullet() {
-        // 创建远程子弹
-        auto bullet = RangedBullet::create();
-        if (bullet) {
-            // 设置子弹属性
-            bullet->setDamage(5);
-            bullet->setCollisionBoxWidth(10.0f);
-            bullet->setCollisionBoxHeight(10.0f);
-            bullet->setSpeed(500.0f);
-            
-            // 设置子弹方向为正上方
-            bullet->setDirection(Vec2(0, 1));
-            
-            // 设置子弹的碰撞掩码
-            bullet->setCategoryBitmask(0x04); // 子弹的碰撞类别
-            bullet->setCollisionBitmask(0x02); // 与敌人碰撞
-            bullet->setContactTestBitmask(0x02); // 检测与敌人的接触
-            
-            // 设置子弹位置为敌人位置上方
-            Vec2 enemyPos = this->getPosition();
-            bullet->setPosition(enemyPos);
-            
-            // 获取场景并添加子弹
-            Scene* scene = this->getScene();
-            if (scene) {
-                scene->addChild(bullet, 10);
-            }
-        }
+       
     }
 };
 
