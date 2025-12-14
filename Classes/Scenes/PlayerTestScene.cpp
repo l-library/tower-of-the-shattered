@@ -8,7 +8,8 @@ Scene* PlayerTestScene::createScene()
 {
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
+    // 显示碰撞箱
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
@@ -49,6 +50,10 @@ bool PlayerTestScene::init()
             auto body = PhysicsBody::create();
             body->addShape(shape);
             body->setDynamic(false);
+            //设置掩码
+            body->setCategoryBitmask(WALL_MASK);
+            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+            body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
             auto node = Sprite::create("maps/platform.png");
             node->setPosition(siz * Vec2(
                 x * tilesize.width + tilesize.width / 2,
@@ -97,6 +102,9 @@ bool PlayerTestScene::init()
 void PlayerTestScene::setupInput() {
     // 创建输入监听
     auto keyboardListener = EventListenerKeyboard::create();
+    
+    if (!_player->canBeControled())
+        return;//若不运行操作则直接返回
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
         switch (code) {

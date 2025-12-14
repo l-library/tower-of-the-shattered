@@ -85,6 +85,20 @@ public:
 	const std::string getCurrentState() const;
 
 	/**
+	* @brief 获得玩家当前血量
+	* @param[in] void
+	* @return (const double)玩家当前血量
+	***/
+	const double getHealth() const { return _health; };
+	
+	/**
+	* @brief 获得玩家是否运行控制
+	* @param[in] void
+	* @return (const)玩家控制状态 true，false
+	***/
+	const bool canBeControled() const { return _controlEnabled; };
+
+	/**
 	* @brief 获得玩家图像
 	* @return 玩家当前的图像（常量指针）
 	***/
@@ -99,12 +113,6 @@ protected:
 	* @details 每帧调用一次
 	***/
 	void update(float dt);
-
-	/**
-	* @brief 初始化碰撞监听
-	* @details 主要初始化与地面的交互，调整is_grounded
-	***/
-	void Player::setupCollisionHandler();
 
 	/**
 	* @brief 改变主角状态
@@ -127,6 +135,10 @@ private:
 	void updateState();//更新状态
 	void updatePhysics(float dt);//更新物理
 	void updateAnimation();//更新动画
+
+	//碰撞回调函数
+	bool onContactBegin(cocos2d::PhysicsContact& contact);
+	bool onContactSeparate(cocos2d::PhysicsContact& contact);
 
 	/*----主角属性----*/
 	//主角图像_sprite（待机动作的第一帧）
@@ -181,6 +193,10 @@ private:
 	bool _isDodge;
 	//是否正在攻击
 	bool _isAttacking;
+	//是否正在受击
+	bool _isHurt;
+	//是否死亡
+	bool _isDead;
 	//当前状态
 	PlayerState _currentState;
 	//前一个状态

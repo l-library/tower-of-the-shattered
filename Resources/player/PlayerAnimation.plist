@@ -194,7 +194,7 @@
                 <array>
                     <dict>
                         <key>spriteframe</key>
-                        <string>attack-2-0.png</string>
+                        <string>attack-2-1.png</string>
                         <key>delayUnits</key>
                         <integer>1</integer>
                         <key>notification</key>
@@ -202,12 +202,6 @@
                             <key>firstframe</key>
                             <true />
                         </dict>
-                    </dict>
-                    <dict>
-                        <key>spriteframe</key>
-                        <string>attack-2-1.png</string>
-                        <key>delayUnits</key>
-                        <integer>1</integer>
                     </dict>
                     <dict>
                         <key>spriteframe</key>
@@ -379,6 +373,104 @@
                     </dict>
                 </array>
             </dict>
+            <key>hurt</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.3</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>hurt-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>hurt-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>hurt-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>hurt-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
+            <key>dead</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.3</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>death-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>death-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>death-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>death-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>death-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
         </dict>
         <key>properties</key>
         <dict>
@@ -388,6 +480,8 @@
                 <string>Walk.plist</string>
                 <string>Attack.plist</string>
                 <string>Dodge.plist</string>
+                <string>Hurt.plist</string>
+                <string>Death.plist</string>
             </array>
             <key>format</key>
             <integer>2</integer>
