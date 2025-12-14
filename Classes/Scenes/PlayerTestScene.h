@@ -13,6 +13,10 @@ public:
 
     void setupInput();//读取输入
 
+    void initBar();
+
+    void scheduleBlood(float dt);
+
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
 

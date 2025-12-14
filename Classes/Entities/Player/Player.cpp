@@ -42,16 +42,18 @@ bool Player::init()
 
     // 基础属性
     Size contentSize = _sprite->getContentSize();
-    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.8f); // 碰撞体通常比贴图稍小
+    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // 碰撞体通常比贴图稍小
 
     _maxHealth = 100.0;
     _health = _maxHealth;
     _speed = 300.0;     // 水平移动最大速度
     _jumpForce = 500.0; // 跳跃冲量 
-    _dodgeForce = 800.0;
+    _dodgeForce = 300.0;
     _acceleration = 1000.0;
     _deceleration = 2000.0; 
     _maxDodgeTime = 0.5;
+    _maxDodgeTimes = 1;
+    _dodgeTimes = _maxDodgeTimes;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
@@ -97,6 +99,10 @@ bool Player::init()
     // 启用update函数
     this->scheduleUpdate();
 
+    //预加载音频文件
+    AudioEngine::preload("sounds/FireBall.mp3");
+    AudioEngine::preload("sounds/PlayerFootstep.mp3");
+
     return true;
 }
 
@@ -106,7 +112,7 @@ void Player::initPhysics()
     Size originalSize = _sprite->getContentSize();
     Vec2 offset = Vec2(0, originalSize.height / 2);
     //创建主身体,材质：摩擦力1.0(防止卡墙)，弹性0
-    auto bodyMaterial = PhysicsMaterial(0.0f, 1.0f, 0.0f);
+    auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
     //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
     _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
 
@@ -119,6 +125,8 @@ void Player::initPhysics()
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
     _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
     _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK;
+    _dodgeMask = WALL_MASK | BORDER_MASK;
 
     //给主身体一个Tag
     _physicsBody->getShape(0)->setTag(TAG_BODY);
@@ -251,6 +259,7 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
                     float diffX = this->getPositionX() - otherNode->getPositionX();
                     knockbackDir = Vec2(diffX > 0 ? 1 : -1.0f, 0.5f); // 向反方向弹开，带一点向上的力
                     _sprite->setFlippedX(diffX > 0 ? true : false);
+                    _direction = diffX > 0 ? Direction::LEFT : Direction::RIGHT;
                 }
                 else {
                     // 如果是陷阱墙，根据朝向反弹
@@ -308,6 +317,15 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
         }
     }
 
+    int otherCategory = otherShape->getCategoryBitmask();
+    bool isEnemy = (otherCategory & ENEMY_MASK);
+    bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
+
+    if (isEnemy || isTrap)
+    {
+        _isHurt = false;
+    }
+
     return true;
 }
 
@@ -336,6 +354,7 @@ void Player::updateTimers(float dt) {
 
     if (_isGrounded) {
         _coyoteTime = kCoyoteTime;
+        _dodgeTimes = _maxDodgeTimes;
     }
     else if (_coyoteTime > 0) {
         _coyoteTime -= dt;
@@ -346,11 +365,12 @@ void Player::updateTimers(float dt) {
 
     if (_dodgeTime > 0) {
         _dodgeTime -= dt;
-        if (_dodgeTime <= 0) {
-            _isDodge = false;
-            // 闪避结束，恢复掩码（如果闪避期间穿墙）（可以考虑后续加入穿过实体）
-            // _physicsBody->setCollisionBitmask(originalMask); 
-        }
+    }
+    if (_dodgeTime <= 0) {
+        _isDodge = false;
+        // 闪避结束，恢复掩码（冲刺穿过部分实体）
+        _physicsBody->setCollisionBitmask(_originalMask); 
+        _physicsBody->setContactTestBitmask(_originalMask | DAMAGE_WALL_MASK);
     }
 
     // 攻击衔接
@@ -383,22 +403,47 @@ void Player::updatePhysics(float dt) {
     // 暂存当前速度
     float currentX = _velocity.x;
     float currentY = _velocity.y;
-
+    // 物理引擎计算速度
+    Vec2 realVelocity = _physicsBody->getVelocity();
     float targetX = 0;
     
+    // 计算水平速度 (加速/减速)
+    float newX = currentX;
+    // 垂直速度 (重力逻辑）
+    float newY = currentY;
+
     // 决定目标速度
     if (_isAttacking) {
         targetX = 0; // 攻击时目标速度为0
     }
-    else if (_isDodge) {
-        targetX = (_direction == Direction::RIGHT ? 1 : -1) * static_cast<float>(_dodgeForce);
+    if (_isDodge) {
+        float dashSpeed = static_cast<float>(_dodgeForce) * ((_direction == Direction::RIGHT) ? 1.0f : -1.0f);
+
+        // 防穿墙逻辑：
+        // 如果是冲刺刚开始（前0.05秒），强制设置速度（给一个初速度）
+        float timeSinceDodgeStart = static_cast<float>(_maxDodgeTime - _dodgeTime);
+
+        if (timeSinceDodgeStart < 0.05f) {
+            // 刚开始冲刺，强制给速度
+            currentX = dashSpeed;
+            targetX = dashSpeed;
+        }
+        else {
+            // 冲刺中途
+            // 如果本来应该高速移动，但实际速度接近0，说明撞墙了
+            if (std::abs(realVelocity.x) < 10.0f) {
+                newX = 0;
+            }
+            else {
+                targetX = dashSpeed;
+            }
+        }
+
+        newY = 0; // 冲刺时忽略重力
     }
     else {
         targetX = _moveInput * static_cast<float>(_speed);
     }
-
-    // 计算水平速度 (加速/减速)
-    float newX = currentX;
 
     if (_isAttacking) {
         newX = currentX * 0.9f; //若在攻击，给予摩檫力
@@ -425,10 +470,7 @@ void Player::updatePhysics(float dt) {
         }
     }
 
-    // 垂直速度 (重力逻辑）
-    float newY = currentY;
     if (newY < -800.0f) newY = -800.0f;
-    if (_isDodge) newY = 0;
     // 跳跃逻辑
     if (_jumpBufferTime > 0 && (_isGrounded || _coyoteTime > 0) && !_isAttacking) {
         newY = static_cast<float>(_jumpForce);
@@ -497,10 +539,12 @@ void Player::updateAnimation() {
     std::string animationName;
     bool loop = true;
 
-    //跳跃、坠落动画待完善
+    // 所有动画制作完成
     switch (_currentState) {
         case PlayerState::IDLE: animationName = "idle"; break;
-        case PlayerState::RUNNING: animationName = "run"; break;
+        case PlayerState::RUNNING: 
+            animationName = "run";
+            break;
         case PlayerState::JUMPING: animationName = "jump"; loop = false; break;
         case PlayerState::FALLING: animationName = "fall"; loop = false; break;
         case PlayerState::ATTACKING:
@@ -538,7 +582,7 @@ void Player::playAnimation(const std::string& name, bool loop)
     {
         _sprite->stopAllActions();
         // 如果要播放死亡动画，则要求停留在最后一帧
-        if (name == "dead")
+        if (name == "dead" || name =="jump" || name == "fall")
             animation->setRestoreOriginalFrame(false);
         // 创建action
         auto action = Animate::create(animation);
@@ -553,8 +597,7 @@ void Player::playAnimation(const std::string& name, bool loop)
             _sprite->runAction(Sequence::create(
                 action,
                 CallFunc::create([this]()
-                    { _isAttacking = false;
-            _isHurt = false; }),
+                    { _isAttacking = false; }),
                 nullptr));
         }
     }
@@ -594,7 +637,8 @@ void Player::shootBullet()
     // 创建子弹对象
     RangedBullet* attack = RangedBullet::create();
     if (!attack) return;
-
+    //播放音效
+    auto audioID = AudioEngine::play2d("FireBall.mp3");
     // 设置为玩家子弹
     attack->setIsPlayerBullet(true); 
 
@@ -709,7 +753,7 @@ void Player::shootBullet()
 }
 
 void Player::attack() {
-    if (_attackCooldown > 0 || _isAttacking) return;
+    if (_attackCooldown > 0 || _isAttacking || !_controlEnabled) return;
 
     // 多段攻击
     if (_attackEngageTime > 0)
@@ -728,16 +772,21 @@ void Player::attack() {
 }
 
 void Player::dodge() {
-    if (_dodgeCooldown > 0 || _isDodge) return; 
+    if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0) return; 
 
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;
     _dodgeTime = _maxDodgeTime; // 闪避持续时间
+    _dodgeTimes--;
 
     //闪避忽略初始速度
     Vec2 current_velocity = _physicsBody->getVelocity();
     current_velocity.x = 0;
     _physicsBody->setVelocity(current_velocity);
+
+    //闪避可以穿过敌人
+    _physicsBody->setCollisionBitmask(_dodgeMask);
+    _physicsBody->setContactTestBitmask(_dodgeMask | DAMAGE_WALL_MASK);
 
     //闪避时无敌
     _isInvincible = true;

@@ -4,12 +4,14 @@
 
 USING_NS_CC;
 
+#define BLOOD_BAR 1002
+
 Scene* PlayerTestScene::createScene()
 {
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
     // 显示碰撞箱
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;
@@ -85,6 +87,7 @@ bool PlayerTestScene::init()
     _player->setScale(2*32/contentSize.width);
     this->addChild(_player, 1);///渲染player
     setupInput();
+    initBar();
     
     // 添加两个Slime实例用于测试
     auto slime1 = Slime::create();
@@ -102,9 +105,6 @@ bool PlayerTestScene::init()
 void PlayerTestScene::setupInput() {
     // 创建输入监听
     auto keyboardListener = EventListenerKeyboard::create();
-    
-    if (!_player->canBeControled())
-        return;//若不运行操作则直接返回
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
         switch (code) {
@@ -152,4 +152,32 @@ void PlayerTestScene::setupInput() {
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+}
+
+void PlayerTestScene::initBar() {
+    // 获取窗口大小
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    auto sprite = Sprite::create("player/hp_border.png");   //创建进度框
+    auto size = sprite->getContentSize();
+    sprite->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5)); //设置框的位置
+    this->addChild(sprite);            //加到默认图层里面去
+    auto sprBlood = Sprite::create("player/hp.png");  //创建血条
+    ProgressTimer* progress = ProgressTimer::create(sprBlood); //创建progress对象
+    progress->setType(ProgressTimer::Type::BAR);        //类型：条状
+    progress->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5));
+    //从右到左减少血量
+    progress->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
+    progress->setBarChangeRate(Point(1, 0));
+    progress->setTag(BLOOD_BAR);       //做一个标记
+    this->addChild(progress);
+    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
+}
+
+void PlayerTestScene::scheduleBlood(float delta) {
+    auto progress = (ProgressTimer*)this->getChildByTag(BLOOD_BAR);
+    progress->setPercentage(static_cast<float>(_player->getHealth() / _player->getMaxHealth()) * 100);  //这里是百分制显示
+    if (progress->getPercentage() < 0) {
+        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
+    }
 }

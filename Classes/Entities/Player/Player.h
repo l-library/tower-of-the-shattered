@@ -90,6 +90,13 @@ public:
 	* @return (const double)玩家当前血量
 	***/
 	const double getHealth() const { return _health; };
+
+	/**
+	* @brief 获得玩家当前最大血量
+	* @param[in] void
+	* @return (const double)玩家最大血量
+	***/
+	const double getMaxHealth() const { return _maxHealth; };
 	
 	/**
 	* @brief 获得玩家是否运行控制
@@ -167,6 +174,8 @@ private:
 	double _maxAttackCooldown;
 	//主角的闪避冷却时间
 	double _maxDodgeCooldown;
+	//主角的空中闪避次数
+	int _maxDodgeTimes;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -181,6 +190,10 @@ private:
 	double _invincibilityTime;
 	//两端攻击之间衔接的时间差
 	double _attackEngageTime;
+	//普通状态下的碰撞掩码
+	int _originalMask;
+	//冲刺状态下的碰撞掩码
+	int _dodgeMask;
 
 	/*----主角当前状态----*/
 	//是否允许控制
@@ -211,7 +224,8 @@ private:
 	//攻击段数
 	int _attack_num;
 	int _footContactCount;
-
+	//空中闪避次数
+	int _dodgeTimes;
 
 	/*----输入----*/
 	float _moveInput;

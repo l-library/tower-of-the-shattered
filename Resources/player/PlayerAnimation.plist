@@ -471,6 +471,110 @@
                     </dict>
                 </array>
             </dict>
+            <key>jump</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>jump-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>jump-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>jump-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>jump-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>jump-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
+            <key>fall</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>fall-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>fall-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>fall-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>fall-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>fall-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
         </dict>
         <key>properties</key>
         <dict>
@@ -482,6 +586,8 @@
                 <string>Dodge.plist</string>
                 <string>Hurt.plist</string>
                 <string>Death.plist</string>
+                <string>Jump.plist</string>
+                <string>Fall.plist</string>
             </array>
             <key>format</key>
             <integer>2</integer>
