@@ -10,46 +10,47 @@ USING_NS_CC;
 class Bullet : public Node
 {
 private:
-    int damage_;                     // ÉËº¦Öµ
-    Sprite* sprite_;                 // ×Óµ¯¾«Áé
-    bool isVisible_;                 // ÊÇ·ñ¿ÉÊÓ
-    PhysicsBody* physicsBody_;       // ÎïÀíÅö×²Ìå
-    std::function<void(Bullet*, float)> updateLogic_;  // ¸üĞÂÂß¼­º¯ÊıÖ¸Õë
-    EventListenerPhysicsContact* contactListener_;  // ÎïÀíÅö×²¼àÌıÆ÷
+    int damage_;                     // ä¼¤å®³å€¼
+    Sprite* sprite_;                 // å­å¼¹ç²¾çµ
+    bool isVisible_;                 // æ˜¯å¦å¯è§†
+    PhysicsBody* physicsBody_;       // ç‰©ç†ç¢°æ’ä½“
+    std::function<void(Bullet*, float)> updateLogic_;  // æ›´æ–°é€»è¾‘å‡½æ•°æŒ‡é’ˆ
+    EventListenerPhysicsContact* contactListener_;  // ç‰©ç†ç¢°æ’ç›‘å¬å™¨
 
-    // Åö×²Ïà¹ØÊôĞÔ
-    float collisionWidth_;           // Åö×²Ìå¿í¶È
-    float collisionHeight_;          // Åö×²Ìå¸ß¶È
-    int categoryBitmask_;            // Àà±ğÑÚÂë
-    int contactTestBitmask_;         // ½Ó´¥²âÊÔÑÚÂë
-    int collisionBitmask_;           // Åö×²ÑÚÂë
+    // ç¢°æ’ç›¸å…³å±æ€§
+    float collisionWidth_;           // ç¢°æ’ä½“å®½åº¦
+    float collisionHeight_;          // ç¢°æ’ä½“é«˜åº¦
+    int categoryBitmask_;            // ç±»åˆ«æ©ç 
+    int contactTestBitmask_;         // æ¥è§¦æµ‹è¯•æ©ç 
+    int collisionBitmask_;           // ç¢°æ’æ©ç 
+    int clearBitmask_;               // å’Œè¯¥æ©ç ä¸‹å¯¹è±¡ç¢°æ’æ—¶æ¸…é™¤å­å¼¹
     
-    // ´æÔÚÊ±¼äÏà¹ØÊôĞÔ
-    float existTime_;                // µ±Ç°´æÔÚÊ±¼ä
-    float maxExistTime_;             // ×î´ó´æÔÚÊ±¼ä
+    // å­˜åœ¨æ—¶é—´ç›¸å…³å±æ€§
+    float existTime_;                // å½“å‰å­˜åœ¨æ—¶é—´
+    float maxExistTime_;             // æœ€å¤§å­˜åœ¨æ—¶é—´
 
 public:
-    // ¾²Ì¬´´½¨·½·¨
+    // é™æ€åˆ›å»ºæ–¹æ³•
     static Bullet* create(const std::string& spriteFrameName, int damage, 
                          const std::function<void(Bullet*, float)>& updateLogic);
     
-    // ÉèÖÃ×î´ó´æÔÚÊ±¼ä
+    // è®¾ç½®æœ€å¤§å­˜åœ¨æ—¶é—´
     void setMaxExistTime(float time) { maxExistTime_ = time; }
     float getMaxExistTime() const { return maxExistTime_; }
 
     virtual bool init(const std::string& spriteFrameName, int damage, 
                      const std::function<void(Bullet*, float)>& updateLogic);
 
-    // ¸üĞÂ·½·¨
+    // æ›´æ–°æ–¹æ³•
     virtual void update(float delta) override;
     
-    // Åö×²½áÊø»Øµ÷º¯Êı
+    // ç¢°æ’ç»“æŸå›è°ƒå‡½æ•°
     bool onContactSeparate(PhysicsContact& contact);
 
-    // ÇåÀí·½·¨
+    // æ¸…ç†æ–¹æ³•
     void cleanupBullet();
 
-    // GetterºÍSetter·½·¨
+    // Getterå’ŒSetteræ–¹æ³•
     int getDamage() const { return damage_; }
     void setDamage(int damage) { damage_ = damage; }
 
@@ -60,7 +61,7 @@ public:
 
     PhysicsBody* getPhysicsBody() const { return physicsBody_; }
 
-    // Åö×²ÌåÏà¹ØÊôĞÔµÄGetterºÍSetter
+    // ç¢°æ’ä½“ç›¸å…³å±æ€§çš„Getterå’ŒSetter
     float getCollisionWidth() const { return collisionWidth_; }
     void setCollisionWidth(float width);
 
@@ -76,20 +77,23 @@ public:
     int getCollisionBitmask() const { return collisionBitmask_; }
     void setCollisionBitmask(int bitmask);
 
-    // ¸üĞÂÂß¼­º¯ÊıÖ¸ÕëµÄSetter
+    int getCLearBitmask() const { return clearBitmask_; }
+    void setCLearBitmask(int bitmask);
+
+    // æ›´æ–°é€»è¾‘å‡½æ•°æŒ‡é’ˆçš„Setter
     void setUpdateLogic(const std::function<void(Bullet*, float)>& updateLogic)
     {
         updateLogic_ = updateLogic;
     }
 
 protected:
-    // ÖØĞÂ´´½¨ÎïÀíÅö×²Ìå
+    // é‡æ–°åˆ›å»ºç‰©ç†ç¢°æ’ä½“
     void recreatePhysicsBody();
     
-    // ×¢²áÅö×²¼àÌıÆ÷
+    // æ³¨å†Œç¢°æ’ç›‘å¬å™¨
     void registerContactListener();
     
-    // Åö×²»Øµ÷º¯Êı
+    // ç¢°æ’å›è°ƒå‡½æ•°
     bool onContactBegin(PhysicsContact& contact);
 
     Bullet();

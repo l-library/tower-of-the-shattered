@@ -14,6 +14,7 @@ Bullet::Bullet()
     , categoryBitmask_(BULLET_MASK)
     , contactTestBitmask_(PLAYER_MASK | ENEMY_MASK | WALL_MASK)
     , collisionBitmask_(BORDER_MASK | WALL_MASK | DAMAGE_WALL_MASK)
+    , clearBitmask_(0)
     , existTime_(0.0f)
     , maxExistTime_(5.0f) // 默认最大存在时间为5秒
 {
@@ -163,6 +164,12 @@ void Bullet::setCollisionBitmask(int bitmask)
     }
 }
 
+void Bullet::setCLearBitmask(int bitmask)
+{
+    if (clearBitmask_ != bitmask)
+        clearBitmask_ = bitmask;
+}
+
 void Bullet::recreatePhysicsBody()
 {
     // 移除旧的物理碰撞体
@@ -226,11 +233,11 @@ bool Bullet::onContactBegin(PhysicsContact& contact)
         PhysicsBody* otherBody = (bodyA == physicsBody_) ? bodyB : bodyA;
         
         // 只有当与Player碰撞时才清理子弹
-        //if (otherBody->getCategoryBitmask() == PLAYER_MASK) {
-          //  CCLOG("Bullet collided with Player!");
-            //cleanupBullet();
-            //return true;
-        //}
+        if (otherBody->getCategoryBitmask() & clearBitmask_) {
+            CCLOG("Bullet collided clear!");
+            cleanupBullet();
+            return true;
+        }
         
         // 对于其他碰撞，只记录日志不清理
         CCLOG("Bullet collided with non-Player object!");
