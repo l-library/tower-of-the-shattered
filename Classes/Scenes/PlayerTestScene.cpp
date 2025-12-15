@@ -65,8 +65,8 @@ bool PlayerTestScene::init()
             //body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
             //body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
             body->setCategoryBitmask(BORDER_MASK | WALL_MASK);
-            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK);
-            body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK);
+            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK|BULLET_MASK);
+            body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
             node->setPhysicsBody(body);
             this->addChild(node);
         }

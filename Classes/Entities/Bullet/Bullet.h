@@ -23,6 +23,7 @@ private:
     int categoryBitmask_;            // 类别掩码
     int contactTestBitmask_;         // 接触测试掩码
     int collisionBitmask_;           // 碰撞掩码
+    int clearBitmask_;               // 和该掩码下对象碰撞时清除子弹
     
     // 存在时间相关属性
     float existTime_;                // 当前存在时间
@@ -75,6 +76,9 @@ public:
 
     int getCollisionBitmask() const { return collisionBitmask_; }
     void setCollisionBitmask(int bitmask);
+
+    int getCLearBitmask() const { return clearBitmask_; }
+    void setCLearBitmask(int bitmask);
 
     // 更新逻辑函数指针的Setter
     void setUpdateLogic(const std::function<void(Bullet*, float)>& updateLogic)
