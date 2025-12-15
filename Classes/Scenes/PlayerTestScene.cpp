@@ -52,21 +52,15 @@ bool PlayerTestScene::init()
             auto body = PhysicsBody::create();
             body->addShape(shape);
             body->setDynamic(false);
-            //ÉèÖÃÑÚÂë
-            //body->setCategoryBitmask(WALL_MASK);
-            //body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
-            //body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
             auto node = Sprite::create("maps/platform.png");
             node->setPosition(siz * Vec2(
                 x * tilesize.width + tilesize.width / 2,
                 (mapsize.height - 1 - y) * tilesize.height + tilesize.height / 2));
             node->setScale(siz);
-            //body->setCategoryBitmask(WALL_MASK);
-            //body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
-            //body->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BULLET_MASK);
-            body->setCategoryBitmask(BORDER_MASK | WALL_MASK);
-            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK);
-            body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK);
+            //ÉèÖÃÑÚÂë
+            body->setCategoryBitmask(WALL_MASK);
+            body->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
+            body->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
             node->setPhysicsBody(body);
             this->addChild(node);
         }

@@ -54,6 +54,7 @@ bool Player::init()
     _maxDodgeTime = 0.5;
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
+    _playerAttackDamage = 30;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
@@ -98,10 +99,6 @@ bool Player::init()
 
     // 启用update函数
     this->scheduleUpdate();
-
-    //预加载音频文件
-    AudioEngine::preload("sounds/FireBall.mp3");
-    AudioEngine::preload("sounds/PlayerFootstep.mp3");
 
     return true;
 }
@@ -633,19 +630,22 @@ void Player::jump() {
 
 
 void Player::shootBullet()
-{/*
+{
     // 创建子弹对象
-    RangedBullet* attack = RangedBullet::create();
-    if (!attack) return;
-    //播放音效
-    auto audioID = AudioEngine::play2d("FireBall.mp3");
-    // 设置为玩家子弹
-    attack->setIsPlayerBullet(true); 
-
-    // 创建视觉精灵
-    Sprite* bulletSprite = Sprite::create("player/FireBall-0.png");
-    bulletSprite->setAnchorPoint(Vec2(0.5, 0));
-
+    Bullet* attack = nullptr;
+    switch (_attack_num) {
+        case 0:
+            attack = Bullet::create("player/FireBall-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+        break;
+        case 1:
+            attack = Bullet::create("player/FlameSlash-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            break;
+        case 2:
+            attack = Bullet::create("player/FrozenSpike-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            break;
+    }
+    attack->setCollisionHeight(attack->getSprite()->getContentSize().height);
+    attack->setCollisionWidth(attack->getSprite()->getContentSize().width);
     // 加载动画资源
     char attack_name[20];
     sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
@@ -653,39 +653,33 @@ void Player::shootBullet()
 
     // 获取玩家当前位置
     Vec2 current_pos = _sprite->getPosition();
+    if (!attack) return;
 
     // 根据攻击段数配置子弹逻辑
+    float speed = 0;
     if (animation)
     {
         auto action = Animate::create(animation);
-
         if (_attack_num == 0) {
             // 第一段为火球
-            attack->setCanPenetrateWall(false); // 火球不能穿墙
-            attack->setSpeed(400.0f);           // 设置飞行速度
-            attack->setDamage(15);              // 设置伤害（待完善）
-
-            bulletSprite->setScale(3.0f);       // 调整视觉大小
-            bulletSprite->runAction(RepeatForever::create(action));
-
-            attack->setCollisionBoxWidth(GRID_SIZE);
-            attack->setCollisionBoxHeight(GRID_SIZE);
-            // 调整物理碰撞箱大小（火球较小）
-            // 注意：如果 BulletBase 没有暴露修改大小的接口，这里只能依赖默认值或重新生成 PhysicsBody
-            // 建议在 Bullet 类中添加 setCollisionSize 接口
+            attack->setCategoryBitmask(PLAYER_BULLET_MASK);
+            attack->setCollisionBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+            attack->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+            speed = 100.0;
+            attack->getSprite()->setScale(3.0f);       // 调整视觉大小
+            attack->getSprite()->runAction(RepeatForever::create(action));
         }
         else {
             // 第二三段为近战攻击
-            attack->setSpeed(0);                // 近战特效不飞行
-            attack->setDamage(25);
-            attack->setCanPenetrateWall(true);  // 近战特效通常是视觉穿墙的
+            speed = 0;
+            attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//第三段攻击为1.5倍伤害
 
             // 播放完动画后删除整个子弹对象(attack)，而不仅仅是删除精灵
             auto finishCallback = CallFunc::create([attack]() {
-                attack->removeFromParent();
+                attack->cleanupBullet();
                 });
 
-            bulletSprite->runAction(Sequence::create(action, finishCallback, nullptr));
+            attack->getSprite()->runAction(Sequence::create(action, finishCallback, nullptr));
         }
     }
 
@@ -693,38 +687,36 @@ void Player::shootBullet()
     Vec2 directionVec;
     if (_direction == Direction::RIGHT) {
         directionVec = Vec2(1, 0);
-        bulletSprite->setFlippedX(false);
+        attack->getPhysicsBody()->setVelocity(Vec2(speed, 0));
+        attack->getSprite()->setFlippedX(false);
     }
     else {
         directionVec = Vec2(-1, 0);
-        bulletSprite->setFlippedX(true);
+        attack->getPhysicsBody()->setVelocity(Vec2(-speed, 0));
+        attack->getSprite()->setFlippedX(true);
     }
-    attack->setDirection(directionVec);
 
-    // 将精灵绑定到 Bullet 逻辑类
-    attack->setSprite(bulletSprite);
+    //// 配置物理属性 (PhysicsBody)
+    //auto body = attack->getPhysicsBody();
+    //if (body) {
+    //    // 重新设置 Category，确保它是玩家子弹
+    //    body->setCategoryBitmask(PLAYER_BULLET_MASK);
 
-    // 配置物理属性 (PhysicsBody)
-    auto body = attack->getPhysicsBody();
-    if (body) {
-        // 重新设置 Category，确保它是玩家子弹
-        body->setCategoryBitmask(PLAYER_BULLET_MASK);
+    //    if (_attack_num == 0) {
+    //        // 火球：与敌人和墙壁发生碰撞检测（物理阻挡）和接触检测（扣血）
+    //        body->setCollisionBitmask(ENEMY_MASK | WALL_MASK);
+    //        body->setContactTestBitmask(ENEMY_MASK | WALL_MASK);
+    //    }
+    //    else {
+    //        // 近战：只与敌人进行接触检测（扣血），不与墙壁发生物理碰撞（不反弹/阻挡）
+    //        body->setCollisionBitmask(0);
+    //        body->setContactTestBitmask(ENEMY_MASK);
 
-        if (_attack_num == 0) {
-            // 火球：与敌人和墙壁发生碰撞检测（物理阻挡）和接触检测（扣血）
-            body->setCollisionBitmask(ENEMY_MASK | WALL_MASK);
-            body->setContactTestBitmask(ENEMY_MASK | WALL_MASK);
-        }
-        else {
-            // 近战：只与敌人进行接触检测（扣血），不与墙壁发生物理碰撞（不反弹/阻挡）
-            body->setCollisionBitmask(0);
-            body->setContactTestBitmask(ENEMY_MASK);
-
-            // 如果需要调整近战范围的物理包围盒大小，可以在这里重新创建 Shape
-            // body->removeShape(0);
-            // body->addShape(PhysicsShapeBox::create(Size(60, 60)));
-        }
-    }
+    //        // 如果需要调整近战范围的物理包围盒大小，可以在这里重新创建 Shape
+    //        // body->removeShape(0);
+    //        // body->addShape(PhysicsShapeBox::create(Size(60, 60)));
+    //    }
+    //}
 
     // 添加子弹到场景或玩家
     if (_attack_num == 0) {
@@ -745,11 +737,13 @@ void Player::shootBullet()
         // --- 近战攻击：作为玩家的子节点 ---
         // 这样特效会跟随玩家移动
         // 根据朝向设置偏移量，使砍击特效出现在玩家前方
+        attack->setAnchorPoint(Vec2(0.5f, 0.0f));
+        attack->getSprite()->setAnchorPoint(Vec2(0.5f, 0.0f));
         Vec2 offset = directionVec * (_attack_num ==1? 20.0f:0.0f);
-        attack->setPosition(current_pos + offset);
-
+        attack->getSprite()->setPosition(current_pos + offset);
+        attack->getPhysicsBody()->setPositionOffset(Vec2(0, attack->getSprite()->getContentSize().height));
         this->addChild(attack, 10);
-    }*/
+    }
 }
 
 void Player::attack() {

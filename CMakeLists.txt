@@ -35,7 +35,7 @@ if(XCODE)
     endif()
 endif()
 
-if(NOT DEFINED BUILD_ENGINE_DONE) # to test tower-of-the-shattered into root project
+if(NOT DEFINED BUILD_ENGINE_DONE) # to test Dead-Cells into root project
     set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cocos2d)
     set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
@@ -58,27 +58,10 @@ endif()
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/HelloWorldScene.cpp
-     Classes/Entities/Bullet/Bullet.cpp
-     Classes/Entities/Enemy/Enemy.cpp
-     Classes/Entities/Enemy/EnemyBase.cpp
-     Classes/Entities/Enemy/Slime.cpp
-     Classes/Entities/Enemy/SoldierEnemy.cpp
-     Classes/Entities/Player/Player.cpp
-     Classes/Scenes/PlayerTestScene.cpp
-     Classes/Maps.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/HelloWorldScene.h
-     Classes/Entities/Bullet/Bullet.h
-     Classes/Entities/Enemy/Enemy.h
-     Classes/Entities/Enemy/EnemyBase.h
-     Classes/Entities/Enemy/Slime.h
-     Classes/Entities/Enemy/SoldierEnemy.h
-     Classes/Entities/Player/Player.h
-     Classes/Scenes/PlayerTestScene.h
-     Classes/Maps.h
-     Classes/TowerOfTheShattered.h
      )
 
 if(ANDROID)

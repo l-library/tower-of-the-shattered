@@ -176,6 +176,8 @@ private:
 	double _maxDodgeCooldown;
 	//主角的空中闪避次数
 	int _maxDodgeTimes;
+	//主角攻击伤害
+	double _playerAttackDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间

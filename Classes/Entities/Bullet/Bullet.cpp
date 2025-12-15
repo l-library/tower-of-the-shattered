@@ -226,11 +226,11 @@ bool Bullet::onContactBegin(PhysicsContact& contact)
         PhysicsBody* otherBody = (bodyA == physicsBody_) ? bodyB : bodyA;
         
         // 只有当与Player碰撞时才清理子弹
-        if (otherBody->getCategoryBitmask() == PLAYER_MASK) {
-            CCLOG("Bullet collided with Player!");
-            cleanupBullet();
-            return true;
-        }
+        //if (otherBody->getCategoryBitmask() == PLAYER_MASK) {
+          //  CCLOG("Bullet collided with Player!");
+            //cleanupBullet();
+            //return true;
+        //}
         
         // 对于其他碰撞，只记录日志不清理
         CCLOG("Bullet collided with non-Player object!");
