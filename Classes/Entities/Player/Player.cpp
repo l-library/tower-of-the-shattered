@@ -45,7 +45,7 @@ bool Player::init()
     _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // 碰撞体通常比贴图稍小
 
     // 玩家初始数值
-    _maxHealth = 10000.0;
+    _maxHealth = 100.0;
     _health = _maxHealth;
     _speed = 300.0;     // 水平移动最大速度
     _jumpForce = 500.0; // 跳跃冲量 
@@ -449,6 +449,7 @@ void Player::updatePhysics(float dt) {
     if (_isAttacking) {
         newX = currentX * 0.9f; //若在攻击，给予摩檫力
     }
+    if (_isSkilling) newY = 0;// 释放技能时忽略重力
     else {
         if (fabs(targetX) > 0.01f) {//加速
             float direction = (targetX > currentX) ? 1.0f : -1.0f;
