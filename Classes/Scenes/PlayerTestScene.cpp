@@ -126,9 +126,9 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_L:
                 _player->dodge();
                 break;
-            case EventKeyboard::KeyCode::KEY_S:
-            case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-                //_player->crouch(true);
+            case EventKeyboard::KeyCode::KEY_I:
+            case EventKeyboard::KeyCode::KEY_1:
+                _player->skillAttack("IceSpear");
                 break;
         }
         };
