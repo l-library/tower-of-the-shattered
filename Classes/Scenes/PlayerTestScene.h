@@ -19,6 +19,7 @@ public:
 
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
+    void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map);
 
 private:
     Player* _player;
