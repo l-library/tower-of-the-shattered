@@ -4,7 +4,8 @@
 
 USING_NS_CC;
 
-#define BLOOD_BAR 1002
+# define BLOOD_BAR 1002
+# define MAGIC_BAR 1003
 
 Scene* PlayerTestScene::createScene()
 {
@@ -155,26 +156,47 @@ void PlayerTestScene::initBar() {
     // 获取窗口大小
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    // 血条
     auto sprite = Sprite::create("player/hp_border.png");   //创建进度框
     auto size = sprite->getContentSize();
     sprite->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5)); //设置框的位置
     this->addChild(sprite);            //加到默认图层里面去
     auto sprBlood = Sprite::create("player/hp.png");  //创建血条
-    ProgressTimer* progress = ProgressTimer::create(sprBlood); //创建progress对象
-    progress->setType(ProgressTimer::Type::BAR);        //类型：条状
-    progress->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5));
+    ProgressTimer* progress_health = ProgressTimer::create(sprBlood); //创建progress对象
+    progress_health->setType(ProgressTimer::Type::BAR);        //类型：条状
+    progress_health->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5));
     //从右到左减少血量
-    progress->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
-    progress->setBarChangeRate(Point(1, 0));
-    progress->setTag(BLOOD_BAR);       //做一个标记
-    this->addChild(progress);
+    progress_health->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
+    progress_health->setBarChangeRate(Point(1, 0));
+    progress_health->setTag(BLOOD_BAR);       //做一个标记
+    this->addChild(progress_health);
+    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
+    // 蓝条
+    sprite = Sprite::create("player/mp_border.png");   //创建进度框
+    size = sprite->getContentSize();
+    sprite->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5)); //设置框的位置
+    this->addChild(sprite);            //加到默认图层里面去
+    auto sprMagic = Sprite::create("player/mp.png");  //创建蓝条
+    auto progress_magic = ProgressTimer::create(sprMagic); //创建progress对象
+    progress_magic->setType(ProgressTimer::Type::BAR);        //类型：条状
+    progress_magic->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5));
+    //从右到左减少蓝条
+    progress_magic->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
+    progress_magic->setBarChangeRate(Point(1, 0));
+    progress_magic->setTag(MAGIC_BAR);       //做一个标记
+    this->addChild(progress_magic);
     schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
 }
 
 void PlayerTestScene::scheduleBlood(float delta) {
-    auto progress = (ProgressTimer*)this->getChildByTag(BLOOD_BAR);
-    progress->setPercentage(static_cast<float>(_player->getHealth() / _player->getMaxHealth()) * 100);  //这里是百分制显示
-    if (progress->getPercentage() < 0) {
+    auto progress_health = (ProgressTimer*)this->getChildByTag(BLOOD_BAR);
+    progress_health->setPercentage(static_cast<float>(_player->getHealth() / _player->getMaxHealth()) * 100);  //这里是百分制显示
+    if (progress_health->getPercentage() < 0) {
+        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
+    }
+    auto progress_magic = (ProgressTimer*)this->getChildByTag(MAGIC_BAR);
+    progress_magic->setPercentage(static_cast<float>(_player->getMagic() / _player->getMaxMagic()) * 100);  //这里是百分制显示
+    if (progress_magic->getPercentage() < 0) {
         this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
     }
 }
