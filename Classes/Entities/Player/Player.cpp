@@ -44,6 +44,7 @@ bool Player::init()
     Size contentSize = _sprite->getContentSize();
     _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // 碰撞体通常比贴图稍小
 
+    // 玩家初始数值
     _maxHealth = 100.0;
     _health = _maxHealth;
     _speed = 300.0;     // 水平移动最大速度
@@ -55,6 +56,8 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 30;
+    _playerSkillDamage = 50;
+    _iceSpearSpeed = 300.0;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
@@ -66,6 +69,7 @@ bool Player::init()
     _isHurt = false;
     _isDead = false;
     _isAttacking = false;
+    _isSkilling = false;
     _isInvincible = false;
     _controlEnabled = true;
     _attack_num = 0;
@@ -410,7 +414,7 @@ void Player::updatePhysics(float dt) {
     float newY = currentY;
 
     // 决定目标速度
-    if (_isAttacking) {
+    if (_isAttacking || _isSkilling) {
         targetX = 0; // 攻击时目标速度为0
     }
     if (_isDodge) {
@@ -445,6 +449,7 @@ void Player::updatePhysics(float dt) {
     if (_isAttacking) {
         newX = currentX * 0.9f; //若在攻击，给予摩檫力
     }
+    if (_isSkilling) newY = 0;// 释放技能时忽略重力
     else {
         if (fabs(targetX) > 0.01f) {//加速
             float direction = (targetX > currentX) ? 1.0f : -1.0f;
@@ -483,6 +488,10 @@ void Player::updateState() {
     //根据标识确定攻击/闪避
     if (_isAttacking) {
         changeState(PlayerState::ATTACKING);
+        return;
+    }
+    if(_isSkilling) {
+        changeState(PlayerState::SKILLING);
         return;
     }
     else if (_isDodge) {
@@ -551,6 +560,7 @@ void Player::updateAnimation() {
         case PlayerState::DODGING: animationName = "dodge"; loop = false; break;
         case PlayerState::HURT: animationName = "hurt"; loop = false; break;
         case PlayerState::DEAD: animationName = "dead"; loop = false; break;
+        case PlayerState::SKILLING: return;
         default: animationName = "idle"; break;
     }
     //如果状态变化，更新动画
@@ -594,7 +604,8 @@ void Player::playAnimation(const std::string& name, bool loop)
             _sprite->runAction(Sequence::create(
                 action,
                 CallFunc::create([this]()
-                    { _isAttacking = false; }),
+                    { _isAttacking = false;
+            _isSkilling = false; }),
                 nullptr));
         }
     }
@@ -613,10 +624,12 @@ const Sprite* Player::getSprite() const {
 }
 
 void Player::moveLeft() {
+    if (!canBeControled()) return;
     _moveInput = -1.0f;
 }
 
 void Player::moveRight() {
+    if (!canBeControled()) return;
     _moveInput = 1.0f;
 }
 
@@ -625,6 +638,7 @@ void Player::stopMoving() {
 }
 
 void Player::jump() {
+    if (!canBeControled()) return;
     _jumpBufferTime = 0.1f;
 }
 
@@ -636,17 +650,19 @@ void Player::shootBullet()
     switch (_attack_num) {
         case 0:
             attack = Bullet::create("player/FireBall-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setMaxExistTime(1.0f);
         break;
         case 1:
             attack = Bullet::create("player/FlameSlash-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setCollisionHeight(75);
+            attack->setCollisionWidth(60);
             break;
         case 2:
             attack = Bullet::create("player/FrozenSpike-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setCollisionHeight(_sprite->getContentSize().height);
+            attack->setCollisionWidth(65);
             break;
     }
-    attack->setCollisionHeight(attack->getSprite()->getContentSize().height);
-    attack->setCollisionWidth(attack->getSprite()->getContentSize().width);
-    attack->setCLearBitmask(WALL_MASK | ENEMY_MASK);
     // 加载动画资源
     char attack_name[20];
     sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
@@ -664,9 +680,10 @@ void Player::shootBullet()
         if (_attack_num == 0) {
             // 第一段为火球
             attack->setCategoryBitmask(PLAYER_BULLET_MASK);
-            attack->setCollisionBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+            attack->setCollisionBitmask(NULL);
             attack->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-            speed = 300.0;
+            attack->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+            speed = 200.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
@@ -674,7 +691,10 @@ void Player::shootBullet()
             // 第二三段为近战攻击
             speed = 0;
             attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//第三段攻击为1.5倍伤害
-
+            attack->setCategoryBitmask(PLAYER_BULLET_MASK);
+            attack->setCollisionBitmask(NULL);
+            attack->setContactTestBitmask(ENEMY_MASK);
+            attack->setCLearBitmask(NULL);
             // 播放完动画后删除整个子弹对象
             auto finishCallback = CallFunc::create([attack]() {
                 attack->cleanupBullet();
@@ -697,28 +717,6 @@ void Player::shootBullet()
         attack->getSprite()->setFlippedX(true);
     }
 
-    //// 配置物理属性 (PhysicsBody)
-    //auto body = attack->getPhysicsBody();
-    //if (body) {
-    //    // 重新设置 Category，确保它是玩家子弹
-    //    body->setCategoryBitmask(PLAYER_BULLET_MASK);
-
-    //    if (_attack_num == 0) {
-    //        // 火球：与敌人和墙壁发生碰撞检测（物理阻挡）和接触检测（扣血）
-    //        body->setCollisionBitmask(ENEMY_MASK | WALL_MASK);
-    //        body->setContactTestBitmask(ENEMY_MASK | WALL_MASK);
-    //    }
-    //    else {
-    //        // 近战：只与敌人进行接触检测（扣血），不与墙壁发生物理碰撞（不反弹/阻挡）
-    //        body->setCollisionBitmask(0);
-    //        body->setContactTestBitmask(ENEMY_MASK);
-
-    //        // 如果需要调整近战范围的物理包围盒大小，可以在这里重新创建 Shape
-    //        // body->removeShape(0);
-    //        // body->addShape(PhysicsShapeBox::create(Size(60, 60)));
-    //    }
-    //}
-
     // 添加子弹到场景或玩家
     if (_attack_num == 0) {
         // --- 远程攻击：添加到世界场景 ---
@@ -727,6 +725,7 @@ void Player::shootBullet()
 
         // 微调发射位置，使其不完全重叠在玩家中心
         worldPos += (directionVec * 30.0f);
+        worldPos.y += _sprite->getContentSize().height;
 
         attack->setPosition(worldPos);
         auto gameScene = Director::getInstance()->getRunningScene();
@@ -742,13 +741,14 @@ void Player::shootBullet()
         attack->getSprite()->setAnchorPoint(Vec2(0.5f, 0.0f));
         Vec2 offset = directionVec * (_attack_num ==1? 20.0f:0.0f);
         attack->getSprite()->setPosition(current_pos + offset);
-        attack->getPhysicsBody()->setPositionOffset(Vec2(0, attack->getSprite()->getContentSize().height));
+        attack->getPhysicsBody()->setPositionOffset(Vec2(directionVec.x * (_attack_num == 1 ? 70 : 0), 
+            (_attack_num == 1 ? 20 : 0) + attack->getSprite()->getContentSize().height));
         this->addChild(attack, 10);
     }
 }
 
 void Player::attack() {
-    if (_attackCooldown > 0 || _isAttacking || !_controlEnabled) return;
+    if (!canBeControled()) return;
 
     // 多段攻击
     if (_attackEngageTime > 0)
@@ -766,8 +766,58 @@ void Player::attack() {
     // 这里留空，视具体Combat系统实现
 }
 
+bool Player::skillAttack(const std::string& name)
+{
+    if (!canBeControled()) return false;
+    auto bullet_animation = AnimationCache::getInstance()->getAnimation(name);
+    Bullet* skill;
+    skill = Bullet::create("player/IceSpear-0.png", _playerSkillDamage, [](Bullet* bullet, float delta) {});
+    if (!bullet_animation||!skill)return false;
+    _isSkilling = true;
+    changeState(PlayerState::SKILLING);
+    // 获取玩家当前位置
+    Vec2 current_pos = _sprite->getPosition();
+    auto action = Animate::create(bullet_animation);
+    // 设置方向 (同时处理物理速度方向和贴图翻转)
+    Vec2 directionVec;
+    if (_direction == Direction::RIGHT) {
+        directionVec = Vec2(1, 0);
+        skill->getSprite()->setFlippedX(false);
+    }
+    else {
+        directionVec = Vec2(-1, 0);
+        skill->getSprite()->setFlippedX(true);
+    }
+    if (name == "IceSpear")
+    {
+        playAnimation("IceSpear-Action");
+        skill->setCategoryBitmask(PLAYER_BULLET_MASK);
+        skill->setCollisionBitmask(NULL);
+        skill->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+        skill->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
+        skill->getSprite()->runAction(RepeatForever::create(action));
+        skill->setMaxExistTime(3.0f);
+        Vec2 worldPos = this->convertToWorldSpace(current_pos);
+        // 微调发射位置，使其不完全重叠在玩家中心
+        worldPos += (directionVec * 30.0f);
+        worldPos.y += _sprite->getContentSize().height;
+        skill->setPosition(worldPos);
+        // 设置速度
+        skill->getPhysicsBody()->setVelocity(_iceSpearSpeed * directionVec);
+        //微调碰撞箱
+        skill->getPhysicsBody()->setPositionOffset(directionVec*20);
+        // 添加为场景的子节点
+        auto gameScene = Director::getInstance()->getRunningScene();
+        if (gameScene) {
+            gameScene->addChild(skill, 10);
+        }
+    }
+    return false;
+}
+
+
 void Player::dodge() {
-    if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0) return; 
+    if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
 
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;

@@ -11,6 +11,7 @@ enum class PlayerState {
 	FALLING,        // 下落中
 	LANDING,		// 落地
 	ATTACKING,      // 攻击中
+	SKILLING,		// 特殊攻击中
 	HURT,           // 受伤
 	DEAD			// 死亡
 };
@@ -103,13 +104,20 @@ public:
 	* @param[in] void
 	* @return (const)玩家控制状态 true，false
 	***/
-	const bool canBeControled() const { return _controlEnabled; };
+	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; };
 
 	/**
 	* @brief 获得玩家图像
 	* @return 玩家当前的图像（常量指针）
 	***/
-	const cocos2d::Sprite* Player::getSprite() const;
+	const cocos2d::Sprite* getSprite() const;
+
+	/**
+	* @brief 玩家释放技能
+	* @param[in] string技能名称 常量引用
+	* @return 释放成功/失败（bool）
+	***/
+	bool skillAttack(const std::string& name);
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -178,6 +186,8 @@ private:
 	int _maxDodgeTimes;
 	//主角攻击伤害
 	double _playerAttackDamage;
+	//主角特殊攻击伤害
+	double _playerSkillDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -208,6 +218,8 @@ private:
 	bool _isDodge;
 	//是否正在攻击
 	bool _isAttacking;
+	//是否正在特殊攻击
+	bool _isSkilling;
 	//是否正在受击
 	bool _isHurt;
 	//是否死亡
@@ -228,6 +240,9 @@ private:
 	int _footContactCount;
 	//空中闪避次数
 	int _dodgeTimes;
+
+	/*----攻击和技能数值----*/
+	float _iceSpearSpeed;
 
 	/*----输入----*/
 	float _moveInput;

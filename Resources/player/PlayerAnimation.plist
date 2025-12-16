@@ -575,6 +575,152 @@
                     </dict>
                 </array>
             </dict>
+            <key>IceSpear-Action</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-6.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-7.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-8.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-9.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>IceSpear-Action-10.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
+            <key>IceSpear</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-6.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>icespear-7.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
         </dict>
         <key>properties</key>
         <dict>
@@ -588,6 +734,7 @@
                 <string>Death.plist</string>
                 <string>Jump.plist</string>
                 <string>Fall.plist</string>
+                <string>IceSpear.plist</string>
             </array>
             <key>format</key>
             <integer>2</integer>
