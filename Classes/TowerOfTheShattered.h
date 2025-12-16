@@ -1,18 +1,22 @@
-/* ï¿½ï¿½ï¿½Í·ï¿½Ä¼ï¿½ï¿½ï¿½Å¿ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+#pragma once
+// ÓÎÏ·Ö÷Í·ÎÄ¼ş£¬°üº¬È«¾Ö³£Á¿ºÍÀàĞÍ¶¨Òå
 
-// ç¢°æ’æ©ç å®å®šä¹‰
-#define ENEMY_MASK          0x00000001  // æ•Œäºº
-#define PLAYER_MASK         0x00000002  // ä¸»è§’
-#define BORDER_MASK         0x00000004  // æ¸¸æˆè¾¹æ¡†
-#define WALL_MASK           0x00000008  // æ¸¸æˆåœºæ™¯ä¸­çš„å¢™å£
-#define DAMAGE_WALL_MASK    0x00000010  // æ¸¸æˆåœºæ™¯ä¸­å¯é€ æˆä¼¤å®³çš„å¢™å£
-#define BULLET_MASK         0x00000020  // å­å¼¹
-#define PLAYER_BULLET_MASK  0x00000040  // ç©å®¶äº§ç”Ÿçš„å­å¼¹
-#define ENEMY_BULLET_MASK   0x00000080  // æ•Œäººäº§ç”Ÿçš„å­å¼¹
-#define PENETRATE_MASK      0x00000100  // å¯ä»¥ç©¿å¢™çš„ç‰©ä½“
-#define BOUNCE_MASK         0x00000200  // å¯ä»¥åå¼¹çš„ç‰©ä½“
+// ÓÎÏ·»ù´¡³£Á¿¶¨Òå
+#define GRID_SIZE 32               // ÓÎÏ·¸ñ×Ó´óĞ¡£¨32x32ÏñËØ£©
 
-#include "Entities/Enemy/Enemy.h"
+// Åö×²ÑÚÂë¶¨Òå
+#define ENEMY_MASK          0x00000001  // µĞÈË
+#define PLAYER_MASK         0x00000002  // Íæ¼Ò
+#define BORDER_MASK         0x00000004  // ÓÎÏ·±ß½ç
+#define WALL_MASK           0x00000008  // ÓÎÏ·³¡¾°ÖĞµÄÇ½±Ú
+#define DAMAGE_WALL_MASK    0x00000010  // ÓÎÏ·³¡¾°ÖĞÓĞÉËº¦µÄÇ½±Ú
+#define BULLET_MASK         0x000000c0  // ×Óµ¯(°üº¬ÏÂÃæÁ½ÖÖ×Óµ¯£¬4+8=c)
+#define PLAYER_BULLET_MASK  0x00000040  // Íæ¼Ò·¢ÉäµÄ×Óµ¯
+#define ENEMY_BULLET_MASK   0x00000080  // µĞÈË·¢ÉäµÄ×Óµ¯
+#define PENETRATE_MASK      0x00000100  // ¿É´©Í¸Ç½±ÚµÄÎïÌå
+#define BOUNCE_MASK         0x00000200  // ¿Éµ¯ÌøµÄÎïÌå
+
+#include "Entities/Enemy/EnemyBase.h"
 #include "Entities/Player/Player.h"
-#include "Entities/Bullet.h"
+#include "Entities/Bullet/Bullet.h"
 #include "Scenes/PlayerTestScene.h"

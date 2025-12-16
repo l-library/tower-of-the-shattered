@@ -25,13 +25,14 @@ enum class Direction {
 //动画标签
 #define ANIMATION_ACTION_TAG 1001
 
-// 定义物理掩码 (建议在头文件中定义常量或枚举)
-const int PLAYER_CATEGORY_BITMASK = 0x01;
-const int GROUND_CATEGORY_BITMASK = 0x02;
-const int PLATFORM_CATEGORY_BITMASK = 0x04;
-const int ENEMY_CATEGORY_BITMASK = 0x08;
-const int TRAP_CATEGORY_BITMASK = 0x10;
-const int ITEM_CATEGORY_BITMASK = 0x20;
+// 定义物理掩码
+//const int PLAYER_CATEGORY_BITMASK = 0x01;
+//const int GROUND_CATEGORY_BITMASK = 0x02;
+//const int PLATFORM_CATEGORY_BITMASK = 0x04;
+//const int ENEMY_CATEGORY_BITMASK = 0x08;
+//const int TRAP_CATEGORY_BITMASK = 0x10;
+//const int ITEM_CATEGORY_BITMASK = 0x20;
+//当前使用TowerOfTheShattered头文件的掩码
 
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
@@ -68,21 +69,6 @@ public:
 	***/
 	void playAnimation(const std::string& name, bool loop = false);
 
-	/**
-	* @brief 获得玩家当前状态
-	* @param[in] void
-	* @return 玩家当前状态: idle, run, dodge, jump, fall, attack, hurt, dead
-	***/
-	std::string getCurrentState();
-
-	/**
-	* @brief 获得玩家图像
-	* @return 玩家当前的图像（常量指针）
-	***/
-	const cocos2d::Sprite* Player::getSprite() const;
-
-	void Player::setupCollisionHandler();
-
 	/*----各操作实现/对外接口----*/
 	void moveLeft();
 	void moveRight();
@@ -90,6 +76,40 @@ public:
 	void jump();
 	void attack();
 	void dodge();
+
+	/**
+	* @brief 获得玩家当前状态
+	* @param[in] void
+	* @return (const)玩家当前状态: idle, run, dodge, jump, fall, attack, hurt, dead
+	***/
+	const std::string getCurrentState() const;
+
+	/**
+	* @brief 获得玩家当前血量
+	* @param[in] void
+	* @return (const double)玩家当前血量
+	***/
+	const double getHealth() const { return _health; };
+
+	/**
+	* @brief 获得玩家当前最大血量
+	* @param[in] void
+	* @return (const double)玩家最大血量
+	***/
+	const double getMaxHealth() const { return _maxHealth; };
+	
+	/**
+	* @brief 获得玩家是否运行控制
+	* @param[in] void
+	* @return (const)玩家控制状态 true，false
+	***/
+	const bool canBeControled() const { return _controlEnabled; };
+
+	/**
+	* @brief 获得玩家图像
+	* @return 玩家当前的图像（常量指针）
+	***/
+	const cocos2d::Sprite* Player::getSprite() const;
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -114,12 +134,18 @@ protected:
 	***/
 	void initPhysics();
 
+	void shootBullet();
+
 private:
 	/*----各个更新函数----*/
 	void updateTimers(float dt);//更新计时器
 	void updateState();//更新状态
 	void updatePhysics(float dt);//更新物理
 	void updateAnimation();//更新动画
+
+	//碰撞回调函数
+	bool onContactBegin(cocos2d::PhysicsContact& contact);
+	bool onContactSeparate(cocos2d::PhysicsContact& contact);
 
 	/*----主角属性----*/
 	//主角图像_sprite（待机动作的第一帧）
@@ -134,6 +160,8 @@ private:
 	//主角法力值
 	double _magic;
 	double _maxMagic;
+	//主角闪避时间（无敌时间）
+	double _maxDodgeTime;
 	//主角移动速度
 	double _speed;
 	//主角跳跃高度
@@ -146,6 +174,10 @@ private:
 	double _maxAttackCooldown;
 	//主角的闪避冷却时间
 	double _maxDodgeCooldown;
+	//主角的空中闪避次数
+	int _maxDodgeTimes;
+	//主角攻击伤害
+	double _playerAttackDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -160,6 +192,10 @@ private:
 	double _invincibilityTime;
 	//两端攻击之间衔接的时间差
 	double _attackEngageTime;
+	//普通状态下的碰撞掩码
+	int _originalMask;
+	//冲刺状态下的碰撞掩码
+	int _dodgeMask;
 
 	/*----主角当前状态----*/
 	//是否允许控制
@@ -172,6 +208,10 @@ private:
 	bool _isDodge;
 	//是否正在攻击
 	bool _isAttacking;
+	//是否正在受击
+	bool _isHurt;
+	//是否死亡
+	bool _isDead;
 	//当前状态
 	PlayerState _currentState;
 	//前一个状态
@@ -186,6 +226,8 @@ private:
 	//攻击段数
 	int _attack_num;
 	int _footContactCount;
+	//空中闪避次数
+	int _dodgeTimes;
 
 	/*----输入----*/
 	float _moveInput;

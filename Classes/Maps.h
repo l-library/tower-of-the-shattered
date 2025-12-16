@@ -1,3 +1,4 @@
+#pragma once
 #include "cocos2d.h"
 
 class Maps : public cocos2d::Scene

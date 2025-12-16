@@ -24,11 +24,11 @@
 
 #include "HelloWorldScene.h"
 #include "TowerOfTheShattered.h"
-#include "Entities/Bullet.h"
+#include "Entities/Bullet/Bullet.h"
 
 USING_NS_CC;
 
-// ç®€å•çš„EnemyBaseæ´¾ç”Ÿç±»ç”¨äºæµ‹è¯•,ä¸€ä¸ªéæŠ½è±¡ç±»éœ€è¦æœ‰createï¼ŒHittedï¼ŒDeadï¼ŒBehaviorInitï¼Œ
+// ¼òµ¥µÄEnemyBaseÅÉÉúÀàÓÃÓÚ²âÊÔ,Ò»¸ö·Ç³éÏóÀàĞèÒªÓĞcreate£¬Hitted£¬Dead£¬BehaviorInit£¬
 class TestEnemy : public EnemyBase
 {
 private:
@@ -51,27 +51,24 @@ public:
 
     TestEnemy() : isTouchingLeftWall_(false), isTouchingRightWall_(false), isTouchingTopWall_(false), isTouchingGround_(false) {}
     
-    // é‡å†™ç²¾çµåˆå§‹åŒ–è™šå‡½æ•°
+    // ÖØĞ´¾«Áé³õÊ¼»¯Ğéº¯Êı
     virtual void InitSprite() override {
-        // åˆå§‹åŒ–ç²¾çµå¹¶è®¾ç½®é»˜è®¤å›¾åƒ
+        // ³õÊ¼»¯¾«Áé²¢ÉèÖÃÄ¬ÈÏÍ¼Ïñ
         sprite_ = Sprite::create("HelloWorld.png");
         if (sprite_) {
             this->addChild(sprite_);
-            // è®¾ç½®ç²¾çµå¤§å°
+            // ÉèÖÃ¾«Áé´óĞ¡
             sprite_->setScale(0.5f);
-            
-            // è®¾ç½®ç¢°æ’ç®±å¤§å°
-            setupPhysicsBody(50.0f, 50.0f);
         }
     }
 
 
     virtual void Hitted(int damage, int poise_damage = 0) override {
-        // è¢«å‡»ä¸­ååº”
+        // ±»»÷ÖĞ·´Ó¦
         setCurrentVitality(getCurrentVitality() - damage);
         setCurrentStaggerResistance(getCurrentStaggerResistance() - poise_damage);
         
-        // ç®€å•çš„è§†è§‰åé¦ˆ
+        // ¼òµ¥µÄÊÓ¾õ·´À¡
         if (getSprite()) {
             getSprite()->setColor(Color3B::RED);
             auto resetColor = CallFunc::create([this]() {
@@ -82,34 +79,34 @@ public:
     }
 
     virtual void Dead() override {
-        // æ­»äº¡å¤„ç†
+        // ËÀÍö´¦Àí
         if (getSprite()) {
             auto fadeOut = FadeOut::create(1.0f);
-            auto removeSelf = RemoveSelf::create(true); // ç§»é™¤ç²¾çµ
+            auto removeSelf = RemoveSelf::create(true); // ÒÆ³ı¾«Áé
             auto removeEnemy = CallFunc::create([this]() {
-                // ç§»é™¤æ•Œäººå¯¹è±¡æœ¬èº«
+                // ÒÆ³ıµĞÈË¶ÔÏó±¾Éí
                 this->removeFromParent();
             });
             getSprite()->runAction(Sequence::create(fadeOut, removeSelf, removeEnemy, nullptr));
         } else {
-            // å¦‚æœæ²¡æœ‰ç²¾çµï¼Œç›´æ¥ç§»é™¤æ•Œäººå¯¹è±¡
+            // Èç¹ûÃ»ÓĞ¾«Áé£¬Ö±½ÓÒÆ³ıµĞÈË¶ÔÏó
             this->removeFromParent();
         }
     }
 
-    // é‡å†™ç¢°æ’å¼€å§‹å›è°ƒ
+    // ÖØĞ´Åö×²¿ªÊ¼»Øµ÷
     virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override {
-        // è·å–ç¢°æ’åŒæ–¹çš„ç¢°æ’ç®±
+        // »ñÈ¡Åö×²Ë«·½µÄÅö×²Ïä
         auto shapeA = contact.getShapeA();
         auto shapeB = contact.getShapeB();
         
-        // è·å–ç¢°æ’åŒæ–¹çš„ç‰©ç†ä½“
+        // »ñÈ¡Åö×²Ë«·½µÄÎïÀíÌå
         auto bodyA = shapeA->getBody();
         auto bodyB = shapeB->getBody();
         
-        // æ£€æµ‹æ˜¯å¦ä¸è¾¹æ¡†ç¢°æ’ï¼ˆè¾¹æ¡†çš„ç¢°æ’ç±»åˆ«æ˜¯0x01ï¼‰
+        // ¼ì²âÊÇ·ñÓë±ß¿òÅö×²£¨±ß¿òµÄÅö×²Àà±ğÊÇ0x01£©
         if (bodyA->getCategoryBitmask() == 0x01) {
-            // æ ¹æ®ä½ç½®åˆ¤æ–­æ˜¯å“ªä¸ªè¾¹æ¡†
+            // ¸ù¾İÎ»ÖÃÅĞ¶ÏÊÇÄÄ¸ö±ß¿ò
             Vec2 bodyPos = bodyA->getNode()->getPosition();
             auto visibleSize = Director::getInstance()->getVisibleSize();
             auto origin = Director::getInstance()->getVisibleOrigin();
@@ -124,7 +121,7 @@ public:
                 isTouchingGround_ = true;
             }
         } else if (bodyB->getCategoryBitmask() == 0x01) {
-            // æ ¹æ®ä½ç½®åˆ¤æ–­æ˜¯å“ªä¸ªè¾¹æ¡†
+            // ¸ù¾İÎ»ÖÃÅĞ¶ÏÊÇÄÄ¸ö±ß¿ò
             Vec2 bodyPos = bodyB->getNode()->getPosition();
             auto visibleSize = Director::getInstance()->getVisibleSize();
             auto origin = Director::getInstance()->getVisibleOrigin();
@@ -143,19 +140,19 @@ public:
         return true;
     }
     
-    // é‡å†™ç¢°æ’ç»“æŸå›è°ƒ
+    // ÖØĞ´Åö×²½áÊø»Øµ÷
     virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override {
-        // è·å–ç¢°æ’åŒæ–¹çš„ç¢°æ’ç®±
+        // »ñÈ¡Åö×²Ë«·½µÄÅö×²Ïä
         auto shapeA = contact.getShapeA();
         auto shapeB = contact.getShapeB();
         
-        // è·å–ç¢°æ’åŒæ–¹çš„ç‰©ç†ä½“
+        // »ñÈ¡Åö×²Ë«·½µÄÎïÀíÌå
         auto bodyA = shapeA->getBody();
         auto bodyB = shapeB->getBody();
         
-        // æ£€æµ‹æ˜¯å¦ä¸è¾¹æ¡†ç¢°æ’ç»“æŸï¼ˆè¾¹æ¡†çš„ç¢°æ’ç±»åˆ«æ˜¯0x01ï¼‰
+        // ¼ì²âÊÇ·ñÓë±ß¿òÅö×²½áÊø£¨±ß¿òµÄÅö×²Àà±ğÊÇ0x01£©
         if (bodyA->getCategoryBitmask() == 0x01 || bodyB->getCategoryBitmask() == 0x01) {
-            // æ ¹æ®ä½ç½®åˆ¤æ–­æ˜¯å“ªä¸ªè¾¹æ¡†
+            // ¸ù¾İÎ»ÖÃÅĞ¶ÏÊÇÄÄ¸ö±ß¿ò
             Vec2 wallPos;
             if (bodyA->getCategoryBitmask() == 0x01) {
                 wallPos = bodyA->getNode()->getPosition();
@@ -182,87 +179,87 @@ public:
     
     virtual void BehaviorInit() override 
     {
-        // åˆå§‹åŒ–AIè¡Œä¸º
+        // ³õÊ¼»¯AIĞĞÎª
         addBehavior("idle", [this](float delta) -> BehaviorResult {
-            // ç©ºé—²è¡Œä¸ºï¼šè½»å¾®ç§»åŠ¨
+            // ¿ÕÏĞĞĞÎª£ºÇáÎ¢ÒÆ¶¯
             Vec2 currentPos = this->getPosition();
             Vec2 newPos = currentPos;
             
-            // åªæœ‰å½“æ²¡æœ‰ç¢°åˆ°å·¦å³è¾¹ç•Œæ—¶æ‰ç§»åŠ¨
+            // Ö»ÓĞµ±Ã»ÓĞÅöµ½×óÓÒ±ß½çÊ±²ÅÒÆ¶¯
             if (!isTouchingRightWall_ && !isTouchingLeftWall_) {
                 newPos = currentPos - Vec2(10, 0);
             }
             
-            // æ›´æ–°ä½ç½®
+            // ¸üĞÂÎ»ÖÃ
             this->setPosition(newPos);
             
-            return {true, 0.0f}; // idleè¡Œä¸ºæ€»æ˜¯ç«‹å³å®Œæˆï¼Œæ— åæ‘‡
+            return {true, 0.0f}; // idleĞĞÎª×ÜÊÇÁ¢¼´Íê³É£¬ÎŞºóÒ¡
         });
         
-        // æ·»åŠ ä¸€ä¸ªç§»åŠ¨è¡Œä¸ºä½œä¸ºç¤ºä¾‹
+        // Ìí¼ÓÒ»¸öÒÆ¶¯ĞĞÎª×÷ÎªÊ¾Àı
         addBehavior("move", [this](float delta) -> BehaviorResult {
-            // ç§»åŠ¨è¡Œä¸ºï¼šå‘å³ç§»åŠ¨
+            // ÒÆ¶¯ĞĞÎª£ºÏòÓÒÒÆ¶¯
             static float moveDuration = 0.0f;
             static bool hasStarted = false;
             static Vec2 startPos;
             
             if (!hasStarted) {
-                startPos = this->getPosition(); // è·å–æ•ŒäººèŠ‚ç‚¹æœ¬èº«çš„ä½ç½®
+                startPos = this->getPosition(); // »ñÈ¡µĞÈË½Úµã±¾ÉíµÄÎ»ÖÃ
                 hasStarted = true;
                 moveDuration = 0.0f;
             }
             
             moveDuration += delta;
-            float totalDuration = 2.0f; // ç§»åŠ¨æŒç»­2ç§’
+            float totalDuration = 2.0f; // ÒÆ¶¯³ÖĞø2Ãë
             
             float progress = std::min(moveDuration / totalDuration, 1.0f);
             float moveDistance = 100.0f;
             Vec2 newPos = startPos;
             
-            // åªæœ‰å½“æ²¡æœ‰ç¢°åˆ°å³è¾¹ç•Œæ—¶æ‰ç§»åŠ¨
+            // Ö»ÓĞµ±Ã»ÓĞÅöµ½ÓÒ±ß½çÊ±²ÅÒÆ¶¯
             if (!isTouchingRightWall_) {
                 newPos = startPos + Vec2(moveDistance * progress, 0);
             }
             
-            // ç§»åŠ¨æ•ŒäººèŠ‚ç‚¹æœ¬èº«ï¼Œè¿™æ ·ç²¾çµå’Œç¢°æ’ç®±éƒ½ä¼šä¸€èµ·ç§»åŠ¨
+            // ÒÆ¶¯µĞÈË½Úµã±¾Éí£¬ÕâÑù¾«ÁéºÍÅö×²Ïä¶¼»áÒ»ÆğÒÆ¶¯
             this->setPosition(newPos);
             
-            // åˆ¤æ–­è¡Œä¸ºæ˜¯å¦å®Œæˆ
+            // ÅĞ¶ÏĞĞÎªÊÇ·ñÍê³É
             if (moveDuration >= totalDuration || isTouchingRightWall_) {
                 hasStarted = false;
-                return {true, 0.5f}; // è¡Œä¸ºå®Œæˆï¼Œ0.5ç§’åæ‘‡
+                return {true, 0.5f}; // ĞĞÎªÍê³É£¬0.5ÃëºóÒ¡
             }
             
-            return {false, 0.0f}; // è¡Œä¸ºæœªå®Œæˆï¼Œæ— åæ‘‡
+            return {false, 0.0f}; // ĞĞÎªÎ´Íê³É£¬ÎŞºóÒ¡
         });
         
-        // æ·»åŠ ç¡¬ç›´è¡Œä¸ºï¼Œåæ‘‡ä¸º0
+        // Ìí¼ÓÓ²Ö±ĞĞÎª£¬ºóÒ¡Îª0
         addBehavior("staggered", [this](float delta) -> BehaviorResult {
-            // ç¡¬ç›´è¡Œä¸ºï¼šæ˜¾ç¤ºç¡¬ç›´æ•ˆæœ
+            // Ó²Ö±ĞĞÎª£ºÏÔÊ¾Ó²Ö±Ğ§¹û
             if (getSprite()) {
-                // ç®€å•çš„ç¡¬ç›´æ•ˆæœï¼šé—ªçƒ
+                // ¼òµ¥µÄÓ²Ö±Ğ§¹û£ºÉÁË¸
                 int frameCount = static_cast<int>(staggerTimer_ / delta);
                 if (frameCount % 3 == 0) {
                     getSprite()->setOpacity(frameCount % 6 < 3 ? 128 : 255);
                 }
             }
-            return {true, 0.0f}; // ç¡¬ç›´è¡Œä¸ºæ€»æ˜¯ç«‹å³å®Œæˆï¼Œæ— åæ‘‡
+            return {true, 0.0f}; // Ó²Ö±ĞĞÎª×ÜÊÇÁ¢¼´Íê³É£¬ÎŞºóÒ¡
         });
     }
 
     
     virtual std::string DecideNextBehavior(float delta) override {
-        // å®é™…é¡¹ç›®ä¸­å¯ä»¥æ ¹æ®æ¸¸æˆé€»è¾‘ã€æ•ŒäººçŠ¶æ€ã€ç©å®¶ä½ç½®ç­‰å› ç´ å†³å®š
+        // Êµ¼ÊÏîÄ¿ÖĞ¿ÉÒÔ¸ù¾İÓÎÏ·Âß¼­¡¢µĞÈË×´Ì¬¡¢Íæ¼ÒÎ»ÖÃµÈÒòËØ¾ö¶¨
         static float decisionTimer = 0.0f;
         static std::string lastDecision = "idle";
         
-        decisionTimer += delta; // ä½¿ç”¨å®é™…çš„deltaæ—¶é—´æ›´æ–°è®¡æ—¶å™¨
+        decisionTimer += delta; // Ê¹ÓÃÊµ¼ÊµÄdeltaÊ±¼ä¸üĞÂ¼ÆÊ±Æ÷
         
-        // æ¯2ç§’é‡æ–°å†³å®šä¸€æ¬¡è¡Œä¸º
+        // Ã¿2ÃëÖØĞÂ¾ö¶¨Ò»´ÎĞĞÎª
         if (decisionTimer >= 2.0f) {
             decisionTimer = 0.0f;
             
-            // 50%æ¦‚ç‡é€‰æ‹©moveè¡Œä¸ºï¼Œå¦åˆ™é€‰æ‹©idle
+            // 50%¸ÅÂÊÑ¡ÔñmoveĞĞÎª£¬·ñÔòÑ¡Ôñidle
             if (rand() % 2 == 0) {
                 lastDecision = "move";
             } else {
@@ -273,35 +270,9 @@ public:
         return lastDecision;
     }
     
-    // å‘å°„å­å¼¹çš„æ–¹æ³•å®ç°
+    // ·¢Éä×Óµ¯µÄ·½·¨ÊµÏÖ
     void shootBullet() {
-        // åˆ›å»ºè¿œç¨‹å­å¼¹
-        auto bullet = RangedBullet::create();
-        if (bullet) {
-            // è®¾ç½®å­å¼¹å±æ€§
-            bullet->setDamage(5);
-            bullet->setCollisionBoxWidth(10.0f);
-            bullet->setCollisionBoxHeight(10.0f);
-            bullet->setSpeed(500.0f);
-            
-            // è®¾ç½®å­å¼¹æ–¹å‘ä¸ºæ­£ä¸Šæ–¹
-            bullet->setDirection(Vec2(0, 1));
-            
-            // è®¾ç½®å­å¼¹çš„ç¢°æ’æ©ç 
-            bullet->setCategoryBitmask(0x04); // å­å¼¹çš„ç¢°æ’ç±»åˆ«
-            bullet->setCollisionBitmask(0x02); // ä¸æ•Œäººç¢°æ’
-            bullet->setContactTestBitmask(0x02); // æ£€æµ‹ä¸æ•Œäººçš„æ¥è§¦
-            
-            // è®¾ç½®å­å¼¹ä½ç½®ä¸ºæ•Œäººä½ç½®ä¸Šæ–¹
-            Vec2 enemyPos = this->getPosition();
-            bullet->setPosition(enemyPos);
-            
-            // è·å–åœºæ™¯å¹¶æ·»åŠ å­å¼¹
-            Scene* scene = this->getScene();
-            if (scene) {
-                scene->addChild(bullet, 10);
-            }
-        }
+       
     }
 };
 
@@ -311,8 +282,8 @@ Scene* HelloWorld::createScene()
     // 'scene' is an autorelease object with physics world
     auto scene = Scene::createWithPhysics();
     
-    // è®¾ç½®ç‰©ç†ä¸–ç•Œå‚æ•°
-    scene->getPhysicsWorld()->setGravity(Vec2(0, -980)); // ä¸Mapsåœºæ™¯ç›¸åŒçš„é‡åŠ›è®¾ç½®
+    // ÉèÖÃÎïÀíÊÀ½ç²ÎÊı
+    scene->getPhysicsWorld()->setGravity(Vec2(0, -980)); // ÓëMaps³¡¾°ÏàÍ¬µÄÖØÁ¦ÉèÖÃ
     
     // 'layer' is an autorelease object
     auto layer = HelloWorld::create();
@@ -408,31 +379,31 @@ bool HelloWorld::init()
         this->addChild(sprite, 0);
     }
 
-    // åˆ›å»ºæµ‹è¯•æ•Œäºº
+    // ´´½¨²âÊÔµĞÈË
     auto testEnemy = TestEnemy::create();
     if (testEnemy) {
-        // è·å–æ•Œäººçš„ç²¾çµå¹¶è®¾ç½®å›¾åƒï¼ˆä½¿ç”¨HelloWorld.pngä½œä¸ºä¸´æ—¶å›¾åƒï¼‰
+        // »ñÈ¡µĞÈËµÄ¾«Áé²¢ÉèÖÃÍ¼Ïñ£¨Ê¹ÓÃHelloWorld.png×÷ÎªÁÙÊ±Í¼Ïñ£©
         auto enemySprite = testEnemy->getSprite();
         if (enemySprite) {
-            // è®¾ç½®ç²¾çµå›¾åƒ
+            // ÉèÖÃ¾«ÁéÍ¼Ïñ
             enemySprite->setTexture("HelloWorld.png");
-            // ç¼©å°ç²¾çµä»¥ä¾¿åŒºåˆ†
+            // ËõĞ¡¾«ÁéÒÔ±ãÇø·Ö
             enemySprite->setScale(0.5f);
         }
         
-        // è®¾ç½®æ•Œäººä½ç½®
+        // ÉèÖÃµĞÈËÎ»ÖÃ
         testEnemy->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/4 + origin.y));
         
-        // æ·»åŠ æ•Œäººåˆ°åœºæ™¯
+        // Ìí¼ÓµĞÈËµ½³¡¾°
         this->addChild(testEnemy, 1);
         
-        // æ·»åŠ è§¦æ‘¸äº‹ä»¶ç›‘å¬å™¨æ¥æµ‹è¯•æ•Œäººå—ä¼¤
+        // Ìí¼Ó´¥ÃşÊÂ¼ş¼àÌıÆ÷À´²âÊÔµĞÈËÊÜÉË
         auto touchListener = EventListenerTouchOneByOne::create();
         touchListener->onTouchBegan = [=](Touch* touch, Event* event) {
-            // å½“ç‚¹å‡»å±å¹•æ—¶ï¼Œæ•Œäººå—ä¼¤
+            // µ±µã»÷ÆÁÄ»Ê±£¬µĞÈËÊÜÉË
             testEnemy->Hitted(10, 5);
             
-            // æ˜¾ç¤ºæ•Œäººå½“å‰çŠ¶æ€
+            // ÏÔÊ¾µĞÈËµ±Ç°×´Ì¬
             auto statusLabel = Label::createWithTTF(
                 StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                     testEnemy->getCurrentVitality(), 
@@ -444,7 +415,7 @@ bool HelloWorld::init()
             statusLabel->setColor(Color3B::GREEN);
             this->addChild(statusLabel, 2);
             
-            // 1ç§’åç§»é™¤çŠ¶æ€æ ‡ç­¾
+            // 1ÃëºóÒÆ³ı×´Ì¬±êÇ©
             statusLabel->runAction(Sequence::create(
                 DelayTime::create(1.0f),
                 RemoveSelf::create(),
@@ -457,13 +428,13 @@ bool HelloWorld::init()
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
     }
     
-    // æ·»åŠ ä¸€ä¸ªæŒ‰é’®ç”¨äºæµ‹è¯•éŸ§æ€§è¢«æ¸…é›¶çš„æ•ˆæœ
+    // Ìí¼ÓÒ»¸ö°´Å¥ÓÃÓÚ²âÊÔÈÍĞÔ±»ÇåÁãµÄĞ§¹û
     auto breakPoiseButton = MenuItemFont::create("Break Poise", [=](Ref* pSender) {
-        // ä¸€æ¬¡æ€§æ‰“ç©ºæ•Œäººçš„éŸ§æ€§
+        // Ò»´ÎĞÔ´ò¿ÕµĞÈËµÄÈÍĞÔ
         int currentPoise = testEnemy->getCurrentStaggerResistance();
-        testEnemy->Hitted(0, currentPoise); // åªé€ æˆéŸ§æ€§ä¼¤å®³ï¼Œä¸é€ æˆç”Ÿå‘½å€¼ä¼¤å®³
+        testEnemy->Hitted(0, currentPoise); // Ö»Ôì³ÉÈÍĞÔÉËº¦£¬²»Ôì³ÉÉúÃüÖµÉËº¦
         
-        // æ˜¾ç¤ºæ•Œäººå½“å‰çŠ¶æ€
+        // ÏÔÊ¾µĞÈËµ±Ç°×´Ì¬
         auto statusLabel = Label::createWithTTF(
             StringUtils::format("Vitality: %d/%d, Stagger: %d/%d", 
                                 testEnemy->getCurrentVitality(), 
@@ -475,7 +446,7 @@ bool HelloWorld::init()
         statusLabel->setColor(Color3B::GREEN);
         this->addChild(statusLabel, 2);
         
-        // 1ç§’åç§»é™¤çŠ¶æ€æ ‡ç­¾
+        // 1ÃëºóÒÆ³ı×´Ì¬±êÇ©
         statusLabel->runAction(Sequence::create(
             DelayTime::create(1.0f),
             RemoveSelf::create(),
@@ -483,22 +454,22 @@ bool HelloWorld::init()
         ));
     });
     
-    // è®¾ç½®æŒ‰é’®ä½ç½®
+    // ÉèÖÃ°´Å¥Î»ÖÃ
     breakPoiseButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 50));
     breakPoiseButton->setColor(Color3B::BLUE);
     
-    // æ·»åŠ ä¸€ä¸ªæŒ‰é’®ç”¨äºæµ‹è¯•æ•Œäººå‘å°„å­å¼¹
+    // Ìí¼ÓÒ»¸ö°´Å¥ÓÃÓÚ²âÊÔµĞÈË·¢Éä×Óµ¯
     auto shootButton = MenuItemFont::create("Shoot Bullet", [=](Ref* pSender) {
-        // è°ƒç”¨æ•Œäººçš„å‘å°„å­å¼¹æ–¹æ³•
+        // µ÷ÓÃµĞÈËµÄ·¢Éä×Óµ¯·½·¨
         testEnemy->shootBullet();
         
-        // æ˜¾ç¤ºå‘å°„æç¤º
+        // ÏÔÊ¾·¢ÉäÌáÊ¾
         auto shootLabel = Label::createWithTTF("Enemy Shot a Bullet!", "fonts/Marker Felt.ttf", 16);
         shootLabel->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height - 80));
         shootLabel->setColor(Color3B::RED);
         this->addChild(shootLabel, 2);
         
-        // 1ç§’åç§»é™¤æç¤º
+        // 1ÃëºóÒÆ³ıÌáÊ¾
         shootLabel->runAction(Sequence::create(
             DelayTime::create(1.0f),
             RemoveSelf::create(),
@@ -506,50 +477,50 @@ bool HelloWorld::init()
         ));
     });
     
-    // è®¾ç½®æŒ‰é’®ä½ç½®
+    // ÉèÖÃ°´Å¥Î»ÖÃ
     shootButton->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + 100));
     shootButton->setColor(Color3B::YELLOW);
     
-    // åˆ›å»ºæŒ‰é’®èœå•å¹¶æ·»åŠ åˆ°åœºæ™¯
+    // ´´½¨°´Å¥²Ëµ¥²¢Ìí¼Óµ½³¡¾°
     auto buttonMenu = Menu::create(breakPoiseButton, shootButton, nullptr);
     buttonMenu->setPosition(Vec2::ZERO);
     this->addChild(buttonMenu, 2);
     
-    // æ·»åŠ åœ°æ¿ç¢°æ’ç®±
-    // åˆ›å»ºä¸€ä¸ªåœ°æ¿èŠ‚ç‚¹
+    // Ìí¼ÓµØ°åÅö×²Ïä
+    // ´´½¨Ò»¸öµØ°å½Úµã
     auto ground = Node::create();
-    // è®¾ç½®åœ°æ¿ä½ç½®åœ¨å±å¹•åº•éƒ¨
+    // ÉèÖÃµØ°åÎ»ÖÃÔÚÆÁÄ»µ×²¿
     ground->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y));
     
-    // åˆ›å»ºç‰©ç†å½¢çŠ¶å’Œç‰©ç†ä½“
-    auto groundSize = Size(visibleSize.width, 20); // åœ°æ¿å®½åº¦ä¸å±å¹•ç›¸åŒï¼Œé«˜åº¦20åƒç´ 
+    // ´´½¨ÎïÀíĞÎ×´ºÍÎïÀíÌå
+    auto groundSize = Size(visibleSize.width, 20); // µØ°å¿í¶ÈÓëÆÁÄ»ÏàÍ¬£¬¸ß¶È20ÏñËØ
     auto groundShape = PhysicsShapeBox::create(groundSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
     auto groundBody = PhysicsBody::create();
     groundBody->addShape(groundShape);
     
-    // è®¾ç½®åœ°æ¿ä¸ºé™æ€ç‰©ç†ä½“
+    // ÉèÖÃµØ°åÎª¾²Ì¬ÎïÀíÌå
     groundBody->setDynamic(false);
     
-    // è®¾ç½®ç‰©ç†ä½“å’Œç¢°æ’æ©ç 
-    groundBody->setCategoryBitmask(0x01); // åœ°æ¿çš„ç¢°æ’ç±»åˆ«
-    groundBody->setCollisionBitmask(0x02); // ä¸æ•Œäººç¢°æ’
-    groundBody->setContactTestBitmask(0x02); // æ£€æµ‹ä¸æ•Œäººçš„æ¥è§¦
+    // ÉèÖÃÎïÀíÌåºÍÅö×²ÑÚÂë
+    groundBody->setCategoryBitmask(0x01); // µØ°åµÄÅö×²Àà±ğ
+    groundBody->setCollisionBitmask(0x02); // ÓëµĞÈËÅö×²
+    groundBody->setContactTestBitmask(0x02); // ¼ì²âÓëµĞÈËµÄ½Ó´¥
     
-    // å°†ç‰©ç†ä½“é™„åŠ åˆ°åœ°æ¿èŠ‚ç‚¹
+    // ½«ÎïÀíÌå¸½¼Óµ½µØ°å½Úµã
     ground->setPhysicsBody(groundBody);
     
-    // æ·»åŠ åœ°æ¿åˆ°åœºæ™¯
+    // Ìí¼ÓµØ°åµ½³¡¾°
     this->addChild(ground);
     
-    // å¯é€‰ï¼šä¸ºäº†è°ƒè¯•ï¼Œå¯ä»¥æ·»åŠ ä¸€ä¸ªå¯è§çš„åœ°æ¿ç²¾çµ
+    // ¿ÉÑ¡£ºÎªÁËµ÷ÊÔ£¬¿ÉÒÔÌí¼ÓÒ»¸ö¿É¼ûµÄµØ°å¾«Áé
     auto groundSprite = Sprite::create();
     groundSprite->setColor(Color3B::BLACK);
     groundSprite->setTextureRect(Rect(0, 0, groundSize.width, groundSize.height));
     groundSprite->setPosition(ground->getPosition());
-    this->addChild(groundSprite, 0); // æ·»åŠ åˆ°æœ€åº•å±‚
+    this->addChild(groundSprite, 0); // Ìí¼Óµ½×îµ×²ã
     
-    // æ·»åŠ å±å¹•è¾¹æ¡†ç¢°æ’ç®±
-    // 1. å·¦è¾¹ç•Œ
+    // Ìí¼ÓÆÁÄ»±ß¿òÅö×²Ïä
+    // 1. ×ó±ß½ç
     auto leftWall = Node::create();
     auto leftWallSize = Size(20, visibleSize.height);
     auto leftWallShape = PhysicsShapeBox::create(leftWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
@@ -563,7 +534,7 @@ bool HelloWorld::init()
     leftWall->setPosition(Vec2(origin.x - leftWallSize.width/2, origin.y + visibleSize.height/2));
     this->addChild(leftWall);
     
-    // 2. å³è¾¹ç•Œ
+    // 2. ÓÒ±ß½ç
     auto rightWall = Node::create();
     auto rightWallSize = Size(20, visibleSize.height);
     auto rightWallShape = PhysicsShapeBox::create(rightWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
@@ -577,7 +548,7 @@ bool HelloWorld::init()
     rightWall->setPosition(Vec2(origin.x + visibleSize.width + rightWallSize.width/2, origin.y + visibleSize.height/2));
     this->addChild(rightWall);
     
-    // 3. ä¸Šè¾¹ç•Œ
+    // 3. ÉÏ±ß½ç
     auto topWall = Node::create();
     auto topWallSize = Size(visibleSize.width, 20);
     auto topWallShape = PhysicsShapeBox::create(topWallSize, PhysicsMaterial(0.0f, 1.0f, 0.0f));
@@ -591,7 +562,7 @@ bool HelloWorld::init()
     topWall->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height + topWallSize.height/2));
     this->addChild(topWall);
     
-    // ä¸ºè°ƒè¯•æ·»åŠ å¯è§çš„è¾¹æ¡†ç²¾çµ
+    // Îªµ÷ÊÔÌí¼Ó¿É¼ûµÄ±ß¿ò¾«Áé
     auto leftWallSprite = Sprite::create();
     leftWallSprite->setColor(Color3B::BLACK);
     leftWallSprite->setTextureRect(Rect(0, 0, leftWallSize.width, leftWallSize.height));

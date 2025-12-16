@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>frames</key>
+        <dict>
+            <key>hurt-1.png</key>
+            <dict>
+                <key>aliases</key>
+                <array />
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{40,39}</string>
+                <key>spriteSourceSize</key>
+                <string>{40,39}</string>
+                <key>textureRect</key>
+                <string>{{0,0},{40,39}}</string>
+                <key>textureRotated</key>
+                <false />
+            </dict>
+            <key>hurt-2.png</key>
+            <dict>
+                <key>aliases</key>
+                <array />
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{40,39}</string>
+                <key>spriteSourceSize</key>
+                <string>{40,39}</string>
+                <key>textureRect</key>
+                <string>{{40,0},{40,39}}</string>
+                <key>textureRotated</key>
+                <false />
+            </dict>
+            <key>hurt-3.png</key>
+            <dict>
+                <key>aliases</key>
+                <array />
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{40,39}</string>
+                <key>spriteSourceSize</key>
+                <string>{40,39}</string>
+                <key>textureRect</key>
+                <string>{{80,0},{40,39}}</string>
+                <key>textureRotated</key>
+                <false />
+            </dict>
+            <key>hurt-4.png</key>
+            <dict>
+                <key>aliases</key>
+                <array />
+                <key>spriteOffset</key>
+                <string>{0,0}</string>
+                <key>spriteSize</key>
+                <string>{40,39}</string>
+                <key>spriteSourceSize</key>
+                <string>{40,39}</string>
+                <key>textureRect</key>
+                <string>{{120,0},{40,39}}</string>
+                <key>textureRotated</key>
+                <false />
+            </dict>
+        </dict>
+        <key>metadata</key>
+        <dict>
+            <key>format</key>
+            <integer>3</integer>
+            <key>pixelFormat</key>
+            <string>RGBA8888</string>
+            <key>premultiplyAlpha</key>
+            <false />
+            <key>realTextureFileName</key>
+            <string>hurt.png</string>
+            <key>size</key>
+            <string>{160,39}</string>
+            <key>smartupdate</key>
+            <string>$TexturePacker:SmartUpdate:4db5246654fdd2e8a1fd39a23b63c8e3:c6ba90050d22d40ed0db0a5f26783087:5a5fdae6fcc47e684ec26357709b89ea$</string>
+            <key>textureFileName</key>
+            <string>hurt.png</string>
+        </dict>
+    </dict>
+</plist>
