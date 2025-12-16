@@ -721,6 +721,76 @@
                     </dict>
                 </array>
             </dict>
+            <key>FireDestryed</key>
+            <dict>
+                <key>delayPerUnit</key>
+                <real>0.1</real>
+                <key>restoreOriginalFrame</key>
+                <true />
+                <key>loops</key>
+                <integer>1</integer>
+                <key>frames</key>
+                <array>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-1.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>firstframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-2.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-3.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-4.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-5.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-6.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-7.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                    </dict>
+                    <dict>
+                        <key>spriteframe</key>
+                        <string>FireDestryed-8.png</string>
+                        <key>delayUnits</key>
+                        <integer>1</integer>
+                        <key>notification</key>
+                        <dict>
+                            <key>lastframe</key>
+                            <true />
+                        </dict>
+                    </dict>
+                </array>
+            </dict>
         </dict>
         <key>properties</key>
         <dict>
