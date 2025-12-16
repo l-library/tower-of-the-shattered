@@ -38,8 +38,8 @@ bool Slime::init()
     collisionInfo.width = GRID_SIZE;
     collisionInfo.height = GRID_SIZE;
     collisionInfo.categoryBitmask = ENEMY_MASK;
-    collisionInfo.contactTestBitmask = PLAYER_MASK | WALL_MASK | BORDER_MASK;
-    collisionInfo.collisionBitmask = WALL_MASK | PLAYER_MASK | BORDER_MASK;
+    collisionInfo.contactTestBitmask = PLAYER_MASK | WALL_MASK | BORDER_MASK | PLAYER_BULLET_MASK;
+    collisionInfo.collisionBitmask = WALL_MASK | PLAYER_MASK | BORDER_MASK | PLAYER_BULLET_MASK;
     collisionInfo.isDynamic = true;
     collisionInfo.mass = 1.0f;
     this->setCollisionBoxInfo(collisionInfo);

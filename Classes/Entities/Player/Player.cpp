@@ -636,17 +636,20 @@ void Player::shootBullet()
     switch (_attack_num) {
         case 0:
             attack = Bullet::create("player/FireBall-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setMaxExistTime(1.0f);
         break;
         case 1:
             attack = Bullet::create("player/FlameSlash-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setCollisionHeight(75);
+            attack->setCollisionWidth(60);
             break;
         case 2:
             attack = Bullet::create("player/FrozenSpike-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
+            attack->setCollisionHeight(_sprite->getContentSize().height);
+            attack->setCollisionWidth(65);
             break;
     }
-    attack->setCollisionHeight(attack->getSprite()->getContentSize().height);
-    attack->setCollisionWidth(attack->getSprite()->getContentSize().width);
-    attack->setCLearBitmask(WALL_MASK | ENEMY_MASK);
+    attack->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
     // 加载动画资源
     char attack_name[20];
     sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
@@ -666,7 +669,7 @@ void Player::shootBullet()
             attack->setCategoryBitmask(PLAYER_BULLET_MASK);
             attack->setCollisionBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
             attack->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-            speed = 300.0;
+            speed = 200.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
@@ -674,7 +677,9 @@ void Player::shootBullet()
             // 第二三段为近战攻击
             speed = 0;
             attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//第三段攻击为1.5倍伤害
-
+            attack->setCategoryBitmask(PLAYER_BULLET_MASK);
+            attack->setCollisionBitmask(ENEMY_MASK);
+            attack->setContactTestBitmask(ENEMY_MASK);
             // 播放完动画后删除整个子弹对象
             auto finishCallback = CallFunc::create([attack]() {
                 attack->cleanupBullet();
@@ -697,28 +702,6 @@ void Player::shootBullet()
         attack->getSprite()->setFlippedX(true);
     }
 
-    //// 配置物理属性 (PhysicsBody)
-    //auto body = attack->getPhysicsBody();
-    //if (body) {
-    //    // 重新设置 Category，确保它是玩家子弹
-    //    body->setCategoryBitmask(PLAYER_BULLET_MASK);
-
-    //    if (_attack_num == 0) {
-    //        // 火球：与敌人和墙壁发生碰撞检测（物理阻挡）和接触检测（扣血）
-    //        body->setCollisionBitmask(ENEMY_MASK | WALL_MASK);
-    //        body->setContactTestBitmask(ENEMY_MASK | WALL_MASK);
-    //    }
-    //    else {
-    //        // 近战：只与敌人进行接触检测（扣血），不与墙壁发生物理碰撞（不反弹/阻挡）
-    //        body->setCollisionBitmask(0);
-    //        body->setContactTestBitmask(ENEMY_MASK);
-
-    //        // 如果需要调整近战范围的物理包围盒大小，可以在这里重新创建 Shape
-    //        // body->removeShape(0);
-    //        // body->addShape(PhysicsShapeBox::create(Size(60, 60)));
-    //    }
-    //}
-
     // 添加子弹到场景或玩家
     if (_attack_num == 0) {
         // --- 远程攻击：添加到世界场景 ---
@@ -727,6 +710,7 @@ void Player::shootBullet()
 
         // 微调发射位置，使其不完全重叠在玩家中心
         worldPos += (directionVec * 30.0f);
+        worldPos.y += _sprite->getContentSize().height;
 
         attack->setPosition(worldPos);
         auto gameScene = Director::getInstance()->getRunningScene();
@@ -742,7 +726,8 @@ void Player::shootBullet()
         attack->getSprite()->setAnchorPoint(Vec2(0.5f, 0.0f));
         Vec2 offset = directionVec * (_attack_num ==1? 20.0f:0.0f);
         attack->getSprite()->setPosition(current_pos + offset);
-        attack->getPhysicsBody()->setPositionOffset(Vec2(0, attack->getSprite()->getContentSize().height));
+        attack->getPhysicsBody()->setPositionOffset(Vec2(directionVec.x * (_attack_num == 1 ? 70 : 0), 
+            (_attack_num == 1 ? 20 : 0) + attack->getSprite()->getContentSize().height));
         this->addChild(attack, 10);
     }
 }
