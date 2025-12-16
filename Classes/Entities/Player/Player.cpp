@@ -120,9 +120,9 @@ void Player::initPhysics()
 
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
-    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | BULLET_MASK);
-    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | BULLET_MASK);
-    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK;
+    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK);
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | DAMAGE_WALL_MASK;
     _dodgeMask = WALL_MASK | BORDER_MASK;
 
     //给主身体一个Tag
@@ -136,8 +136,8 @@ void Player::initPhysics()
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
     footShape->setCategoryBitmask(PLAYER_MASK);
-    footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK);
-    footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK);
+    footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
+    footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
     footShape->setTag(TAG_FEET); // 标记为脚
 
     _physicsBody->addShape(footShape);
@@ -187,10 +187,10 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
     // 地面检测
     if (playerShape->getTag() == TAG_FEET)
     {
-        // 检查对方是否是墙壁或边界
+        // 检查对方是否是墙壁、边界或敌人
         int otherMask = otherShape->getCategoryBitmask();
 
-        if ((otherMask & WALL_MASK) || (otherMask & BORDER_MASK))
+        if ((otherMask & WALL_MASK) || (otherMask & BORDER_MASK)||(otherMask & ENEMY_MASK))
         {
             _footContactCount++;
             if (_footContactCount > 0) {
@@ -204,7 +204,7 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
     }
     // 伤害判定逻辑
     int otherCategory = otherShape->getCategoryBitmask();
-    bool isEnemy = (otherCategory & ENEMY_MASK);
+    bool isEnemy = (otherCategory & ENEMY_BULLET_MASK);
     bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
 
     if (isEnemy || isTrap)
@@ -217,10 +217,10 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             if (isEnemy && otherNode)
             {
                 // 尝试将 Node* 转换为 Enemy*
-                auto enemy = dynamic_cast<EnemyBase*>(otherNode);
+                auto enemy = dynamic_cast<Bullet*>(otherNode);
                 if (enemy)
                 {
-                    damage = static_cast<float>(enemy->getBaseAttackPower());
+                    damage = static_cast<float>(enemy->getDamage());
                 }
                 else
                 {
@@ -646,6 +646,7 @@ void Player::shootBullet()
     }
     attack->setCollisionHeight(attack->getSprite()->getContentSize().height);
     attack->setCollisionWidth(attack->getSprite()->getContentSize().width);
+    attack->setCLearBitmask(WALL_MASK | ENEMY_MASK);
     // 加载动画资源
     char attack_name[20];
     sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
@@ -665,7 +666,7 @@ void Player::shootBullet()
             attack->setCategoryBitmask(PLAYER_BULLET_MASK);
             attack->setCollisionBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
             attack->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-            speed = 100.0;
+            speed = 300.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
@@ -674,7 +675,7 @@ void Player::shootBullet()
             speed = 0;
             attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//第三段攻击为1.5倍伤害
 
-            // 播放完动画后删除整个子弹对象(attack)，而不仅仅是删除精灵
+            // 播放完动画后删除整个子弹对象
             auto finishCallback = CallFunc::create([attack]() {
                 attack->cleanupBullet();
                 });
