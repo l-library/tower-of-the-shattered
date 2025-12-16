@@ -47,8 +47,6 @@ bool Player::init()
     // 玩家初始数值
     _maxHealth = 100.0;
     _health = _maxHealth;
-    _maxMagic = 100.0;
-    _magic = _maxMagic;
     _speed = 300.0;     // 水平移动最大速度
     _jumpForce = 500.0; // 跳跃冲量 
     _dodgeForce = 300.0;
@@ -57,10 +55,9 @@ bool Player::init()
     _maxDodgeTime = 0.5;
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
-    _playerAttackDamage = 25.0;
-    _iceSpearSpeed = 300.0f;	
-    _iceSpearMagic = 25.0f;
-    _iceSpearDamage = 50.0f;
+    _playerAttackDamage = 30;
+    _playerSkillDamage = 50;
+    _iceSpearSpeed = 300.0;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
@@ -119,7 +116,7 @@ void Player::initPhysics()
     auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
     //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
     _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
-    if (!_physicsBody) return;
+
     //禁止旋转
     _physicsBody->setRotationEnable(false);
     //设置质量
@@ -249,7 +246,6 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
                 _physicsBody->setVelocity(Vec2::ZERO);//速度减为0
                 playAnimation("dead");
                 this->removeComponent(_physicsBody);//移除所有物理效果
-                _physicsBody = nullptr;
             }
             else {
                 _isHurt = true;
@@ -335,7 +331,7 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
 }
 
 void Player::update(float dt) {
-    if (!_controlEnabled || !_physicsBody) return;
+    if (!_controlEnabled) return;
 
     // 同步物理引擎的速度到逻辑变量
     if (_physicsBody) {
@@ -450,7 +446,7 @@ void Player::updatePhysics(float dt) {
         targetX = _moveInput * static_cast<float>(_speed);
     }
 
-    if (_isAttacking || _isSkilling) {
+    if (_isAttacking) {
         newX = currentX * 0.9f; //若在攻击，给予摩檫力
     }
     if (_isSkilling) newY = 0;// 释放技能时忽略重力
@@ -689,11 +685,6 @@ void Player::shootBullet()
             attack->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
             speed = 200.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
-            // 播放完动画后播放爆炸动画（待实现）
-            //auto finishCallback = CallFunc::create([attack]() {
-            //    auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
-            //    attack->getSprite()->runAction(Animate::create(burst));
-            //    });
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
         else {
@@ -728,6 +719,7 @@ void Player::shootBullet()
 
     // 添加子弹到场景或玩家
     if (_attack_num == 0) {
+        // --- 远程攻击：添加到世界场景 ---
         // 将玩家的局部坐标转换为世界坐标，防止子弹跟随玩家移动
         Vec2 worldPos = this->convertToWorldSpace(current_pos);
 
@@ -742,6 +734,8 @@ void Player::shootBullet()
         }
     }
     else {
+        // --- 近战攻击：作为玩家的子节点 ---
+        // 这样特效会跟随玩家移动
         // 根据朝向设置偏移量，使砍击特效出现在玩家前方
         attack->setAnchorPoint(Vec2(0.5f, 0.0f));
         attack->getSprite()->setAnchorPoint(Vec2(0.5f, 0.0f));
@@ -767,6 +761,9 @@ void Player::attack() {
     _attackEngageTime = kMaxAttackEngageTime; // 多段攻击的衔接
 
     shootBullet();
+
+    // 生成伤害判定框（Hitbox）通常在动画的特定帧回调中生成，或者在这里生成一个瞬时的Sensor
+    // 这里留空，视具体Combat系统实现
 }
 
 bool Player::skillAttack(const std::string& name)
@@ -774,7 +771,7 @@ bool Player::skillAttack(const std::string& name)
     if (!canBeControled()) return false;
     auto bullet_animation = AnimationCache::getInstance()->getAnimation(name);
     Bullet* skill;
-    skill = Bullet::create("player/IceSpear-0.png", 0, [](Bullet* bullet, float delta) {});
+    skill = Bullet::create("player/IceSpear-0.png", _playerSkillDamage, [](Bullet* bullet, float delta) {});
     if (!bullet_animation||!skill)return false;
     _isSkilling = true;
     changeState(PlayerState::SKILLING);
@@ -793,7 +790,6 @@ bool Player::skillAttack(const std::string& name)
     }
     if (name == "IceSpear")
     {
-        skill->setDamage(_iceSpearDamage);
         playAnimation("IceSpear-Action");
         skill->setCategoryBitmask(PLAYER_BULLET_MASK);
         skill->setCollisionBitmask(NULL);
@@ -815,14 +811,12 @@ bool Player::skillAttack(const std::string& name)
         if (gameScene) {
             gameScene->addChild(skill, 10);
         }
-        _magic -= _iceSpearMagic;
     }
     return false;
 }
 
 
 void Player::dodge() {
-    if (!_physicsBody) return;
     if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
 
     _isDodge = true;

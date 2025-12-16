@@ -442,7 +442,7 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
         if (bullet!= nullptr)
         {
-            Hitted(bullet->getDamage());
+            Hitted(100);
 
         }
         return true;

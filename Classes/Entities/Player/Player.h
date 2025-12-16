@@ -98,20 +98,6 @@ public:
 	* @return (const double)玩家最大血量
 	***/
 	const double getMaxHealth() const { return _maxHealth; };
-
-	/**
-	* @brief 获得玩家当前法力值
-	* @param[in] void
-	* @return (const double)玩家当前法力值
-	***/
-	const double getMagic() const { return _magic; };
-
-	/**
-	* @brief 获得玩家当前最大法力值
-	* @param[in] void
-	* @return (const double)玩家最大法力值
-	***/
-	const double getMaxMagic() const { return _maxMagic; };
 	
 	/**
 	* @brief 获得玩家是否运行控制
@@ -198,6 +184,10 @@ private:
 	double _maxDodgeCooldown;
 	//主角的空中闪避次数
 	int _maxDodgeTimes;
+	//主角攻击伤害
+	double _playerAttackDamage;
+	//主角特殊攻击伤害
+	double _playerSkillDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -252,10 +242,7 @@ private:
 	int _dodgeTimes;
 
 	/*----攻击和技能数值----*/
-	double _playerAttackDamage;// 普通攻击伤害
 	float _iceSpearSpeed;
-	float _iceSpearMagic;
-	float _iceSpearDamage;
 
 	/*----输入----*/
 	float _moveInput;
