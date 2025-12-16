@@ -119,7 +119,7 @@ void Player::initPhysics()
     auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
     //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
     _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
-
+    if (!_physicsBody) return;
     //禁止旋转
     _physicsBody->setRotationEnable(false);
     //设置质量
@@ -249,6 +249,7 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
                 _physicsBody->setVelocity(Vec2::ZERO);//速度减为0
                 playAnimation("dead");
                 this->removeComponent(_physicsBody);//移除所有物理效果
+                _physicsBody = nullptr;
             }
             else {
                 _isHurt = true;
@@ -334,7 +335,7 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
 }
 
 void Player::update(float dt) {
-    if (!_controlEnabled) return;
+    if (!_controlEnabled || !_physicsBody) return;
 
     // 同步物理引擎的速度到逻辑变量
     if (_physicsBody) {
@@ -821,6 +822,7 @@ bool Player::skillAttack(const std::string& name)
 
 
 void Player::dodge() {
+    if (!_physicsBody) return;
     if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
 
     _isDodge = true;
