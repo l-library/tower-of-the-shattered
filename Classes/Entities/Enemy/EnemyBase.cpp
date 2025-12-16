@@ -21,6 +21,9 @@ EnemyBase::EnemyBase()
     , staggerDuration_(2.0f)  // 默认硬直持续2秒
     , staggerTimer_(0.0f)
     , player_(nullptr)
+    , isDead_(false)
+    , deathTimer_(0.0f)
+    , maxDeathTimer_(1.5f)    // 默认最大死亡时间1.5秒（足够淡出动画完成）
 {
     // 初始化碰撞箱默认信息
     collisionBoxInfo_.width = 50.0f;
@@ -37,8 +40,25 @@ EnemyBase::~EnemyBase()
     // 释放精灵资源
     if (sprite_ != nullptr)
     {
-        sprite_->removeFromParent();
-        sprite_ = nullptr;
+        // 检查精灵是否正在运行动作
+        if (sprite_->getNumberOfRunningActions() > 0)
+        {
+            // 如果正在运行动作，等待动作完成后再移除
+            auto removeCallback = CallFunc::create([this]() {
+                if (sprite_)
+                {
+                    sprite_->removeFromParent();
+                    sprite_ = nullptr;
+                }
+            });
+            sprite_->runAction(Sequence::create(DelayTime::create(0.1f), removeCallback, nullptr));
+        }
+        else
+        {
+            // 如果没有运行动作，直接移除
+            sprite_->removeFromParent();
+            sprite_ = nullptr;
+        }
     }
     // 清空AI行为映射
     aiBehaviors_.clear();
@@ -217,13 +237,37 @@ BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
 }
 void EnemyBase::update(float delta)
 {
-    // 如果已经死亡，不再更新
-    if (currentState_ == EnemyState::DEAD)
+    if (current_vitality_ <= 0 && currentState_ != EnemyState::DEAD)
     {
-        return;
+        currentState_ = EnemyState::DEAD;
+        isDead_ = true;
+        this->Dead();
     }
     
-
+    // 死亡状态处理：延迟移除敌人对象
+    if (currentState_ == EnemyState::DEAD)
+    {
+        deathTimer_ += delta;
+        
+        // 当死亡计时器超过最大死亡时间时，检查是否可以移除
+        if (deathTimer_ >= maxDeathTimer_)
+        {
+            // 检查是否有正在运行的动作
+            bool hasRunningActions = false;
+            if (sprite_ && sprite_->getNumberOfRunningActions() > 0)
+            {
+                hasRunningActions = true;
+            }
+            
+            // 如果没有正在运行的动作，移除敌人对象
+            if (!hasRunningActions)
+            {
+                this->removeFromParentAndCleanup(true);
+            }
+        }
+        
+        return;
+    }
     
     // 调用AI更新方法，封装了所有AI相关逻辑
     this->updateAI(delta);
@@ -352,8 +396,8 @@ void EnemyBase::setMaxVitality(int maxVitality)
 void EnemyBase::setCurrentVitality(int currentVitality)
 {
     current_vitality_ = std::max(0, std::min(currentVitality, max_vitality_));
-    // 如果生命值为0，触发死亡
-    if (current_vitality_ <= 0)
+    // 如果生命值为0且尚未死亡，触发死亡
+    if (current_vitality_ <= 0 && currentState_ != EnemyState::DEAD)
     {
         currentState_ = EnemyState::DEAD;
         this->Dead();
