@@ -36,7 +36,7 @@ bool PlayerTestScene::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // map_1
-    auto map_1 = TMXTiledMap::create("maps/map_1.tmx");
+    auto map_1 = TMXTiledMap::create("maps/map_boss.tmx");
 
     // 遍历地图生成多边形碰撞箱
     buildPolyPhysicsFromLayer(map_1);
