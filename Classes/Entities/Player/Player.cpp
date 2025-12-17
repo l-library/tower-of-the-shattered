@@ -65,6 +65,7 @@ bool Player::init()
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 0.2;
     _dodgeTime = 0;
+    _maxIceSpearCooldown = 3.0;
 
     // 状态标志
     _isGrounded = false;
@@ -85,10 +86,14 @@ bool Player::init()
     _attackCooldown = 0.0;
     _invincibilityTime = 0.0;
     _attackEngageTime = 0.0;
+    _iceSpearCooldown = 0.0;
 
     // 输入
     _moveInput = 0.0;
     _velocity = Vec2::ZERO;
+
+    // 全局状态（需要存档功能）
+    _isUnlockedIceSpear = true;
 
     // 初始化物理身体
     initPhysics();
@@ -400,6 +405,9 @@ void Player::updateTimers(float dt) {
             _sprite->setOpacity(static_cast<uint8_t>(blink * 255));
         }
     }
+
+    if (_iceSpearCooldown > 0)
+        _iceSpearCooldown -= dt;
 }
 
 void Player::updatePhysics(float dt) {
@@ -738,7 +746,7 @@ void Player::shootBullet()
         attack->setPosition(worldPos);
         auto gameScene = Director::getInstance()->getRunningScene();
         if (gameScene) {
-            gameScene->addChild(attack, 10);
+            gameScene->addChild(attack, 9);
         }
     }
     else {
@@ -749,7 +757,7 @@ void Player::shootBullet()
         attack->getSprite()->setPosition(current_pos + offset);
         attack->getPhysicsBody()->setPositionOffset(Vec2(directionVec.x * (_attack_num == 1 ? 70 : 0), 
             (_attack_num == 1 ? 20 : 0) + attack->getSprite()->getContentSize().height));
-        this->addChild(attack, 10);
+        this->addChild(attack, 9);
     }
 }
 
@@ -793,7 +801,10 @@ bool Player::skillAttack(const std::string& name)
     }
     if (name == "IceSpear")
     {
+        if (_magic < _iceSpearMagic) return false;
+        if (!isUnlocked(name)) return false;
         skill->setDamage(_iceSpearDamage);
+        _iceSpearCooldown = _maxIceSpearCooldown;
         playAnimation("IceSpear-Action");
         skill->setCategoryBitmask(PLAYER_BULLET_MASK);
         skill->setCollisionBitmask(NULL);
@@ -842,6 +853,14 @@ void Player::dodge() {
     //闪避时无敌
     _isInvincible = true;
     _invincibilityTime = _dodgeTime;
+}
+
+bool Player::isUnlocked(const std::string &name)
+{
+    if (name == "IceSpear")
+        return _isUnlockedIceSpear;
+    else
+        return false;
 }
 
 const std::string Player::getCurrentState() const

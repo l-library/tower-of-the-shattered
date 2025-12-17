@@ -16,6 +16,8 @@ public:
     void initBar();
 
     void scheduleBlood(float dt);
+    void scheduleSkillColldown(float dt);
+    void initSkillIcons();
 
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数

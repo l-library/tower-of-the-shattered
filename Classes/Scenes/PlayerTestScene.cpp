@@ -6,6 +6,7 @@ USING_NS_CC;
 
 #define BLOOD_BAR 1002
 #define MAGIC_BAR 1003
+#define COOL_DOWN 900
 
 Scene* PlayerTestScene::createScene()
 {
@@ -60,6 +61,7 @@ bool PlayerTestScene::init()
     this->addChild(_player, 1);///渲染player
     setupInput();
     initBar();
+    initSkillIcons();
 
     // 添加两个Slime实例用于测试
     auto slime1 = Slime::create();
@@ -134,7 +136,7 @@ void PlayerTestScene::initBar() {
     auto sprite = Sprite::create("player/hp_border.png");   //创建进度框
     auto size = sprite->getContentSize();
     sprite->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5)); //设置框的位置
-    this->addChild(sprite);            //加到默认图层里面去
+    this->addChild(sprite,10);            //加到默认图层里面去
     auto sprBlood = Sprite::create("player/hp.png");  //创建血条
     ProgressTimer* progress_health = ProgressTimer::create(sprBlood); //创建progress对象
     progress_health->setType(ProgressTimer::Type::BAR);        //类型：条状
@@ -143,13 +145,13 @@ void PlayerTestScene::initBar() {
     progress_health->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
     progress_health->setBarChangeRate(Point(1, 0));
     progress_health->setTag(BLOOD_BAR);       //做一个标记
-    this->addChild(progress_health);
+    this->addChild(progress_health,10);
     schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
     // 蓝条
     sprite = Sprite::create("player/mp_border.png");   //创建进度框
     size = sprite->getContentSize();
     sprite->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5)); //设置框的位置
-    this->addChild(sprite);            //加到默认图层里面去
+    this->addChild(sprite,10);            //加到默认图层里面去
     auto sprMagic = Sprite::create("player/mp.png");  //创建蓝条
     auto progress_magic = ProgressTimer::create(sprMagic); //创建progress对象
     progress_magic->setType(ProgressTimer::Type::BAR);        //类型：条状
@@ -158,7 +160,7 @@ void PlayerTestScene::initBar() {
     progress_magic->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
     progress_magic->setBarChangeRate(Point(1, 0));
     progress_magic->setTag(MAGIC_BAR);       //做一个标记
-    this->addChild(progress_magic);
+    this->addChild(progress_magic,10);
     schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
 }
 
@@ -285,5 +287,80 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
     else
     {
         log("Object group 'Objects' not found in TMX map.");
+    }
+}
+
+void PlayerTestScene::initSkillIcons()
+{
+    // 获取窗口大小
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+    //加载边框
+    Sprite* border = Sprite::create("skill-icons/Border.png");
+    Sprite* stencil = Sprite::create("skill-icons/Stencil.png");
+    auto stencil_timer = ProgressTimer::create(stencil);
+    stencil_timer->setVisible(false);
+    //设置为扇形，顺时针旋转
+    stencil_timer->setType(ProgressTimer::Type::RADIAL);
+    stencil_timer->setReverseDirection(true);
+    //加载各技能图标
+    Sprite* ice_spear = Sprite::create("skill-icons/IceSpear.png");
+
+    //设置图标位置
+    border->setAnchorPoint(Vec2(0.5, 0.5));//将锚点设置到图片中央
+    stencil_timer->setAnchorPoint(Vec2(0.5, 0.5));
+    ice_spear->setAnchorPoint(Vec2(0.5, 0.5));
+    border->setScale(2.0f);
+    ice_spear->setScale(2.0f);
+    stencil_timer->setScale(2.0f);
+    auto size = border->getContentSize();
+    auto position = Point(size.width * 2 / 2 + 10, size.height * 2 / 2 + 10);
+    border->setPosition(position);
+    ice_spear->setPosition(position);
+    stencil_timer->setPosition(position);
+    this->addChild(border, 10);
+    addChild(stencil_timer, 12);
+    this->addChild(ice_spear, 11);
+    stencil_timer->setTag(COOL_DOWN);
+
+    //启用刷新函数，每隔0.1秒
+    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleSkillColldown), 0.1f);
+}
+
+void PlayerTestScene::scheduleSkillColldown(float dt)
+{
+    // 安全获取 Timer 对象
+    auto mProgressTimer = (ProgressTimer*)this->getChildByTag(COOL_DOWN);
+    if (!mProgressTimer) {
+        return; // 防止空指针崩溃
+    }
+
+    // 获取数据
+    float maxCD = _player->getMaxCoolDown();
+    float currentCD = _player->getCoolDown();
+
+    // 逻辑判断
+    // 如果当前有冷却时间 (currentCD > 0) 且 最大冷却合法
+    if (currentCD > 0 && maxCD > 0)
+    {
+        if (!mProgressTimer->isVisible()) {
+            mProgressTimer->setVisible(true);
+        }
+
+        // 计算百分比：(当前剩余时间 / 总时间) * 100
+        // 例如：剩余 2秒 / 总共 10秒 = 20% -> 遮罩显示 20% 的面积
+        float percentage = (currentCD / maxCD) * 100.0f;
+
+        // 设置进度
+        mProgressTimer->setPercentage(percentage);
+    }
+    else
+    {
+        // 没有冷却或冷却结束，隐藏遮罩
+        if (mProgressTimer->isVisible()) {
+            mProgressTimer->setVisible(false);
+            mProgressTimer->setPercentage(0.0f); // 确保重置
+        }
     }
 }

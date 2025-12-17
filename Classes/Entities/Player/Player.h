@@ -120,6 +120,9 @@ public:
 	***/
 	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; };
 
+	const float getMaxCoolDown() const { return _maxIceSpearCooldown; };
+	const float getCoolDown() const { return _iceSpearCooldown; };
+
 	/**
 	* @brief 获得玩家图像
 	* @return 玩家当前的图像（常量指针）
@@ -132,6 +135,13 @@ public:
 	* @return 释放成功/失败（bool）
 	***/
 	bool skillAttack(const std::string& name);
+
+	/**
+	* @brief 获得某个技能是否被解锁了
+	* @param[in] string技能名称 常量引用
+	* @return 解锁/没有解锁
+	***/
+	bool isUnlocked(const std::string& name);
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -256,7 +266,12 @@ private:
 	float _iceSpearSpeed;
 	float _iceSpearMagic;
 	float _iceSpearDamage;
+	float _maxIceSpearCooldown;
+	float _iceSpearCooldown;
 
 	/*----输入----*/
 	float _moveInput;
+
+	/*----全局状态----*/
+	bool _isUnlockedIceSpear;
 };
