@@ -103,7 +103,7 @@ void Slime::BehaviorInit()
 std::string Slime::DecideNextBehavior(float delta)
 {
     // 查找玩家
-    this->findPlayer();
+    EnemyAi::findPlayer(this);
     
     // 更新攻击计时器
     attackTimer_ += delta;
@@ -112,7 +112,7 @@ std::string Slime::DecideNextBehavior(float delta)
     if (this->getPlayer() != nullptr && attackTimer_ >= attackCooldown_)
     {
         // 检测玩家是否可见、在攻击范围内且水平
-        if (this->isPlayerVisible() && this->isPlayerInRange() && this->isPlayerHorizontal())
+        if (EnemyAi::isPlayerVisible(this) && EnemyAi::isPlayerInRange(this, detectionRange_) && EnemyAi::isPlayerHorizontal(this, GRID_SIZE * 2))
         {
             // 随机选择跳跃攻击或冲撞攻击
             int random = rand() % 2;
@@ -330,52 +330,7 @@ BehaviorResult Slime::chargeAttack(float delta)
     return { false, 0.0f };
 }
 
-Player* Slime::findPlayer()
-{
-    // 查找玩家节点（使用typeid检测玩家类型）
-    auto parent = this->getParent();
-    if (parent != nullptr)
-    {
-        auto children = parent->getChildren();
-        for (auto child : children)
-        {
-            // 使用typeid检测节点是否为Player类型
-            if (typeid(*child) == typeid(Player))
-            {
-                Player* player = static_cast<Player*>(child);
-                this->setPlayer(player); // 存储玩家指针到基类
-                return player;
-            }
-        }
-    }
-    
-    this->setPlayer(nullptr); // 如果没有找到玩家，将基类的玩家指针设为nullptr
-    return nullptr;
-}
 
-bool Slime::isPlayerInRange()
-{
-    if (this->getPlayer() == nullptr)
-    {
-        return false;
-    }
-    
-    // 检测玩家是否在攻击范围内
-    float distance = this->getPosition().distance(this->getPlayer()->getPosition());
-    return distance <= detectionRange_;
-}
-
-bool Slime::isPlayerHorizontal()
-{
-    if (this->getPlayer() == nullptr)
-    {
-        return false;
-    }
-    
-    // 检测玩家是否在同一水平线上（Y坐标差小于一定值）
-    float yDiff = abs(this->getPosition().y - this->getPlayer()->getPosition().y);
-    return yDiff <= GRID_SIZE * 2;
-}
 
 bool Slime::onContactBegin(PhysicsContact& contact)
 {

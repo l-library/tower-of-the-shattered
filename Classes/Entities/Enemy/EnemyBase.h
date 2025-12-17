@@ -107,8 +107,6 @@ public:
     float getStaggerDuration() const;
     CollisionBoxInfo getCollisionBoxInfo() const;
     
-    // 检测玩家是否可见（路径上没有墙）
-    bool isPlayerVisible();
     
     // 设置玩家指针
     void setPlayer(Player* player);

@@ -1,6 +1,7 @@
 #pragma once
 #include "EnemyBase.h"
 #include "TowerOfTheShattered.h" // 包含GRID_SIZE宏
+#include "EnemyAi/EnemyAi.h"
 
 // Slime类 - 第一个具体的小兵类，继承自EnemyBase
 class Slime : public EnemyBase
@@ -44,8 +45,5 @@ private:
     BehaviorResult jumpAttack(float delta);  // 跳跃攻击行为
     BehaviorResult chargeAttack(float delta); // 冲撞攻击行为
     
-    // 辅助方法
-      Player* findPlayer();             // 查找玩家
-      bool isPlayerInRange();                  // 检测玩家是否在攻击范围内
-    bool isPlayerHorizontal();               // 检测玩家是否在同一水平线上
+    
 };

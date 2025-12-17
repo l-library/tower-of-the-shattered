@@ -285,36 +285,7 @@ CollisionBoxInfo EnemyBase::getCollisionBoxInfo() const
     return collisionBoxInfo_;
 }
 
-bool EnemyBase::isPlayerVisible()
-{
-    if (player_ == nullptr)
-    {
-        return false;
-    }
-    
-    // 获取当前场景的物理世界
-    auto scene = Director::getInstance()->getRunningScene();
-    if (scene == nullptr) return false;
-    
-    auto physicsWorld = scene->getPhysicsWorld();
-    if (physicsWorld == nullptr) return false;
-    
-    // 创建射线检测回调
-    bool hasWall = false;
-    
-    physicsWorld->rayCast([&hasWall](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data) -> float {
-        // 检查碰撞的物体是否是墙壁
-        if (info.shape->getBody()->getCategoryBitmask() == WALL_MASK)
-        {
-            hasWall = true;
-            return 0.0f; // 找到墙壁，停止检测
-        }
-        return -1.0f; // 继续检测
-    }, this->getPosition(), player_->getPosition(), nullptr);
-    
-    // 如果没有墙壁阻挡，则玩家可见
-    return !hasWall;
-}
+
 
 void EnemyBase::setPlayer(Player* player)
 {
