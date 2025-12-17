@@ -4,37 +4,57 @@
 class Boss1 : public EnemyBase
 {
 protected:
-    // Boss1特有的属性
+    cocos2d::Animation* idleAnimation_; 
+    bool isIdleAnimationPlaying_;      
+    cocos2d::Node* spriteParent_;     
+    
+    //attack1相关
+    bool isAttack1Active_;            
+    int bulletCount_;                
+    float bulletTimer_;                
+    bool hasTeleported_;              
+    cocos2d::Vec2 initialPosition_;   
+    void fireBullet1();            
+    
+    //attack2相关
+    bool isAttack2Active_;            
+    float attack2Timer_;              
+    int attack2State_;                
+    void fireSwordBeam();            
+    
+    //attack3相关
+    bool isAttack3Active_;            
+    bool hasSummonedClone_;           
+    cocos2d::Vec2 clonePosition_;     
+    Boss1* clone_;                    
+    bool isClone_;                    // 是否为分身
+    void createClone();            
 
-
-
-
-
-    // 行为方法
+    //boss1的行为
     BehaviorResult idle(float delta);
     BehaviorResult recovery(float delta);
     BehaviorResult attack1(float delta);
     BehaviorResult attack2(float delta);
     BehaviorResult attack3(float delta);
+    BehaviorResult turn(float delta);
 
 
 public:
-    // 构造函数和析构函数
     Boss1();
     virtual ~Boss1();
 
-    // 创建实例的静态方法
+    // 建立
     static Boss1* create();
 
-    // 重写父类的虚函数
+    // 虚函数重写
     virtual bool init() override;
     virtual void Hitted(int damage, int poise_damage = 0) override;
     virtual void Dead() override;
     virtual void BehaviorInit() override;
     virtual std::string DecideNextBehavior(float delta) override;
     virtual void InitSprite() override;
-
-    // 重写碰撞回调函数
+    virtual void otherUpdate(float delta)override { turn(delta); }
+    // 碰撞回调
     virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
     virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;
 };

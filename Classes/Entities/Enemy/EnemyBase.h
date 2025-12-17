@@ -87,7 +87,8 @@ public:
     virtual void BehaviorInit() = 0; // 行为初始化，子类必须实现
     virtual std::string DecideNextBehavior(float delta) = 0; // 决定下一个行为，传入delta时间
     virtual void InitSprite();    // 初始化精灵，子类可以重写以设置不同的精灵
-    
+    virtual void otherUpdate(float delta) {};
+
     // Getter方法 - 物理碰撞体
     cocos2d::PhysicsBody* getPhysicsBody() const;
     

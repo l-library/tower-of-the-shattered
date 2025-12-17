@@ -158,6 +158,7 @@ bool EnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
 
 void EnemyBase::updateAI(float delta)
 {
+    otherUpdate(delta);
     if (currentState_ == EnemyState::IDLE)
     {
         // 调用DecideNextBehavior()决定下一个行为
@@ -201,12 +202,16 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::RECOVERY)
     {
+        // 执行recovery行为
+        this->Execute("recovery", delta);
+        
         // 更新后摇计时器
         recoveryTimer_ += delta;
-        
+        sprite_->setColor(Color3B(150, 255, 150));
         // 如果后摇时间结束，进入IDLE状态
         if (recoveryTimer_ >= recoveryDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
         }
     }
@@ -222,11 +227,13 @@ void EnemyBase::updateAI(float delta)
         // 如果硬直时间结束，进入IDLE状态并重置韧性
         if (staggerTimer_ >= staggerDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
             current_stagger_resistance_ = stagger_resistance_; // 重置韧性
         }
     }
 }
+
 BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
 {
     if (hasBehavior(name)) {

@@ -1,6 +1,7 @@
 #include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
+#include "Entities/Enemy/Bosses/Boss1.h"
 
 USING_NS_CC;
 
@@ -61,14 +62,10 @@ bool PlayerTestScene::init()
     setupInput();
     initBar();
 
-    // 添加两个Slime实例用于测试
-    auto slime1 = Slime::create();
-    slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-    this->addChild(slime1, 1);
-
-    auto slime2 = Slime::create();
-    slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
-    this->addChild(slime2, 1);
+    // 添加一个Boss1实例用于测试
+    auto boss1 = Boss1::create();
+    boss1->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y));
+    this->addChild(boss1, 1);
 
     return true;
 }
