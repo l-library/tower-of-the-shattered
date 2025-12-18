@@ -28,9 +28,10 @@ Boss1::Boss1()
     // 初始化attack3相关变量
     isAttack3Active_ = false;
     hasSummonedClone_ = false;
+    IsStage2_ = false;
+    isStage3_ = false;
     clonePosition_ = Vec2::ZERO;
     clone_ = nullptr;
-    isClone_ = false;
 }
 
 Boss1::~Boss1()
@@ -70,8 +71,8 @@ bool Boss1::init()
     }
     
     // 设置Boss1的基本属性
-    this->setMaxVitality(1000); // 高生命值
-    this->setCurrentVitality(1000);
+    this->setMaxVitality(100); // 高生命值
+    this->setCurrentVitality(25);
     this->setStaggerResistance(500); // 高韧性
     this->setBaseAttackPower(50); // 高攻击力
     this->setDefense(10); // 高防御力
@@ -139,20 +140,12 @@ void Boss1::Dead()
     
     // 死亡视觉效果
     if (getSprite()) {
-        if (isClone_) {
-            // 分身快速死亡，立即清除
-            auto fadeOut = FadeOut::create(0.5f);
-            auto scaleDown = ScaleTo::create(0.5f, 0.1f);
-            auto removeSelf = RemoveSelf::create();
-            auto sequence = Sequence::create(Spawn::create(fadeOut, scaleDown, nullptr), removeSelf, nullptr);
-            getSprite()->runAction(sequence);
-        } else {
-            // 本体正常死亡动画
-            auto fadeOut = FadeOut::create(2.0f);
-            auto scaleDown = ScaleTo::create(2.0f, 0.1f);
-            auto spawn = Spawn::create(fadeOut, scaleDown, nullptr);
-            getSprite()->runAction(spawn);
-        }
+
+        // 本体正常死亡动画
+        auto fadeOut = FadeOut::create(2.0f);
+        auto scaleDown = ScaleTo::create(2.0f, 0.1f);
+        auto spawn = Spawn::create(fadeOut, scaleDown, nullptr);
+        getSprite()->runAction(spawn);
     }
     
     // 立即移除碰撞箱
@@ -161,16 +154,7 @@ void Boss1::Dead()
         this->removeComponent(physicsBody_);
         physicsBody_ = nullptr;
     }
-    
-    // 如果是分身，立即停止所有行为和调度器
-    if (isClone_) {
-        this->unscheduleAllCallbacks();
-        this->stopAllActions();
-        // 延迟移除节点，确保动画完成
-        this->scheduleOnce([this](float dt) {
-            this->removeFromParentAndCleanup(true);
-        }, 0.5f, "remove_self");
-    }
+   
 }
 
 void Boss1::BehaviorInit()
@@ -181,6 +165,7 @@ void Boss1::BehaviorInit()
     this->addBehavior("attack1", [this](float delta) { return this->attack1(delta); });
     this->addBehavior("attack2", [this](float delta) { return this->attack2(delta); });
     this->addBehavior("attack3", [this](float delta) { return this->attack3(delta); });
+    this->addBehavior("attack4", [this](float delta) { return this->attack4(delta); });
     this->addBehavior("turn", [this](float delta) { return this->turn(delta); });
     
     // 设置初始行为
@@ -189,10 +174,13 @@ void Boss1::BehaviorInit()
 
 std::string Boss1::DecideNextBehavior(float delta)
 {
-    if (isClone_)
-        return "attack2";
-    if (currentBehavior_ == "idle")
+    // 只有当boss血量低于最大血量的一半且attack3尚未使用过时，才会调用attack3
+    if (currentBehavior_ == "idle" && !IsStage2_ && this->getCurrentVitality() <= this->getMaxVitality() / 2)
+    {
         return "attack3";
+    }
+    if (!isStage3_ && this->clone_ != nullptr && this->clone_->getCurrentState() == EnemyState::DEAD)
+        return "attack4";
     // 默认返回待机行为
     return "idle";
 }
@@ -250,7 +238,7 @@ BehaviorResult Boss1::turn(float delta)
     Player* player = EnemyAi::findPlayer(this);
     
     // 如果找到玩家且精灵存在
-    if (player != nullptr && sprite_ != nullptr)
+    if (player != nullptr && sprite_ != nullptr && !isAttack3Active_)
     {
         // 获取玩家位置和boss位置
         Vec2 playerPos = player->getPosition();
@@ -476,13 +464,9 @@ BehaviorResult Boss1::attack1(float delta)
                 isIdleAnimationPlaying_ = false;
 
 
-                // 如果是分身，在攻击结束后自我消灭
-                if (isClone_)
-                {
-                    this->Dead();
-                }
 
-                return  { true, 5.0f };
+
+                return  { true, 3.0f };
             }
         }
 
@@ -696,11 +680,6 @@ BehaviorResult Boss1::attack2(float delta)
                 // 返回true表示攻击行为结束，进入recovery行为5秒
                 BehaviorResult result = { true, 5.0f };
                 
-                // 如果是分身，在攻击结束后自我消灭
-                if (isClone_)
-                {
-                    this->Dead();
-                }
                 
                 return result;
             }
@@ -730,21 +709,6 @@ BehaviorResult Boss1::attack3(float delta)
         auto visibleSize = Director::getInstance()->getVisibleSize();
         clonePosition_ = Vec2(visibleSize.width - bossPos.x, bossPos.y);
         
-        // 在分身位置播放3秒的闪光动画
-        auto flash = Sprite::create();
-        if (flash != nullptr)
-        {
-            flash->setPosition(clonePosition_);
-            flash->setScale(2.0f);
-            this->getParent()->addChild(flash);
-            
-            // 创建闪光动画
-            auto blink = Blink::create(3.0f, 15); // 3秒内闪烁15次
-            auto fadeOut = FadeOut::create(0.5f);
-            auto removeSelf = RemoveSelf::create();
-            auto sequence = Sequence::create(blink, fadeOut, removeSelf, nullptr);
-            flash->runAction(sequence);
-        }
         
         // 查找玩家位置
         Player* player = EnemyAi::findPlayer(this);
@@ -784,14 +748,10 @@ BehaviorResult Boss1::attack3(float delta)
             }
         }
         
-        // 在召唤位置显示蓝色调的1.png，持续3秒并向玩家方向修正和翻转
+        // 在召唤位置显示正常色调的1.png，持续3秒并向玩家方向修正和翻转
         auto cloneEffect = Sprite::create("Enemy/Boss1/1.png");
         if (cloneEffect != nullptr)
         {
-            // 应用蓝色调
-            cloneEffect->setColor(Color3B::BLUE);
-            cloneEffect->setOpacity(200); // 半透明效果
-            
             // 根据玩家位置翻转图片
             bool flipX = false;
             if (player != nullptr)
@@ -837,20 +797,110 @@ BehaviorResult Boss1::attack3(float delta)
     {
         // 攻击结束，重置状态
         isAttack3Active_ = false;
+        // 设置attack3已使用
+        IsStage2_ = true;
         
-        // 返回true表示攻击行为结束，进入recovery行为3秒
-        BehaviorResult result = { true, 3.0f };
-        
-        // 如果是分身，在攻击结束后自我消灭
-        if (isClone_)
-        {
-            this->Dead();
-        }
+        // 返回true表示攻击行为结束,转阶段召唤分身没有后摇
+        BehaviorResult result = { true, 0.0f };
         
         return result;
     }
     
     return { false, 0.0f };
+}
+
+//attack4相关
+BehaviorResult Boss1::attack4(float delta)
+{
+    // 停止待机动画
+    if (sprite_ != nullptr && isIdleAnimationPlaying_)
+    {
+        sprite_->stopAllActions();
+        isIdleAnimationPlaying_ = false;
+    }
+    
+    // 如果攻击还未激活，初始化攻击
+    static float attack4Timer = 0.0f;
+    static float maxHealth = 0.0f;
+    static float recoverySpeed = 0.0f;
+    
+    if (true)
+    {
+        if (!isAttack3Active_)
+        {
+            isAttack3Active_ = true;
+            attack4Timer = 0.0f;
+            maxHealth = this->getMaxVitality();
+            float currentHealth = this->getCurrentVitality();
+            float healthToRecover = maxHealth - currentHealth;
+            recoverySpeed = healthToRecover / 2.0f; // 2秒内恢复到满
+        }
+        
+        // 更新计时器
+        attack4Timer += delta;
+        
+        // 计算当前应该恢复的生命值
+        float healthRecovered = recoverySpeed * attack4Timer;
+        float currentHealth = this->getCurrentVitality();
+        float newHealth = std::min(currentHealth + healthRecovered, maxHealth);
+        
+        // 设置新的生命值
+        this->setCurrentVitality(newHealth);
+        
+        // 如果恢复完成，进入三阶段
+        if (attack4Timer >= 2.0f || this->getCurrentVitality() >= maxHealth)
+        {
+            // 确保生命值达到最大值
+            this->setCurrentVitality(maxHealth);
+            isAttack3Active_ = false;
+            
+            // 添加红色滤镜到当前场景
+            if (this->getParent() != nullptr)
+            {
+                auto scene = this->getParent()->getParent();
+                if (scene != nullptr)
+                {
+                    auto redFilter = LayerColor::create(Color4B(255, 0, 0, 50)); // 1%透明度的红色
+                    redFilter->setName("redFilter"); // 设置名称以便后续管理
+                    scene->addChild(redFilter, 100); // 添加到最高层级
+                }
+            }
+            isStage3_ = true;
+            // 返回完成状态
+            return { true, 0.0f };
+        }
+        
+        // 返回未完成状态
+        return { false, 0.0f };
+    }
+    
+    // 如果已经在三阶段，返回完成状态
+    return { true, 0.0f };
+}
+
+// 更新函数
+void Boss1::otherUpdate(float delta)
+{
+    // 执行turn行为
+    turn(delta);
+    
+    // 三阶段每秒扣血1%
+    if (isStage3_)
+    {
+        static float damageTimer = 0.0f;
+        damageTimer += delta;
+        
+        if (damageTimer >= 1.0f)
+        {
+            // 扣除当前生命值的1%
+            float currentHealth = this->getCurrentVitality();
+            float damage = currentHealth * 0.01f;
+            this->setCurrentVitality(currentHealth - damage);
+            
+            // 重置计时器
+            damageTimer = 0.0f;
+        }
+    }
 }
 
 // 创建分身
@@ -863,18 +913,17 @@ void Boss1::createClone()
         // 设置分身位置为对称位置
         clone_->setPosition(clonePosition_);
         
-        // 设置分身颜色为蓝色
-        if (clone_->getSprite() != nullptr)
-        {
-            clone_->getSprite()->setColor(cocos2d::Color3B(0, 100, 255));
-        }
+        // 复制boss的生命值等信息
+        clone_->setMaxVitality(this->getMaxVitality());
+        clone_->setCurrentVitality(this->getCurrentVitality());
+        clone_->setStaggerResistance(this->getStaggerResistance());
+        clone_->setCurrentStaggerResistance(this->getCurrentStaggerResistance());
+        clone_->setBaseAttackPower(this->getBaseAttackPower());
+        clone_->setDefense(this->getDefense());
+        clone_->IsStage2_ = true;
         
-        // 设置分身具有无限血量
-        clone_->setMaxVitality(INT_MAX);
-        clone_->setCurrentVitality(INT_MAX);
-        
-        // 设置为分身
-        clone_->isClone_ = true;
+        // 设置分身的本体指针
+        clone_->clone_ = this;
         
         // 重置attack2相关状态变量，确保每个分身独立执行攻击
         clone_->isAttack2Active_ = false;

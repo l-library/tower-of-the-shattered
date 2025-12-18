@@ -13,7 +13,7 @@ Scene* PlayerTestScene::createScene()
     Scene* scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
     // ÏÔÊ¾Åö×²Ïä
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    //scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
     PlayerTestScene* layer = PlayerTestScene::create();
     scene->addChild(layer);
     return scene;

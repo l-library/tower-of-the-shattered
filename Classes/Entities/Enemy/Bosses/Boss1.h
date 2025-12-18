@@ -22,13 +22,14 @@ protected:
     int attack2State_;                
     void fireSwordBeam();            
     
-    //attack3相关
-    bool isAttack3Active_;            
-    bool hasSummonedClone_;           
-    cocos2d::Vec2 clonePosition_;     
-    Boss1* clone_;                    
-    bool isClone_;                    // 是否为分身
-    void createClone();            
+    //attack3,4相关
+    bool isAttack3Active_;
+    bool hasSummonedClone_;
+    bool IsStage2_;            // 记录attack3是否已经使用过
+    bool isStage3_;            // 记录是否进入三阶段   
+    cocos2d::Vec2 clonePosition_;
+    Boss1* clone_;
+    void createClone();
 
     //boss1的行为
     BehaviorResult idle(float delta);
@@ -36,6 +37,7 @@ protected:
     BehaviorResult attack1(float delta);
     BehaviorResult attack2(float delta);
     BehaviorResult attack3(float delta);
+    BehaviorResult attack4(float delta);
     BehaviorResult turn(float delta);
 
 
@@ -53,7 +55,7 @@ public:
     virtual void BehaviorInit() override;
     virtual std::string DecideNextBehavior(float delta) override;
     virtual void InitSprite() override;
-    virtual void otherUpdate(float delta)override { turn(delta); }
+    virtual void otherUpdate(float delta)override;
     // 碰撞回调
     virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
     virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;

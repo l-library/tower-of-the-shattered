@@ -360,6 +360,11 @@ void EnemyBase::setStaggerDuration(float duration)
     staggerDuration_ = std::max(0.0f, duration);
 }
 
+
+void EnemyBase::setCurrentBehavior(std::string name)
+{
+    currentBehavior_ = name;
+}
 // Setter方法
 void EnemyBase::setMaxVitality(int maxVitality)
 {
@@ -439,25 +444,4 @@ void EnemyBase::removeBehavior(const std::string& name)
 bool EnemyBase::hasBehavior(const std::string& name) const
 {
     return aiBehaviors_.find(name) != aiBehaviors_.end();
-}
-
-// SoldierEnemyBase类的实现
-bool SoldierEnemyBase::init()
-{
-    if (!EnemyBase::init())
-    {
-        return false;
-    }
-    
-    return true;
-}
-
-bool SoldierEnemyBase::onContactBegin(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactBegin(contact);
-}
-
-bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactSeparate(contact);
 }
