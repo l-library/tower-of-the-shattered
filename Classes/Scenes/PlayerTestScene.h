@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include "Entities/Player/Player.h"
+#include "Scenes/GameCamera.h"
 
 //创建Scene的子类PlayerTestScene
 //该场景用于测试玩家的基本操作
@@ -13,16 +14,16 @@ public:
 
     void setupInput();//读取输入
 
-    void initBar();
-
-    void scheduleBlood(float dt);
-    void scheduleSkillColldown(float dt);
-    void initSkillIcons();
+    void PlayerTestScene::update(float dt);
 
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
+    
     void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map);
+
+    ~PlayerTestScene();
 
 private:
     Player* _player;
+    GameCamera* _cameraController;
 };

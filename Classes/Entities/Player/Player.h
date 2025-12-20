@@ -1,6 +1,6 @@
 #pragma once
 #include "cocos2d.h"
-#include "Box2D/Box2D.h"
+#include "SkillManager.h"
 
 // 玩家状态枚举
 enum class PlayerState {
@@ -105,6 +105,7 @@ public:
 	* @return (const double)玩家当前法力值
 	***/
 	const double getMagic() const { return _magic; };
+	const void setMagic(double magic) { _magic = magic; }
 
 	/**
 	* @brief 获得玩家当前最大法力值
@@ -112,7 +113,7 @@ public:
 	* @return (const double)玩家最大法力值
 	***/
 	const double getMaxMagic() const { return _maxMagic; };
-	
+
 	/**
 	* @brief 获得玩家是否运行控制
 	* @param[in] void
@@ -120,8 +121,9 @@ public:
 	***/
 	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; };
 
-	const float getMaxCoolDown() const { return _maxIceSpearCooldown; };
-	const float getCoolDown() const { return _iceSpearCooldown; };
+	const Direction getDirection() const { return _direction; };
+
+	SkillManager* getSkillManager() const { return _skillManager; };
 
 	/**
 	* @brief 获得玩家图像
@@ -263,15 +265,11 @@ private:
 
 	/*----攻击和技能数值----*/
 	double _playerAttackDamage;// 普通攻击伤害
-	float _iceSpearSpeed;
-	float _iceSpearMagic;
-	float _iceSpearDamage;
-	float _maxIceSpearCooldown;
-	float _iceSpearCooldown;
 
 	/*----输入----*/
 	float _moveInput;
 
-	/*----全局状态----*/
-	bool _isUnlockedIceSpear;
+	/*----技能管理器----*/
+	SkillManager* _skillManager;
+	
 };

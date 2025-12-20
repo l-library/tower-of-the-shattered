@@ -58,14 +58,10 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 25.0;
-    _iceSpearSpeed = 300.0f;	
-    _iceSpearMagic = 25.0f;
-    _iceSpearDamage = 50.0f;
 
     _maxAttackCooldown = 0.3;
-    _maxDodgeCooldown = 0.2;
+    _maxDodgeCooldown = 1.0;
     _dodgeTime = 0;
-    _maxIceSpearCooldown = 3.0;
 
     // 状态标志
     _isGrounded = false;
@@ -86,14 +82,19 @@ bool Player::init()
     _attackCooldown = 0.0;
     _invincibilityTime = 0.0;
     _attackEngageTime = 0.0;
-    _iceSpearCooldown = 0.0;
 
     // 输入
     _moveInput = 0.0;
     _velocity = Vec2::ZERO;
 
-    // 全局状态（需要存档功能）
-    _isUnlockedIceSpear = true;
+    // 技能管理器初始化
+    _skillManager = SkillManager::create(this);
+    _skillManager->retain();
+
+    // 注册技能
+    auto iceSpear = SkillIceSpear::create();
+    iceSpear->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("IceSpear", iceSpear);
 
     // 初始化物理身体
     initPhysics();
@@ -144,7 +145,7 @@ void Player::initPhysics()
     //这是一个比身体底部略小且略低的矩形，用于检测是否站在地上
     //只检测碰撞，不产生物理推力
     Size footSize = Size(_physicsSize.width * 0.8f, 10);
-    Vec2 footOffset = Vec2(0, 2); // 位于身体底部
+    Vec2 footOffset = Vec2(0, 5); // 位于身体底部
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
     footShape->setCategoryBitmask(PLAYER_MASK);
@@ -405,9 +406,9 @@ void Player::updateTimers(float dt) {
             _sprite->setOpacity(static_cast<uint8_t>(blink * 255));
         }
     }
-
-    if (_iceSpearCooldown > 0)
-        _iceSpearCooldown -= dt;
+    
+    // 更新技能状态
+    _skillManager->update(dt);
 }
 
 void Player::updatePhysics(float dt) {
@@ -780,53 +781,11 @@ void Player::attack() {
 bool Player::skillAttack(const std::string& name)
 {
     if (!canBeControled()) return false;
-    auto bullet_animation = AnimationCache::getInstance()->getAnimation(name);
-    Bullet* skill;
-    skill = Bullet::create("player/IceSpear-0.png", 0, [](Bullet* bullet, float delta) {});
-    if (!bullet_animation||!skill)return false;
-    _isSkilling = true;
-    changeState(PlayerState::SKILLING);
-    // 获取玩家当前位置
-    Vec2 current_pos = _sprite->getPosition();
-    auto action = Animate::create(bullet_animation);
-    // 设置方向 (同时处理物理速度方向和贴图翻转)
-    Vec2 directionVec;
-    if (_direction == Direction::RIGHT) {
-        directionVec = Vec2(1, 0);
-        skill->getSprite()->setFlippedX(false);
-    }
-    else {
-        directionVec = Vec2(-1, 0);
-        skill->getSprite()->setFlippedX(true);
-    }
-    if (name == "IceSpear")
-    {
-        if (_magic < _iceSpearMagic) return false;
-        if (!isUnlocked(name)) return false;
-        skill->setDamage(_iceSpearDamage);
-        _iceSpearCooldown = _maxIceSpearCooldown;
-        playAnimation("IceSpear-Action");
-        skill->setCategoryBitmask(PLAYER_BULLET_MASK);
-        skill->setCollisionBitmask(NULL);
-        skill->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-        skill->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-        skill->getSprite()->runAction(RepeatForever::create(action));
-        skill->setMaxExistTime(3.0f);
-        Vec2 worldPos = this->convertToWorldSpace(current_pos);
-        // 微调发射位置，使其不完全重叠在玩家中心
-        worldPos += (directionVec * 30.0f);
-        worldPos.y += _sprite->getContentSize().height;
-        skill->setPosition(worldPos);
-        // 设置速度
-        skill->getPhysicsBody()->setVelocity(_iceSpearSpeed * directionVec);
-        //微调碰撞箱
-        skill->getPhysicsBody()->setPositionOffset(directionVec*20);
-        // 添加为场景的子节点
-        auto gameScene = Director::getInstance()->getRunningScene();
-        if (gameScene) {
-            gameScene->addChild(skill, 10);
-        }
-        _magic -= _iceSpearMagic;
+
+    if (_skillManager->useSkill(name)) {
+        changeState(PlayerState::SKILLING);
+        _isSkilling = true;
+        return true;
     }
     return false;
 }
@@ -855,12 +814,9 @@ void Player::dodge() {
     _invincibilityTime = _dodgeTime;
 }
 
-bool Player::isUnlocked(const std::string &name)
+bool Player::isUnlocked(const std::string& name)
 {
-    if (name == "IceSpear")
-        return _isUnlockedIceSpear;
-    else
-        return false;
+    return _skillManager->getSkill(name)->isUnlocked();
 }
 
 const std::string Player::getCurrentState() const
