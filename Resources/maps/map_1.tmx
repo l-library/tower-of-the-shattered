@@ -306,4 +306,9 @@
    <polygon points="0,0 0,16 32,16 32,0"/>
   </object>
  </objectgroup>
+<objectgroup id="4" name="sensor">
+	<object id="216" x="1280" y="384">
+		<polygon points="0,0 -16,0 -16,64 0,64"/>
+	</object>
+</objectgroup>
 </map>

@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include "Entities/Player/Player.h"
+#include "physics/CCPhysicsWorld.h"
 
 //创建Scene的子类PlayerTestScene
 //该场景用于测试玩家的基本操作
@@ -23,4 +24,5 @@ public:
 
 private:
     Player* _player;
+    cocos2d::PhysicsWorld* _world = nullptr;
 };
