@@ -95,6 +95,9 @@ bool Player::init()
     auto iceSpear = SkillIceSpear::create();
     iceSpear->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
     _skillManager->addSkill("IceSpear", iceSpear);
+    auto ArcaneJet = SkillArcaneJet::create();
+    ArcaneJet->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("ArcaneJet", ArcaneJet);
 
     // 初始化物理身体
     initPhysics();

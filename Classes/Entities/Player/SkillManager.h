@@ -3,6 +3,7 @@
 #include "cocos2d.h"
 #include <map>
 #include "SkillIceSpire.h"
+#include "SkillArcaneJet.h"
 
 class SkillManager : public cocos2d::Ref {
 public:

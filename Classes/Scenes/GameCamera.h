@@ -31,11 +31,10 @@ private:
     cocos2d::ProgressTimer* _hpBar;
     cocos2d::ProgressTimer* _mpBar;
     cocos2d::ProgressTimer* _skillCDTimer;
+    cocos2d::ProgressTimer* _skillCDTimer_2;
 
     //放大倍数
     float _zoom_factor;
-    //UI图标
-    cocos2d::Sprite* _ice_icon;
 };
 
 #endif

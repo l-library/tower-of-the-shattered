@@ -16,7 +16,7 @@ bool GameCamera::init(Scene* scene, Player* player, TMXTiledMap* map) {
     _scene = scene;
     _player = player;
     _map = map;
-    _zoom_factor = 0.5f; // 默认缩放倍率，0.5 表示看到一半的视野
+    _zoom_factor = 1.0f; // 默认缩放倍率，0.5 表示看到一半的视野
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     // 获取默认摄像机
@@ -83,25 +83,45 @@ void GameCamera::initBar() {
 }
 
 void GameCamera::initSkillIcons() {
-    auto border = Sprite::create("skill-icons/Border.png");
-    border->setScale(2.0f);
-    border->setPosition(Vec2(60, 60));
-    _uiRoot->addChild(border);
+    auto border_1 = Sprite::create("skill-icons/Border.png");
+    border_1->setScale(2.0f);
+    border_1->setPosition(Vec2(60, 60));
+    _uiRoot->addChild(border_1);
+    auto border_2 = Sprite::create("skill-icons/Border.png");
+    border_2->setScale(2.0f);
+    border_2->setPosition(Vec2(130, 60));
+    _uiRoot->addChild(border_2);
 
+    Sprite* ice_icon;
+    Sprite* arcane_icon;
     if (_player->getSkillManager()->getSkill("IceSpear")->isUnlocked())
-        _ice_icon = Sprite::create("skill-icons/IceSpear.png");
+        ice_icon = Sprite::create("skill-icons/IceSpear.png");
     else
-        _ice_icon = Sprite::create("skill-icons/NULL.png");
-    _ice_icon->setScale(2.0f);
-    _ice_icon->setPosition(border->getPosition());
-    _uiRoot->addChild(_ice_icon);
+        ice_icon = Sprite::create("skill-icons/NULL.png");
+    ice_icon->setScale(2.0f);
+    ice_icon->setPosition(border_1->getPosition());
+    _uiRoot->addChild(ice_icon);
+    if (_player->getSkillManager()->getSkill("ArcaneJet")->isUnlocked())
+        arcane_icon = Sprite::create("skill-icons/ArcaneJet.png");
+    else
+        arcane_icon = Sprite::create("skill-icons/NULL.png");
+    arcane_icon->setScale(2.0f);
+    arcane_icon->setPosition(border_2->getPosition());
+    _uiRoot->addChild(arcane_icon);
     _skillCDTimer = ProgressTimer::create(Sprite::create("skill-icons/Stencil.png"));
     _skillCDTimer->setType(ProgressTimer::Type::RADIAL);
     _skillCDTimer->setReverseDirection(true);
     _skillCDTimer->setScale(2.0f);
-    _skillCDTimer->setPosition(border->getPosition());
+    _skillCDTimer->setPosition(border_1->getPosition());
     _skillCDTimer->setVisible(false);
     _uiRoot->addChild(_skillCDTimer);
+    _skillCDTimer_2 = ProgressTimer::create(Sprite::create("skill-icons/Stencil.png"));
+    _skillCDTimer_2->setType(ProgressTimer::Type::RADIAL);
+    _skillCDTimer_2->setReverseDirection(true);
+    _skillCDTimer_2->setScale(2.0f);
+    _skillCDTimer_2->setPosition(border_2->getPosition());
+    _skillCDTimer_2->setVisible(false);
+    _uiRoot->addChild(_skillCDTimer_2);
 }
 
 void GameCamera::update(float dt) {
@@ -140,6 +160,12 @@ void GameCamera::update(float dt) {
         float percent = iceSkill->getCooldownPercent() * 100;
         _skillCDTimer->setPercentage(percent);
         _skillCDTimer->setVisible(percent > 0);
+    }
+    auto arcaneSkill = _player->getSkillManager()->getSkill("ArcaneJet");
+    if (arcaneSkill->isUnlocked()) {
+        float percent = arcaneSkill->getCooldownPercent() * 100;
+        _skillCDTimer_2->setPercentage(percent);
+        _skillCDTimer_2->setVisible(percent > 0);
     }
 }
 

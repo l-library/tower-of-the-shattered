@@ -27,7 +27,7 @@ bool PlayerTestScene::init()
 
     this->getPhysicsWorld()->setGravity(Vec2(0, -980));
     this->getPhysicsWorld()->setSubsteps(3);
-
+    this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -102,6 +102,10 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_I:
             case EventKeyboard::KeyCode::KEY_1:
                 _player->skillAttack("IceSpear");
+                break;
+            case EventKeyboard::KeyCode::KEY_O:
+            case EventKeyboard::KeyCode::KEY_2:
+                _player->skillAttack("ArcaneJet");
                 break;
         }
         };
