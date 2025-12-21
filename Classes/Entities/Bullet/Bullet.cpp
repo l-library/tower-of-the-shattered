@@ -17,12 +17,13 @@ Bullet::Bullet()
     , clearBitmask_(0)
     , existTime_(0.0f)
     , maxExistTime_(5.0f) // 默认最大存在时间为5秒
+    , isNeedCleanup_(false)
 {
 }
 
 Bullet::~Bullet()
 {
-    // 释放资源
+    // 清理资源
     if (sprite_) {
         sprite_->release();
     }
@@ -57,7 +58,7 @@ bool Bullet::init(const std::string& spriteFrameName, int damage,
     // 设置伤害值
     damage_ = damage;
 
-    // 创建精灵
+    // 创建子弹精灵
     sprite_ = Sprite::create(spriteFrameName);
     if (!sprite_) {
         CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
@@ -65,13 +66,13 @@ bool Bullet::init(const std::string& spriteFrameName, int damage,
     }
     sprite_->retain();
     sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
-    sprite_->setPosition(Vec2::ZERO); // 设置精灵在节点中心
+    sprite_->setPosition(Vec2::ZERO); // 精灵居中，使碰撞体与精灵位置一致
     this->addChild(sprite_);
-    // 初始碰撞体大小设为精灵大小
+    // 根据精灵尺寸设置碰撞体大小
     collisionWidth_ = sprite_->getContentSize().width;
     collisionHeight_ = sprite_->getContentSize().height;
 
-    // 创建物理碰撞体
+    // 重新创建物理碰撞体
     recreatePhysicsBody();
 
     // 设置更新逻辑
@@ -80,7 +81,7 @@ bool Bullet::init(const std::string& spriteFrameName, int damage,
     // 注册碰撞监听器
     registerContactListener();
 
-    // 启动更新
+    // 开始更新
     this->scheduleUpdate();
 
     return true;
@@ -90,17 +91,21 @@ void Bullet::update(float delta)
 {
     Node::update(delta);
 
-    // 更新存在时间
+    // 累计存在时间
     existTime_ += delta;
     
-    // 检查是否超过最大存在时间
-    if (existTime_ >= maxExistTime_) {
-        CCLOG("Bullet expired by exist time!");
+    // 检查是否需要清理
+    if (isNeedCleanup_ || existTime_ >= maxExistTime_) {
+        if (isNeedCleanup_) {
+            CCLOG("Bullet cleanup by collision!");
+        } else {
+            CCLOG("Bullet expired by exist time!");
+        }
         cleanupBullet();
         return;
     }
 
-    // 执行自定义更新逻辑
+    // 设置更新逻辑
     if (updateLogic_) {
         updateLogic_(this, delta);
     }
@@ -113,7 +118,7 @@ void Bullet::setVisible(bool visible)
         sprite_->setVisible(visible);
     }
     if (physicsBody_) {
-        // 物理碰撞体不可见时禁用碰撞
+        // 可视状态改变时，启用/禁用物理碰撞体
         physicsBody_->setEnabled(visible);
     }
 }
@@ -172,7 +177,7 @@ void Bullet::setCLearBitmask(int bitmask)
 
 void Bullet::recreatePhysicsBody()
 {
-    // 移除旧的物理碰撞体
+    // 如果已有物理碰撞体，先移除
     if (physicsBody_) {
         this->removeComponent(physicsBody_);
         physicsBody_->release();
@@ -194,31 +199,31 @@ void Bullet::recreatePhysicsBody()
     physicsBody_->setAngularDamping(0.0f);
     physicsBody_->setRotationEnable(false);
 
-    // 设置碰撞掩码
+    // 设置掩码
     physicsBody_->setCategoryBitmask(categoryBitmask_);
     physicsBody_->setContactTestBitmask(contactTestBitmask_);
     physicsBody_->setCollisionBitmask(collisionBitmask_);
 
-    // 添加物理碰撞体到节点
+    // 将物理碰撞体添加到节点
     this->addComponent(physicsBody_);
 }
 
 void Bullet::registerContactListener()
 {
-    // 创建碰撞监听器
+    // 创建物理碰撞监听器
     contactListener_ = EventListenerPhysicsContact::create();
     if (!contactListener_) {
         CCLOG("Failed to create contact listener for bullet");
         return;
     }
 
-    // 注册碰撞开始回调
+    // 设置碰撞开始回调
     contactListener_->onContactBegin = CC_CALLBACK_1(Bullet::onContactBegin, this);
     
-    // 注册碰撞结束回调
+    // 设置碰撞结束回调
     contactListener_->onContactSeparate = CC_CALLBACK_1(Bullet::onContactSeparate, this);
 
-    // 添加监听器到事件分发器
+    // 将监听器添加到事件分发器
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener_, this);
     contactListener_->retain();
 }
@@ -228,19 +233,16 @@ bool Bullet::onContactBegin(PhysicsContact& contact)
     PhysicsBody* bodyA = contact.getShapeA()->getBody();
     PhysicsBody* bodyB = contact.getShapeB()->getBody();
     
-    // 检查碰撞是否涉及当前子弹
+    // 检查是否是子弹与其他物体的碰撞
     if (bodyA == physicsBody_ || bodyB == physicsBody_) {
         PhysicsBody* otherBody = (bodyA == physicsBody_) ? bodyB : bodyA;
-        
-        // 只有当与Player碰撞时才清理子弹
+
         if (otherBody->getCategoryBitmask() & clearBitmask_) {
             CCLOG("Bullet collided clear!");
-            cleanupBullet();
+            isNeedCleanup_ = true;        //将子弹设为即将清除
             return true;
         }
         
-        // 对于其他碰撞，只记录日志不清理
-        CCLOG("Bullet collided with non-Player object!");
     }
 
     return true;
@@ -251,7 +253,7 @@ bool Bullet::onContactSeparate(PhysicsContact& contact)
     PhysicsBody* bodyA = contact.getShapeA()->getBody();
     PhysicsBody* bodyB = contact.getShapeB()->getBody();
     
-    // 检查分离是否涉及当前子弹
+    // 检查是否是子弹与其他物体的分离
     if (bodyA == physicsBody_ || bodyB == physicsBody_) {
         CCLOG("Bullet separated from object!");
         return true;
@@ -286,7 +288,7 @@ void Bullet::cleanupBullet()
         sprite_ = nullptr;
     }
 
-    // 从父节点移除子弹
+    // 从父节点中移除并清理
     if (this->getParent()) {
         this->getParent()->removeChild(this, true);
     }

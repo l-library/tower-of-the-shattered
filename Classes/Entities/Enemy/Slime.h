@@ -2,8 +2,8 @@
 #include "EnemyBase.h"
 #include "TowerOfTheShattered.h" // 包含GRID_SIZE宏
 
-// Slime类 - 第一个具体的小兵类，继承自SoldierEnemyBase
-class Slime : public SoldierEnemyBase
+// Slime类 - 第一个具体的小兵类，继承自EnemyBase
+class Slime : public EnemyBase
 {
 public:
     CREATE_FUNC(Slime);

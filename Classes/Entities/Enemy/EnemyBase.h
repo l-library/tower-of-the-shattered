@@ -58,6 +58,9 @@ protected:
     float staggerDuration_;        // 被击晕状态持续时间
     float staggerTimer_;           // 被击晕状态计时器
     Player* player_;               // 指向玩家的指针
+    bool isDead_;                  // 是否已经死亡
+    float deathTimer_;             // 死亡计时器
+    float maxDeathTimer_;          // 最大死亡时间（用于延迟移除）
 
     // 初始化方法（重写）
     bool init() override;

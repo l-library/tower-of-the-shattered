@@ -7,7 +7,7 @@ using namespace cocos2d;
 
 bool Slime::init()
 {
-    if (!SoldierEnemyBase::init())
+    if (!EnemyBase::init())
     {
         return false;
     }
@@ -38,8 +38,8 @@ bool Slime::init()
     collisionInfo.width = GRID_SIZE;
     collisionInfo.height = GRID_SIZE;
     collisionInfo.categoryBitmask = ENEMY_MASK;
-    collisionInfo.contactTestBitmask = PLAYER_MASK | WALL_MASK | BORDER_MASK;
-    collisionInfo.collisionBitmask = WALL_MASK | PLAYER_MASK | BORDER_MASK;
+    collisionInfo.contactTestBitmask = PLAYER_MASK | WALL_MASK | BORDER_MASK | PLAYER_BULLET_MASK;
+    collisionInfo.collisionBitmask = WALL_MASK | PLAYER_MASK | BORDER_MASK | PLAYER_BULLET_MASK;
     collisionInfo.isDynamic = true;
     collisionInfo.mass = 1.0f;
     this->setCollisionBoxInfo(collisionInfo);
@@ -75,14 +75,12 @@ void Slime::Hitted(int damage, int poise_damage)
 void Slime::Dead()
 {
     // 淡出效果
-    if (sprite_ != nullptr)
-    {
+    if (getSprite()) {
         auto fadeOut = FadeOut::create(1.0f);
-        auto removeSelf = RemoveSelf::create();
-        sprite_->runAction(Sequence::create(fadeOut, removeSelf, nullptr));
+        getSprite()->runAction(fadeOut);
     }
     
-    // 立即移除碰撞箱
+    // 立即移除碰撞箱，防止继续与其他物体碰撞
     if (physicsBody_ != nullptr)
     {
         this->removeComponent(physicsBody_);
@@ -171,6 +169,12 @@ BehaviorResult Slime::recovery(float delta)
 
 BehaviorResult Slime::jumpAttack(float delta)
 {
+    // 如果已经死亡，立即结束攻击行为
+    if (currentState_ == EnemyState::DEAD)
+    {
+        return { true, 0.0f };
+    }
+    
     // 跳跃攻击行为
     if (!isJumping_)
     {
@@ -187,8 +191,11 @@ BehaviorResult Slime::jumpAttack(float delta)
         }
         
         // 设置跳跃速度（向上跳跃，同时向玩家方向移动）
-        Vec2 jumpVelocity = Vec2(direction.x * movementSpeed_, jumpSpeed_);
-        physicsBody_->setVelocity(jumpVelocity);
+        if (physicsBody_ != nullptr)
+        {
+            Vec2 jumpVelocity = Vec2(direction.x * movementSpeed_, jumpSpeed_);
+            physicsBody_->setVelocity(jumpVelocity);
+        }
         
         // 攻击时让精灵变红
         if (sprite_ != nullptr)
@@ -198,6 +205,12 @@ BehaviorResult Slime::jumpAttack(float delta)
         
         // 创建跳跃攻击子弹，碰撞箱为Slime的1.2倍
         auto jumpBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+            // 检查自身是否已经死亡或被移除
+            if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
+            {
+                bullet->cleanupBullet();
+                return;
+            }
             bullet->setPosition(this->getPosition());  // 同步位置
         });
         if (jumpBullet)
@@ -215,7 +228,7 @@ BehaviorResult Slime::jumpAttack(float delta)
     }
     
     // 检查是否落地或撞到其他碰撞箱
-    if (isJumping_ && (physicsBody_->getVelocity().y == 0 || isJumpAttackCollided_))
+    if (isJumping_ && physicsBody_ != nullptr && (physicsBody_->getVelocity().y == 0 || isJumpAttackCollided_))
     {
         isJumping_ = false;
         
@@ -233,6 +246,12 @@ BehaviorResult Slime::jumpAttack(float delta)
 
 BehaviorResult Slime::chargeAttack(float delta)
 {
+    // 如果已经死亡，立即结束攻击行为
+    if (currentState_ == EnemyState::DEAD)
+    {
+        return { true, 0.0f };
+    }
+    
     // 冲撞攻击行为
     if (!isCharging_)
     {
@@ -249,8 +268,11 @@ BehaviorResult Slime::chargeAttack(float delta)
         }
         
         // 设置冲撞速度（向玩家方向快速移动）
-        Vec2 chargeVelocity = Vec2(direction.x * movementSpeed_ * 2, 0);
-        physicsBody_->setVelocity(chargeVelocity);
+        if (physicsBody_ != nullptr)
+        {
+            Vec2 chargeVelocity = Vec2(direction.x * movementSpeed_ * 2, 0);
+            physicsBody_->setVelocity(chargeVelocity);
+        }
         
         // 攻击时让精灵变红
         if (sprite_ != nullptr)
@@ -260,6 +282,12 @@ BehaviorResult Slime::chargeAttack(float delta)
         
         // 创建冲撞攻击子弹，碰撞箱为Slime的1.2倍
         auto chargeBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+            // 检查自身是否已经死亡或被移除
+            if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
+            {
+                bullet->cleanupBullet();
+                return;
+            }
             bullet->setPosition(this->getPosition());  // 同步位置
         });
         if (chargeBullet)
@@ -286,7 +314,10 @@ BehaviorResult Slime::chargeAttack(float delta)
         isCharging_ = false;
         
         // 停止冲撞
-        physicsBody_->setVelocity(Vec2::ZERO);
+        if (physicsBody_ != nullptr)
+        {
+            physicsBody_->setVelocity(Vec2::ZERO);
+        }
         
         // 攻击结束后恢复原色
         if (sprite_ != nullptr)
@@ -399,9 +430,6 @@ bool Slime::onContactBegin(PhysicsContact& contact)
     // 检测是否碰到主角
     if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
     {
-        // 给予主角伤害
-        // 这里假设主角有一个Hitted方法
-        // otherNode->Hitted(this->getBaseAttackPower());
         
         // 反方向弹开一点距离
         Vec2 direction = (otherNode->getPosition() - slimeNode->getPosition()).getNormalized();
@@ -409,11 +437,22 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         
         return true;
     }
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_BULLET_MASK)
+    {
+        Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
+        if (bullet!= nullptr)
+        {
+            Hitted(bullet->getDamage());
+
+        }
+        return true;
+
+    }
     
-    return SoldierEnemyBase::onContactBegin(contact);
+    return EnemyBase::onContactBegin(contact);
 }
 
 bool Slime::onContactSeparate(PhysicsContact& contact)
 {
-    return SoldierEnemyBase::onContactSeparate(contact);
+    return EnemyBase::onContactSeparate(contact);
 }
