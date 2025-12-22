@@ -6,6 +6,9 @@
 
 using namespace cocos2d;
 
+// 初始化静态变量
+bool Boss1::isHealthBarCreated_ = false;
+
 Boss1::Boss1()
 {
     // 初始化待机动画相关变量
@@ -32,6 +35,23 @@ Boss1::Boss1()
     isStage3_ = false;
     clonePosition_ = Vec2::ZERO;
     clone_ = nullptr;
+    
+    // 初始化attack5相关变量
+    isAttack5Active_ = false;
+    attack5Timer_ = 0.0f;
+    isFlipped_ = false;
+    originalCollisionWidth_ = 0.0f;
+    dashDistance_ = 0.0f;
+    dashBullet_ = nullptr;
+    
+    // 初始化AI决策相关变量
+    lastBehavior_ = "idle";
+    lastAttack1Time_ = 0.0f;
+    
+    // 初始化UI相关变量
+    healthBarBorder_ = nullptr;
+    healthBar1_ = nullptr;
+    healthBar2_ = nullptr;
 }
 
 Boss1::~Boss1()
@@ -71,8 +91,8 @@ bool Boss1::init()
     }
     
     // 设置Boss1的基本属性
-    this->setMaxVitality(100); // 高生命值
-    this->setCurrentVitality(25);
+    this->setMaxVitality(500); // 高生命值
+    this->setCurrentVitality(500);
     this->setStaggerResistance(500); // 高韧性
     this->setBaseAttackPower(50); // 高攻击力
     this->setDefense(10); // 高防御力
@@ -96,6 +116,8 @@ bool Boss1::init()
     
     // 初始化行为
     this->BehaviorInit();
+    
+    // 血条UI将在第一次攻击时创建
     
     return true;
 }
@@ -166,6 +188,7 @@ void Boss1::BehaviorInit()
     this->addBehavior("attack2", [this](float delta) { return this->attack2(delta); });
     this->addBehavior("attack3", [this](float delta) { return this->attack3(delta); });
     this->addBehavior("attack4", [this](float delta) { return this->attack4(delta); });
+    this->addBehavior("attack5", [this](float delta) { return this->attack5(delta); });
     this->addBehavior("turn", [this](float delta) { return this->turn(delta); });
     
     // 设置初始行为
@@ -174,13 +197,86 @@ void Boss1::BehaviorInit()
 
 std::string Boss1::DecideNextBehavior(float delta)
 {
-    // 只有当boss血量低于最大血量的一半且attack3尚未使用过时，才会调用attack3
+    // 1. attack3触发条件：boss为idle且未进入二阶段且血量降至最大的一半以下
     if (currentBehavior_ == "idle" && !IsStage2_ && this->getCurrentVitality() <= this->getMaxVitality() / 2)
     {
         return "attack3";
     }
+    
+    // 2. attack4触发条件：二阶段的两个boss其中一个死亡，另一个调用（仅一次）
     if (!isStage3_ && this->clone_ != nullptr && this->clone_->getCurrentState() == EnemyState::DEAD)
+    {
         return "attack4";
+    }
+    
+    // 3. 攻击行为选择逻辑
+    if (currentBehavior_ == "idle")
+    {
+        Player* player = EnemyAi::findPlayer(this);
+        if (player != nullptr)
+        {
+            // 计算与玩家的距离
+            Vec2 playerPos = player->getPosition();
+            Vec2 bossPos = this->getPosition();
+            float distanceToPlayer = abs(playerPos.x - bossPos.x);
+            
+            // attack5触发条件：玩家在地面、距离较远、路径中没有另一个boss
+            bool canUseAttack5 = true;
+            
+            // 检查玩家是否在地面
+            // 假设玩家在地面时y坐标接近0或有特定标志
+            bool isPlayerOnGround = (playerPos.y <= GRID_SIZE); // 简单判断：y坐标小于等于一个格子高度
+            
+            // 检查距离是否较远
+            bool isPlayerFar = (distanceToPlayer >= 10 * GRID_SIZE); // 距离大于等于10个格子
+            
+            // 检查路径中是否有另一个boss（二阶段）
+            bool hasAnotherBossInPath = false;
+            if (this->clone_ != nullptr && this->clone_->getCurrentState() != EnemyState::DEAD)
+            {
+                Vec2 clonePos = this->clone_->getPosition();
+                // 检查clone是否在boss和玩家之间
+                if ((clonePos.x > std::min(bossPos.x, playerPos.x) && clonePos.x < std::max(bossPos.x, playerPos.x)) &&
+                    abs(clonePos.y - playerPos.y) <= 2 * GRID_SIZE) // 垂直方向允许一定误差
+                {
+                    hasAnotherBossInPath = true;
+                }
+            }
+            
+            // 只有满足所有条件才能使用attack5
+            if (isPlayerOnGround && isPlayerFar && !hasAnotherBossInPath)
+            {
+                // 30%概率使用attack5
+                if (rand() % 10 < 3)
+                {
+                    lastBehavior_ = "attack5";
+                    return "attack5";
+                }
+            }
+            
+            // 准备随机选择攻击行为
+            std::vector<std::string> availableAttacks;
+            
+
+            availableAttacks.push_back("attack1");
+
+            
+            // 添加attack2选项
+            availableAttacks.push_back("attack2");
+            
+            // 添加attack5选项（即使不满足远距离条件，也可以作为普通攻击使用）
+            availableAttacks.push_back("attack5");
+            
+            // 随机选择攻击行为
+            if (!availableAttacks.empty())
+            {
+                int randomIndex = rand() % availableAttacks.size();
+                lastBehavior_ = availableAttacks[randomIndex];
+                return availableAttacks[randomIndex];
+            }
+        }
+    }
+    
     // 默认返回待机行为
     return "idle";
 }
@@ -234,6 +330,13 @@ void Boss1::InitSprite()
 // 转向行为：立即使boss面对玩家方向
 BehaviorResult Boss1::turn(float delta)
 {
+    // 如果正在进行冲刺攻击（attack5），不执行转向逻辑
+    if (isAttack5Active_)
+    {
+        // 转向行为立即完成
+        return { true, 0.0f };
+    }
+    
     // 使用EnemyAi类查找玩家
     Player* player = EnemyAi::findPlayer(this);
     
@@ -319,6 +422,10 @@ BehaviorResult Boss1::recovery(float delta)
 
 BehaviorResult Boss1::attack1(float delta)
 {
+    // 第一次攻击时创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -582,6 +689,10 @@ void Boss1::fireSwordBeam()
 
 BehaviorResult Boss1::attack2(float delta)
 {
+    // 第一次攻击时创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -677,9 +788,12 @@ BehaviorResult Boss1::attack2(float delta)
                     sprite_->setPosition(Vec2::ZERO);
                 }
                 
+
+
                 // 返回true表示攻击行为结束，进入recovery行为5秒
                 BehaviorResult result = { true, 5.0f };
-                
+                if (isStage3_)
+                    result = { true, 1.0f };//三阶段后摇极短
                 
                 return result;
             }
@@ -691,6 +805,10 @@ BehaviorResult Boss1::attack2(float delta)
 
 BehaviorResult Boss1::attack3(float delta)
 {
+    // 第一次攻击时创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -812,6 +930,10 @@ BehaviorResult Boss1::attack3(float delta)
 //attack4相关
 BehaviorResult Boss1::attack4(float delta)
 {
+    // 第一次攻击时创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -878,6 +1000,229 @@ BehaviorResult Boss1::attack4(float delta)
     return { true, 0.0f };
 }
 
+//attack5相关
+BehaviorResult Boss1::attack5(float delta)
+{
+    // 第一次攻击时创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
+    // 停止待机动画
+    if (sprite_ != nullptr && isIdleAnimationPlaying_)
+    {
+        sprite_->stopAllActions();
+        isIdleAnimationPlaying_ = false;
+    }
+    
+    // 如果攻击还未激活，初始化攻击
+    if (!isAttack5Active_)
+    {
+        isAttack5Active_ = true;
+        attack5Timer_ = 0.0f;
+        
+        // 获取玩家位置，判断冲刺方向
+        Player* player = EnemyAi::findPlayer(this);
+        if (player != nullptr)
+        {
+            Vec2 playerPos = player->getPosition();
+            Vec2 bossPos = this->getPosition();
+            
+            // 确定是否需要翻转图片
+            isFlipped_ = playerPos.x < bossPos.x;
+            
+            // 设置精灵纹理为4.png
+            if (sprite_ != nullptr)
+            {
+                sprite_->setTexture("Enemy/Boss1/4.png");
+                sprite_->setFlippedX(isFlipped_);
+                sprite_->setVisible(true);
+            }
+            
+            // 计算冲刺距离（以玩家位置为目标）
+            dashDistance_ = abs(playerPos.x - bossPos.x);
+            
+            // 创建冲刺攻击的判定框bullet
+            CollisionBoxInfo collisionInfo = getCollisionBoxInfo();
+            
+            // 创建一个略大于boss自身判定框的bullet
+            Size bulletSize = Size(collisionInfo.width * 1.2f, collisionInfo.height * 1.1f); // 宽度增加20%，高度增加10%
+            Vec2 bulletPos = this->getPosition();
+            
+            // 使用Bullet类创建判定框
+            auto updateBullet = [this](Bullet* bullet, float delta) {
+                // 与boss同步移动
+                bullet->setPosition(this->getPosition());
+            };
+            
+            dashBullet_ = Bullet::create("Enemy/Boss1/4.png", this->getBaseAttackPower(), updateBullet);
+            if (dashBullet_ != nullptr)
+            {
+                dashBullet_->setPosition(bulletPos);
+                dashBullet_->setCollisionWidth(GRID_SIZE * 1.8f);
+                dashBullet_->setCollisionHeight(GRID_SIZE * 3.3f);
+                dashBullet_->setMaxExistTime(1.2f);
+                // 设置碰撞掩码
+                dashBullet_->setCategoryBitmask(ENEMY_BULLET_MASK);
+                dashBullet_->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
+                dashBullet_->setCollisionBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
+                dashBullet_->setCLearBitmask(PLAYER_MASK);
+                dashBullet_->getSprite()->setVisible(false);
+                // 添加到场景
+                this->getParent()->addChild(dashBullet_);
+            }
+        }
+        
+        return { false, 0.0f };
+    }
+    
+    // 更新攻击计时器
+    attack5Timer_ += delta;
+    
+    // 冲刺持续1秒
+    const float dashDuration = 1.0f;
+    if (attack5Timer_ < dashDuration)
+    {
+        // 计算当前冲刺进度（0-1）
+        float progress = attack5Timer_ / dashDuration;
+        
+        // 计算冲刺速度
+        float dashSpeed = dashDistance_ / dashDuration;
+        
+        // 确定冲刺方向
+        float direction = isFlipped_ ? -1.0f : 1.0f;
+        
+        // 更新位置
+        Vec2 currentPos = this->getPosition();
+        this->setPosition(currentPos + Vec2(direction * dashSpeed * delta, 0));
+
+        
+        return { false, 0.0f };
+    }
+    else
+    {
+        // 攻击结束，重置状态
+        isAttack5Active_ = false;
+        
+        // 恢复精灵到待机动画
+        if (sprite_ != nullptr)
+        {
+            SpriteFrame* initialFrame = SpriteFrameCache::getInstance()->getSpriteFrameByName("idle_0.png");
+            if (initialFrame != nullptr)
+            {
+                sprite_->setSpriteFrame(initialFrame);
+            }
+            
+            // 恢复原始翻转状态
+            sprite_->setFlippedX(isFlipped_);
+        }
+
+        
+        // 重置动画状态
+        isIdleAnimationPlaying_ = false;
+        
+
+        if (isStage3_)
+            return { true, 1.0f };
+        // 返回true表示攻击行为结束，进入recovery行为
+        return { true, 3.0f };
+
+    }
+}
+
+// 初始化血条UI
+void Boss1::initHealthBar()
+{
+    // 如果血条已经创建，不再重复创建
+    if (isHealthBarCreated_) {
+        return;
+    }
+    
+    // 获取窗口大小
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    
+    // 血条边框
+    auto borderSize = Size(400, 40);
+    healthBarBorder_ = Sprite::create();
+    healthBarBorder_->setTextureRect(Rect(0, 0, borderSize.width, borderSize.height), false, borderSize);
+    healthBarBorder_->setColor(Color3B::GRAY);
+    healthBarBorder_->setOpacity(200);
+    
+    // 设置位置：屏幕底部中间
+    healthBarBorder_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + 30));
+    if (this->getParent() != nullptr)
+        this->getParent()->addChild(healthBarBorder_, 1000); // 添加到场景中，使用高Z轴确保显示在最上层
+    
+    // 创建Boss1的血条（红色）
+    auto healthBar1Sprite = Sprite::create();
+    healthBar1Sprite->setTextureRect(Rect(0, 0, borderSize.width / 2 - 10, borderSize.height - 10), false, Size(borderSize.width / 2 - 10, borderSize.height - 10));
+    healthBar1Sprite->setColor(Color3B::RED);
+    healthBar1Sprite->setOpacity(255);
+    
+    healthBar1_ = ProgressTimer::create(healthBar1Sprite);
+    healthBar1_->setType(ProgressTimer::Type::BAR);
+    healthBar1_->setMidpoint(Point(0, 0.5));
+    healthBar1_->setBarChangeRate(Point(1, 0));
+    healthBar1_->setPercentage(100);
+    
+    // 设置位置：左侧血条
+    healthBar1_->setPosition(Vec2(origin.x + visibleSize.width / 2 - borderSize.width / 4, origin.y + 30));
+    
+    // 创建Boss2的血条（蓝色）
+    auto healthBar2Sprite = Sprite::create();
+    healthBar2Sprite->setTextureRect(Rect(0, 0, borderSize.width / 2 - 10, borderSize.height - 10), false, Size(borderSize.width / 2 - 10, borderSize.height - 10));
+    healthBar2Sprite->setColor(Color3B::BLUE);
+    healthBar2Sprite->setOpacity(255);
+    
+    healthBar2_ = ProgressTimer::create(healthBar2Sprite);
+    healthBar2_->setType(ProgressTimer::Type::BAR);
+    healthBar2_->setMidpoint(Point(0, 0.5));
+    healthBar2_->setBarChangeRate(Point(1, 0));
+    healthBar2_->setPercentage(100);
+    
+    // 设置位置：右侧血条
+    healthBar2_->setPosition(Vec2(origin.x + visibleSize.width / 2 + borderSize.width / 4, origin.y + 30));
+    
+    // 添加到父节点（如果存在）
+    if (this->getParent() != nullptr) {
+        this->getParent()->addChild(healthBar1_, 1001);
+        this->getParent()->addChild(healthBar2_, 1001);
+    }
+    
+    // 标记血条已创建
+    isHealthBarCreated_ = true;
+    
+    // 定时更新血条
+    this->schedule(CC_SCHEDULE_SELECTOR(Boss1::updateHealthBar), 0.1f);
+}
+
+// 更新血条UI
+void Boss1::updateHealthBar(float delta)
+{
+    if (healthBar1_ && healthBar2_) {
+        // 更新Boss1的血条
+        float boss1HealthPercent = static_cast<float>(this->getCurrentVitality()) / this->getMaxVitality() * 100;
+        healthBar1_->setPercentage(boss1HealthPercent);
+        
+        // 更新Boss2的血条（如果存在）
+        if (this->clone_ != nullptr && this->clone_->getCurrentState() != EnemyState::DEAD) {
+            float boss2HealthPercent = static_cast<float>(this->clone_->getCurrentVitality()) / this->clone_->getMaxVitality() * 100;
+            healthBar2_->setPercentage(boss2HealthPercent);
+        } else {
+            healthBar2_->setPercentage(0);
+        }
+        
+        // 当两个Boss都死亡时，隐藏血条
+        if ((this->getCurrentState() == EnemyState::DEAD || this->getCurrentVitality() <= 0) && 
+            (this->clone_ == nullptr || this->clone_->getCurrentState() == EnemyState::DEAD || this->clone_->getCurrentVitality() <= 0)) {
+            this->unschedule(CC_SCHEDULE_SELECTOR(Boss1::updateHealthBar));
+            healthBarBorder_->setVisible(false);
+            healthBar1_->setVisible(false);
+            healthBar2_->setVisible(false);
+        }
+    }
+}
+
 // 更新函数
 void Boss1::otherUpdate(float delta)
 {
@@ -892,9 +1237,9 @@ void Boss1::otherUpdate(float delta)
         
         if (damageTimer >= 1.0f)
         {
-            // 扣除当前生命值的1%
+            // 扣除当前生命值的1.5%
             float currentHealth = this->getCurrentVitality();
-            float damage = currentHealth * 0.01f;
+            float damage = currentHealth * 0.015f;
             this->setCurrentVitality(currentHealth - damage);
             
             // 重置计时器

@@ -31,6 +31,24 @@ protected:
     Boss1* clone_;
     void createClone();
 
+    //attack5相关
+    bool isAttack5Active_;
+    float attack5Timer_;
+    bool isFlipped_;
+    float originalCollisionWidth_;
+    float dashDistance_;
+    Bullet* dashBullet_; // 冲刺攻击的判定框bullet
+    
+    //AI决策相关
+    std::string lastBehavior_; // 记录上一个行为，防止attack1连续调用
+    float lastAttack1Time_; // 记录上一次attack1调用的时间
+    
+    //UI相关
+    cocos2d::Sprite* healthBarBorder_; // 血条边框
+    cocos2d::ProgressTimer* healthBar1_; // Boss1血条
+    cocos2d::ProgressTimer* healthBar2_; // Boss2血条
+    static bool isHealthBarCreated_; // 静态变量，标记血条是否已创建
+    
     //boss1的行为
     BehaviorResult idle(float delta);
     BehaviorResult recovery(float delta);
@@ -38,7 +56,12 @@ protected:
     BehaviorResult attack2(float delta);
     BehaviorResult attack3(float delta);
     BehaviorResult attack4(float delta);
+    BehaviorResult attack5(float delta);
     BehaviorResult turn(float delta);
+    
+    //UI相关方法
+    void initHealthBar();
+    void updateHealthBar(float delta);
 
 
 public:
