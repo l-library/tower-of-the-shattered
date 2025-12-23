@@ -91,10 +91,10 @@ bool Boss1::init()
     }
     
     // 设置Boss1的基本属性
-    this->setMaxVitality(500); // 高生命值
-    this->setCurrentVitality(500);
+    this->setMaxVitality(1000); // 高生命值
+    this->setCurrentVitality(1000);
     this->setStaggerResistance(500); // 高韧性
-    this->setBaseAttackPower(50); // 高攻击力
+    this->setBaseAttackPower(20);
     this->setDefense(10); // 高防御力
     
     // 设置碰撞箱信息
@@ -210,7 +210,7 @@ std::string Boss1::DecideNextBehavior(float delta)
     }
     
     // 3. 攻击行为选择逻辑
-    if (currentBehavior_ == "idle")
+    if (currentBehavior_ == "idle" && !isAttack1Active_ )
     {
         Player* player = EnemyAi::findPlayer(this);
         if (player != nullptr)
@@ -230,21 +230,10 @@ std::string Boss1::DecideNextBehavior(float delta)
             // 检查距离是否较远
             bool isPlayerFar = (distanceToPlayer >= 10 * GRID_SIZE); // 距离大于等于10个格子
             
-            // 检查路径中是否有另一个boss（二阶段）
-            bool hasAnotherBossInPath = false;
-            if (this->clone_ != nullptr && this->clone_->getCurrentState() != EnemyState::DEAD)
-            {
-                Vec2 clonePos = this->clone_->getPosition();
-                // 检查clone是否在boss和玩家之间
-                if ((clonePos.x > std::min(bossPos.x, playerPos.x) && clonePos.x < std::max(bossPos.x, playerPos.x)) &&
-                    abs(clonePos.y - playerPos.y) <= 2 * GRID_SIZE) // 垂直方向允许一定误差
-                {
-                    hasAnotherBossInPath = true;
-                }
-            }
             
-            // 只有满足所有条件才能使用attack5
-            if (isPlayerOnGround && isPlayerFar && !hasAnotherBossInPath)
+            
+            // 满足所有条件使用attack5
+            if (isPlayerOnGround && isPlayerFar)
             {
                 // 30%概率使用attack5
                 if (rand() % 10 < 3)
@@ -254,18 +243,24 @@ std::string Boss1::DecideNextBehavior(float delta)
                 }
             }
             
-            // 准备随机选择攻击行为
+            // 准备随机选择攻击行为，确保与上一次不同
             std::vector<std::string> availableAttacks;
+            std::vector<std::string> allAttacks = {"attack1", "attack2", "attack5"};
             
-
-            availableAttacks.push_back("attack1");
-
+            // 首先添加所有与上一次不同的攻击
+            for (const auto& attack : allAttacks)
+            {
+                if (attack != lastBehavior_)
+                {
+                    availableAttacks.push_back(attack);
+                }
+            }
             
-            // 添加attack2选项
-            availableAttacks.push_back("attack2");
-            
-            // 添加attack5选项（即使不满足远距离条件，也可以作为普通攻击使用）
-            availableAttacks.push_back("attack5");
+            // 如果没有可用攻击（理论上不会发生，因为至少有3种攻击），添加所有攻击
+            if (availableAttacks.empty())
+            {
+                availableAttacks = allAttacks;
+            }
             
             // 随机选择攻击行为
             if (!availableAttacks.empty())
@@ -472,6 +467,8 @@ BehaviorResult Boss1::attack1(float delta)
 
                 // 设置精灵纹理为clone.png
                 sprite_->setTexture("Enemy/Boss1/clone.png");
+                // 确保精灵可见
+                sprite_->setVisible(true);
 
                 // 使用EnemyAi类查找玩家
                 Player* player = EnemyAi::findPlayer(this);
@@ -500,6 +497,7 @@ BehaviorResult Boss1::attack1(float delta)
                 }, 1.0f, "second_flash_end");
             }, 1.0f, "first_flash_end");
     }
+    
 
     // 如果已经完成所有闪光和升空，处理子弹发射和实时翻转
     if (hasTeleported_)
@@ -577,8 +575,8 @@ BehaviorResult Boss1::attack1(float delta)
             }
         }
 
-        return { false, 0.0f };
     }
+    return { false, 0.0f };
 }
 
 void Boss1::fireBullet1()
@@ -1314,7 +1312,7 @@ bool Boss1::onContactBegin(PhysicsContact& contact)
         Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
         if (bullet != nullptr)
         {
-            Hitted(bullet->getDamage(), bullet->getDamage() * 2); // 子弹造成双倍韧性伤害
+            Hitted(bullet->getDamage()-this->getDefense(), bullet->getDamage() * 2); // 子弹造成双倍韧性伤害
         }
         return true;
     }
