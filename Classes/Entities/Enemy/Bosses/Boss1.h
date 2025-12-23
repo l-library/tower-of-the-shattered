@@ -29,6 +29,7 @@ protected:
     bool isStage3_;            // 记录是否进入三阶段   
     cocos2d::Vec2 clonePosition_;
     Boss1* clone_;
+    bool prepareStage3_;
     void createClone();
 
     //attack5相关
@@ -45,9 +46,8 @@ protected:
     
     //UI相关
     cocos2d::Sprite* healthBarBorder_; // 血条边框
-    cocos2d::ProgressTimer* healthBar1_; // Boss1血条
-    cocos2d::ProgressTimer* healthBar2_; // Boss2血条
-    static bool isHealthBarCreated_; // 静态变量，标记血条是否已创建
+    cocos2d::ProgressTimer* healthBar_; // Boss血条
+    bool isHealthBarCreated_; // 成员变量，标记血条是否已创建
     
     //boss1的行为
     BehaviorResult idle(float delta);

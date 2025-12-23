@@ -62,7 +62,7 @@ bool PlayerTestScene::init()
     setupInput();
     initBar();
 
-    auto fly = Fly::create();
+    auto fly = Boss1::create();
     fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
     this->addChild(fly, 1);
 

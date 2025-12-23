@@ -6,9 +6,6 @@
 
 using namespace cocos2d;
 
-// 初始化静态变量
-bool Boss1::isHealthBarCreated_ = false;
-
 Boss1::Boss1()
 {
     // 初始化待机动画相关变量
@@ -35,7 +32,8 @@ Boss1::Boss1()
     isStage3_ = false;
     clonePosition_ = Vec2::ZERO;
     clone_ = nullptr;
-    
+    prepareStage3_ = false;
+
     // 初始化attack5相关变量
     isAttack5Active_ = false;
     attack5Timer_ = 0.0f;
@@ -50,8 +48,8 @@ Boss1::Boss1()
     
     // 初始化UI相关变量
     healthBarBorder_ = nullptr;
-    healthBar1_ = nullptr;
-    healthBar2_ = nullptr;
+    healthBar_ = nullptr;
+    isHealthBarCreated_ = false;
 }
 
 Boss1::~Boss1()
@@ -92,9 +90,9 @@ bool Boss1::init()
     
     // 设置Boss1的基本属性
     this->setMaxVitality(1000); // 高生命值
-    this->setCurrentVitality(1000);
+    this->setCurrentVitality(100);
     this->setStaggerResistance(500); // 高韧性
-    this->setBaseAttackPower(20);
+    this->setBaseAttackPower(10);
     this->setDefense(10); // 高防御力
     
     // 设置碰撞箱信息
@@ -204,7 +202,7 @@ std::string Boss1::DecideNextBehavior(float delta)
     }
     
     // 2. attack4触发条件：二阶段的两个boss其中一个死亡，另一个调用（仅一次）
-    if (!isStage3_ && this->clone_ != nullptr && this->clone_->getCurrentState() == EnemyState::DEAD)
+    if (!isStage3_ && prepareStage3_)
     {
         return "attack4";
     }
@@ -417,10 +415,6 @@ BehaviorResult Boss1::recovery(float delta)
 
 BehaviorResult Boss1::attack1(float delta)
 {
-    // 第一次攻击时创建血条
-    if (!isHealthBarCreated_) {
-        this->initHealthBar();
-    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -687,10 +681,6 @@ void Boss1::fireSwordBeam()
 
 BehaviorResult Boss1::attack2(float delta)
 {
-    // 第一次攻击时创建血条
-    if (!isHealthBarCreated_) {
-        this->initHealthBar();
-    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -803,10 +793,6 @@ BehaviorResult Boss1::attack2(float delta)
 
 BehaviorResult Boss1::attack3(float delta)
 {
-    // 第一次攻击时创建血条
-    if (!isHealthBarCreated_) {
-        this->initHealthBar();
-    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -928,10 +914,6 @@ BehaviorResult Boss1::attack3(float delta)
 //attack4相关
 BehaviorResult Boss1::attack4(float delta)
 {
-    // 第一次攻击时创建血条
-    if (!isHealthBarCreated_) {
-        this->initHealthBar();
-    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -1001,10 +983,6 @@ BehaviorResult Boss1::attack4(float delta)
 //attack5相关
 BehaviorResult Boss1::attack5(float delta)
 {
-    // 第一次攻击时创建血条
-    if (!isHealthBarCreated_) {
-        this->initHealthBar();
-    }
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -1146,77 +1124,65 @@ void Boss1::initHealthBar()
     healthBarBorder_->setColor(Color3B::GRAY);
     healthBarBorder_->setOpacity(200);
     
-    // 设置位置：屏幕底部中间
-    healthBarBorder_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + 30));
+    // 设置位置：屏幕顶部中间
+    healthBarBorder_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 50));
     if (this->getParent() != nullptr)
         this->getParent()->addChild(healthBarBorder_, 1000); // 添加到场景中，使用高Z轴确保显示在最上层
     
-    // 创建Boss1的血条（红色）
-    auto healthBar1Sprite = Sprite::create();
-    healthBar1Sprite->setTextureRect(Rect(0, 0, borderSize.width / 2 - 10, borderSize.height - 10), false, Size(borderSize.width / 2 - 10, borderSize.height - 10));
-    healthBar1Sprite->setColor(Color3B::RED);
-    healthBar1Sprite->setOpacity(255);
+    // 创建Boss的血条
+    auto healthBarSprite = Sprite::create();
+    healthBarSprite->setTextureRect(Rect(0, 0, borderSize.width - 20, borderSize.height - 10), false, Size(borderSize.width - 20, borderSize.height - 10));
     
-    healthBar1_ = ProgressTimer::create(healthBar1Sprite);
-    healthBar1_->setType(ProgressTimer::Type::BAR);
-    healthBar1_->setMidpoint(Point(0, 0.5));
-    healthBar1_->setBarChangeRate(Point(1, 0));
-    healthBar1_->setPercentage(100);
+    // 设置血条颜色：本体为红色，分身为蓝色
+    if (clone_ != nullptr) {
+        healthBarSprite->setColor(Color3B::BLUE);
+    } else {
+        healthBarSprite->setColor(Color3B::RED);
+    }
     
-    // 设置位置：左侧血条
-    healthBar1_->setPosition(Vec2(origin.x + visibleSize.width / 2 - borderSize.width / 4, origin.y + 30));
+    healthBarSprite->setOpacity(255);
     
-    // 创建Boss2的血条（蓝色）
-    auto healthBar2Sprite = Sprite::create();
-    healthBar2Sprite->setTextureRect(Rect(0, 0, borderSize.width / 2 - 10, borderSize.height - 10), false, Size(borderSize.width / 2 - 10, borderSize.height - 10));
-    healthBar2Sprite->setColor(Color3B::BLUE);
-    healthBar2Sprite->setOpacity(255);
+    healthBar_ = ProgressTimer::create(healthBarSprite);
+    healthBar_->setType(ProgressTimer::Type::BAR);
+    healthBar_->setMidpoint(Point(0, 0.5));
+    healthBar_->setBarChangeRate(Point(1, 0));
+    healthBar_->setPercentage(100);
     
-    healthBar2_ = ProgressTimer::create(healthBar2Sprite);
-    healthBar2_->setType(ProgressTimer::Type::BAR);
-    healthBar2_->setMidpoint(Point(0, 0.5));
-    healthBar2_->setBarChangeRate(Point(1, 0));
-    healthBar2_->setPercentage(100);
-    
-    // 设置位置：右侧血条
-    healthBar2_->setPosition(Vec2(origin.x + visibleSize.width / 2 + borderSize.width / 4, origin.y + 30));
+    // 设置位置：屏幕顶部中间
+    if (clone_ != nullptr) {
+        // 分身血条位置更低一些
+        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 80));
+    } else {
+        // 本体血条位置
+        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 50));
+    }
     
     // 添加到父节点（如果存在）
     if (this->getParent() != nullptr) {
-        this->getParent()->addChild(healthBar1_, 1001);
-        this->getParent()->addChild(healthBar2_, 1001);
+        this->getParent()->addChild(healthBar_, 1001);
     }
     
     // 标记血条已创建
     isHealthBarCreated_ = true;
     
-    // 定时更新血条
-    this->schedule(CC_SCHEDULE_SELECTOR(Boss1::updateHealthBar), 0.1f);
+    // 不再使用定时器更新，而是在otherUpdate中更新
 }
 
 // 更新血条UI
 void Boss1::updateHealthBar(float delta)
 {
-    if (healthBar1_ && healthBar2_) {
-        // 更新Boss1的血条
-        float boss1HealthPercent = static_cast<float>(this->getCurrentVitality()) / this->getMaxVitality() * 100;
-        healthBar1_->setPercentage(boss1HealthPercent);
+    if (healthBar_) {
+        // 更新当前Boss的血条
+        float healthPercent = static_cast<float>(this->getCurrentVitality()) / this->getMaxVitality() * 100;
+        healthBar_->setPercentage(healthPercent);
         
-        // 更新Boss2的血条（如果存在）
-        if (this->clone_ != nullptr && this->clone_->getCurrentState() != EnemyState::DEAD) {
-            float boss2HealthPercent = static_cast<float>(this->clone_->getCurrentVitality()) / this->clone_->getMaxVitality() * 100;
-            healthBar2_->setPercentage(boss2HealthPercent);
-        } else {
-            healthBar2_->setPercentage(0);
-        }
-        
-        // 当两个Boss都死亡时，隐藏血条
-        if ((this->getCurrentState() == EnemyState::DEAD || this->getCurrentVitality() <= 0) && 
-            (this->clone_ == nullptr || this->clone_->getCurrentState() == EnemyState::DEAD || this->clone_->getCurrentVitality() <= 0)) {
-            this->unschedule(CC_SCHEDULE_SELECTOR(Boss1::updateHealthBar));
-            healthBarBorder_->setVisible(false);
-            healthBar1_->setVisible(false);
-            healthBar2_->setVisible(false);
+        // 当Boss死亡或生命值为0时，隐藏血条
+        if (this->getCurrentState() == EnemyState::DEAD || this->getCurrentVitality() <= 0) {
+            healthBar_->setVisible(false);
+            // 如果是本体，还要隐藏边框
+            if (clone_ == nullptr) {
+                healthBarBorder_->setVisible(false);
+            }
         }
     }
 }
@@ -1226,8 +1192,20 @@ void Boss1::otherUpdate(float delta)
 {
     // 执行turn行为
     turn(delta);
+
+    // 如果血条未创建，创建血条
+    if (!isHealthBarCreated_) {
+        this->initHealthBar();
+    }
     
-    // 三阶段每秒扣血1%
+    // 更新血条
+    this->updateHealthBar(delta);
+
+    if (!isStage3_ && this->clone_ != nullptr && this->clone_->getCurrentState() == EnemyState::DEAD)
+    {
+        prepareStage3_ = true;
+    }
+    // 三阶段每秒扣血1.5%
     if (isStage3_)
     {
         static float damageTimer = 0.0f;
