@@ -58,6 +58,7 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 25.0;
+    _magicRestore = 1.0;
 
     _maxAttackCooldown = 0.3;
     _maxDodgeCooldown = 1.0;
@@ -98,6 +99,9 @@ bool Player::init()
     auto ArcaneJet = SkillArcaneJet::create();
     ArcaneJet->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
     _skillManager->addSkill("ArcaneJet", ArcaneJet);
+    auto ArcaneShield = SkillArcaneShield::create();
+    ArcaneShield->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("ArcaneShield", ArcaneShield);
 
     // 初始化物理身体
     initPhysics();
@@ -220,17 +224,18 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
     }
     // 伤害判定逻辑
     int otherCategory = otherShape->getCategoryBitmask();
-    bool isEnemy = (otherCategory & ENEMY_BULLET_MASK);
+    bool isEnemyBullet = (otherCategory & ENEMY_BULLET_MASK);
+    bool isEnemy = (otherCategory & ENEMY_MASK);
     bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
 
-    if (isEnemy || isTrap)
+    if (isEnemyBullet || isTrap || isEnemy)
     {
         // 如果没有处于无敌状态且没有死亡
         if (!_isInvincible && _currentState != PlayerState::DEAD)
         {
             // 扣血
             float damage = 10;
-            if (isEnemy && otherNode)
+            if (isEnemyBullet && otherNode)
             {
                 // 尝试将 Node* 转换为 Enemy*
                 auto enemy = dynamic_cast<Bullet*>(otherNode);
@@ -247,6 +252,8 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             {
                 damage = 20.0f; // 陷阱的固定伤害
             }
+            else if (isEnemy)
+                damage = 5.0; //敌人的固定碰撞伤害
             _health -= damage;
 
             // 状态判断
@@ -332,10 +339,10 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
     }
 
     int otherCategory = otherShape->getCategoryBitmask();
-    bool isEnemy = (otherCategory & ENEMY_MASK);
+    bool isEnemyBullet = (otherCategory & ENEMY_MASK);
     bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
 
-    if (isEnemy || isTrap)
+    if (isEnemyBullet || isTrap)
     {
         _isHurt = false;
     }
@@ -412,6 +419,10 @@ void Player::updateTimers(float dt) {
     
     // 更新技能状态
     _skillManager->update(dt);
+
+    // 自动恢复魔法值
+    if (_magic < _maxMagic)
+        _magic = std::min(_maxMagic, _magic + _magicRestore * dt);
 }
 
 void Player::updatePhysics(float dt) {
@@ -621,7 +632,8 @@ void Player::playAnimation(const std::string& name, bool loop)
                 action,
                 CallFunc::create([this]()
                     { _isAttacking = false;
-            _isSkilling = false; }),
+            _isSkilling = false;
+            _isHurt = false; }),
                 nullptr));
         }
     }
@@ -702,10 +714,10 @@ void Player::shootBullet()
             speed = 200.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
             // 播放完动画后播放爆炸动画（待实现）
-            //auto finishCallback = CallFunc::create([attack]() {
-            //    auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
-            //    attack->getSprite()->runAction(Animate::create(burst));
-            //    });
+            auto finishCallback = CallFunc::create([attack]() {
+                auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
+                attack->getSprite()->runAction(Animate::create(burst));
+                });
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
         else {

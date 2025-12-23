@@ -210,6 +210,8 @@ private:
 	double _maxDodgeCooldown;
 	//主角的空中闪避次数
 	int _maxDodgeTimes;
+	//主角每秒恢复的魔法值
+	double _magicRestore;
 
 	/*----计时器----*/
 	//跳跃缓冲时间

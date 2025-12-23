@@ -117,7 +117,7 @@ void SkillArcaneJet::spawnBullet(Player* owner) {
         float scaleX = currentLength / originalSize.width;
         skill->getSprite()->setScaleX(scaleX);
 
-        // 重新创建 PhysicsBody（重点）
+        // 重新创建 PhysicsBody
         auto recreate_body = PhysicsBody::createBox(Size(currentLength * scaleX, originalSize.height));
         if (!recreate_body) return;
         recreate_body->setDynamic(false);
