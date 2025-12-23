@@ -2,7 +2,7 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Entities/Enemy/Bosses/Boss1.h"
-
+#include"Entities/Enemy/Fly.h"
 USING_NS_CC;
 
 #define BLOOD_BAR 1002
@@ -62,10 +62,9 @@ bool PlayerTestScene::init()
     setupInput();
     initBar();
 
-    // 添加一个Boss1实例用于测试
-    auto boss1 = Boss1::create();
-    boss1->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y));
-    this->addChild(boss1, 1);
+    auto fly = Fly::create();
+    fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
+    this->addChild(fly, 1);
 
     return true;
 }
