@@ -43,6 +43,9 @@ constexpr double kMaxAttackEngageTime = 0.7;//在0.7秒内继续攻击则衔接下一段攻击
 const int TAG_BODY = 10;
 const int TAG_FEET = 11;
 
+// 定义两次脚步声播放的间隔
+const float kStepSoundsInterval = 0.5f;
+
 /**
 * @brief 储存主角的各类信息 
 * @details 这个类继承自Node
@@ -226,6 +229,8 @@ private:
 	double _invincibilityTime;
 	//两端攻击之间衔接的时间差
 	double _attackEngageTime;
+	//两次脚步声之间的声音间隔
+	float _stepSoundsInterval;
 	//普通状态下的碰撞掩码
 	int _originalMask;
 	//冲刺状态下的碰撞掩码

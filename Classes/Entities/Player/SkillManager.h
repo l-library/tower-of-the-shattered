@@ -2,7 +2,7 @@
 
 #include "cocos2d.h"
 #include <map>
-#include "SkillIceSpire.h"
+#include "SkillIceSpear.h"
 #include "SkillArcaneJet.h"
 #include "SkillArcaneShield.h"
 
