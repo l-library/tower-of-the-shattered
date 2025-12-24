@@ -32,6 +32,7 @@ private:
     cocos2d::ProgressTimer* _mpBar;
     cocos2d::ProgressTimer* _skillCDTimer;
     cocos2d::ProgressTimer* _skillCDTimer_2;
+    cocos2d::ProgressTimer* _skillCDTimer_3;
 
     //·Å´ó±¶Êý
     float _zoom_factor;

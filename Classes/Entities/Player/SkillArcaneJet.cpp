@@ -62,9 +62,7 @@ void SkillArcaneJet::spawnBullet(Player* owner) {
     Size originalSize = skill->getSprite()->getContentSize();
     Vec2 direction = (owner->getDirection() == Direction::RIGHT) ? cocos2d::Vec2(1, 0) : cocos2d::Vec2(-1, 0);
 
-    // 关键：设置锚点与朝向
-    // 锚点决定了缩放的"固定端"。
-    // 同时也需要设置 Sprite 的锚点，确保纹理和父节点对齐。
+    // 设置锚点与朝向
     if (direction.x > 0) {
         // 向右：锚点在左侧 (0, 0.5)，向右延伸
         skill->setAnchorPoint(Vec2(0.0f, 0.5f));
@@ -78,21 +76,25 @@ void SkillArcaneJet::spawnBullet(Player* owner) {
         skill->getSprite()->setFlippedX(true); // 翻转贴图
     }
 
-    // --- 3. 设置初始位置 ---
+    // 设置初始位置
     // 将位置设置在玩家前方一点的"枪口"位置
     Vec2 playerCenter = owner->getSprite()->getPosition();
     Vec2 worldPos = owner->convertToWorldSpace(playerCenter);
 
     // Y轴调整：根据玩家中心高度微调
-    worldPos.y += owner->getSprite()->getContentSize().height / 2 +20.0;
+    worldPos.y += owner->getSprite()->getContentSize().height / 2 + 20.0;
     // X轴调整：向朝向方向偏移，避免从身体内部发出
     worldPos += direction * 15.0f;
 
     skill->setPosition(worldPos);
     skill->setScaleY(2.0f);   // 设定激光的粗细
-    skill->setScaleX(0.1f);   // 初始长度设为极短，准备开始生长
+    skill->getSprite()->setScaleX(0.1f);   // 初始长度设为极短，准备开始生长
 
-    // --- 4. 播放动画 ---
+    skill->getPhysicsBody()->setCategoryBitmask(PLAYER_BULLET_MASK);
+    skill->getPhysicsBody()->setContactTestBitmask(ENEMY_MASK);
+    skill->getPhysicsBody()->setCollisionBitmask(0);
+
+    // 播放动画
     auto action = Animate::create(bullet_animation);
     skill->getSprite()->runAction(Sequence::create(
         action,
@@ -100,40 +102,41 @@ void SkillArcaneJet::spawnBullet(Player* owner) {
         nullptr
     ));
 
-    // --- 5. 构建物理刚体 ---
-    // 使用原始尺寸创建盒子，因为PhysicsBody会跟随Node的setScaleX自动变形
-    auto body = PhysicsBody::createBox(originalSize);
+    // 动态延伸逻辑
+    float growSpeed = 100.0f;          // 激光每秒增长的“世界长度”
+    float currentLength = originalSize.width;
+    float maxLength = 100.f; // 激光的最大长度
 
-    // 关键步骤：设置物理偏移 (Offset)
-    // Box默认中心在(0,0)。
-    // 如果锚点是(0, 0.5)，Sprite内容在局部坐标 [0, width]。Box中心需要移到 width/2。
-    // 如果锚点是(1, 0.5)，Sprite内容在局部坐标 [-width, 0]。Box中心需要移到 -width/2。
+    skill->schedule([=](float dt) mutable {
 
-    float xOffset = originalSize.width / 2.0f;
-    if (direction.x > 0) {
-        body->setPositionOffset(Vec2(xOffset+ 250.0, 0));
-    }
-    else {
-        body->setPositionOffset(Vec2(-xOffset-250.0, 0));
-    }
+        // 增加激光长度
+        currentLength += growSpeed * dt;
+        currentLength = std::min(currentLength, maxLength);
 
-    body->setDynamic(false); // 激光通常不仅是动力学物体，也可以设为Kinematic或Dynamic(false)
-    body->setCategoryBitmask(PLAYER_BULLET_MASK);
-    body->setContactTestBitmask(ENEMY_MASK);
-    body->setCollisionBitmask(0); // 激光通常穿透，不产生物理反弹
+        // 视觉缩放（只拉 X）
+        float scaleX = currentLength / originalSize.width;
+        skill->getSprite()->setScaleX(scaleX);
 
-    // 覆盖 Bullet::init 中创建的默认刚体
-    skill->setPhysicsBody(body);
+        // 重新创建 PhysicsBody
+        auto recreate_body = PhysicsBody::createBox(Size(currentLength * scaleX, originalSize.height));
+        if (!recreate_body) return;
+        recreate_body->setDynamic(false);
+        recreate_body->setGravityEnable(false);
+        recreate_body->setCategoryBitmask(PLAYER_BULLET_MASK);
+        recreate_body->setContactTestBitmask(ENEMY_MASK);
+        recreate_body->setCollisionBitmask(0); // 激光通常穿透，不产生物理反弹
 
-    // --- 6. 动态延伸逻辑 ---
-    // 这里的 dt 是每帧间隔。
-    // 3.0f * dt 表示每秒伸长 3倍原始长度。
-    // 由于设置了正确的锚点和Offset，ScaleX 变大时，碰撞框会沿着发射方向变长。
-    skill->schedule([skill](float dt) {
-        if (!skill || !skill->getParent()) return; // 安全检查
-        float currentScaleX = skill->getScaleX();
-        skill->setScaleX(currentScaleX + 3.0f * dt); // 调整增长速度
-        }, "scale_task");
+        // 更新 Offset（保证“起点不动”）
+        float half = currentLength * 0.5f;
+        if (direction.x > 0) {
+            recreate_body->setPositionOffset(Vec2(half * scaleX  + direction.x * 15.0f, 0));
+        }
+        else {
+            recreate_body->setPositionOffset(Vec2(-half * scaleX + direction.x * 15.0f, 0));
+        }
+
+        skill->setPhysicsBody(recreate_body);
+        }, "laser_grow");
 
     // 添加到场景
     auto gameScene = Director::getInstance()->getRunningScene();

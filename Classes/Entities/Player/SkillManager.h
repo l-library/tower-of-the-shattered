@@ -4,6 +4,7 @@
 #include <map>
 #include "SkillIceSpire.h"
 #include "SkillArcaneJet.h"
+#include "SkillArcaneShield.h"
 
 class SkillManager : public cocos2d::Ref {
 public:
