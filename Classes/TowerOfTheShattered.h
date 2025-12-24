@@ -15,7 +15,7 @@
 #define ENEMY_BULLET_MASK   0x00000080  // 敌人发射的子弹
 #define PENETRATE_MASK      0x00000100  // 可穿透墙壁的物体
 #define BOUNCE_MASK         0x00000200  // 可弹跳的物体
-
+#define NPC_MASK            0x00000400  // NPC
 #include "Entities/Enemy/EnemyBase.h"
 #include "Entities/Player/Player.h"
 #include "Entities/Bullet/Bullet.h"
