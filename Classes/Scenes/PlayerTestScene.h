@@ -20,6 +20,7 @@ public:
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
     
     void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map);
+    void PlayerTestScene::switchLevelBox(cocos2d::TMXTiledMap* map);
 
     ~PlayerTestScene();
 

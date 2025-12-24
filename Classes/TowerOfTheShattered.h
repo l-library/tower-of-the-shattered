@@ -2,7 +2,8 @@
 // 游戏主头文件，包含全局常量和类型定义
 
 // 游戏基础常量定义
-#define GRID_SIZE 32               // 游戏格子大小（32x32像素）
+#define GRID_SIZE	32		// 游戏格子大小（32x32像素）
+#define MAP_SIZE	1.25f	// 地图缩放
 
 // 碰撞掩码定义
 #define ENEMY_MASK          0x00000001  // 敌人
@@ -15,6 +16,9 @@
 #define ENEMY_BULLET_MASK   0x00000080  // 敌人发射的子弹
 #define PENETRATE_MASK      0x00000100  // 可穿透墙壁的物体
 #define BOUNCE_MASK         0x00000200  // 可弹跳的物体
+#define SENSOR_MASK			0x00001000	// 切换关卡检测碰撞体
+#define MACHINE_MASK		0x00002000	// 触发机关检测碰撞体
+#define EVERYTHING_MASK		0xFFFFFFFF	// 碰撞一切
 
 #include "Entities/Enemy/EnemyBase.h"
 #include "Entities/Player/Player.h"
