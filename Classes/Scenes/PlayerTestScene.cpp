@@ -68,7 +68,7 @@ bool PlayerTestScene::init()
 
     // ²¥·Å±³¾°ÒôÀÖ
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
-    AudioManager::getInstance()->setBGMVolume(0.6f);
+    AudioManager::getInstance()->setBGMVolume(0.9f);
     return true;
 }
 void PlayerTestScene::update(float dt) {

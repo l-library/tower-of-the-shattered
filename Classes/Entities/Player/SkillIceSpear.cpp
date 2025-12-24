@@ -1,4 +1,4 @@
-#include "SkillIceSpire.h"
+#include "SkillIceSpear.h"
 #include "../Bullet/Bullet.h"
 
 USING_NS_CC;
