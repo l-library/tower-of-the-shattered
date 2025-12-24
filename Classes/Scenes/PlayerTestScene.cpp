@@ -5,22 +5,38 @@
 #include"Entities/Enemy/Fly.h"
 #include"Entities/Enemy/Bomber.h"
 #include"Entities/Enemy/Mage.h"
+#include "Maps/ChangeLevel.h"
+
 USING_NS_CC;
 
-#define BLOOD_BAR 1002
-#define MAGIC_BAR 1003
+#define COOL_DOWN 900
 
 Scene* PlayerTestScene::createScene()
 {
-    Scene* scene = Scene::createWithPhysics();
-    scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    // ÏÔÊ¾Åö×²Ïä
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
-    PlayerTestScene* layer = PlayerTestScene::create();
-    scene->addChild(layer);
-    return scene;
+    return PlayerTestScene::create();
 }
 
+Scene* PlayerTestScene::createWithMap(const std::string& mapFile) {
+    // 1. ç›´æŽ¥åˆ›å»ºå®žä¾‹ï¼Œä¸è°ƒç”¨é»˜è®¤çš„ create()
+    PlayerTestScene* pRet = new(std::nothrow) PlayerTestScene();
+
+    if (pRet) {
+        // 2. å…ˆè®¾ç½®åœ°å›¾æ–‡ä»¶å
+        pRet->_currentMapFile = mapFile;
+
+        // 3. å†è°ƒç”¨ init()
+        if (pRet->init()) {
+            pRet->autorelease();
+            return pRet;
+        }
+        else {
+            delete pRet;
+            pRet = nullptr;
+        }
+    }
+
+    return nullptr;
+}
 
 static void problemLoading(const char* filename)
 {
@@ -35,45 +51,72 @@ bool PlayerTestScene::init()
         return false;
     }
 
+    this->getPhysicsWorld()->setGravity(Vec2(0, -980));
+    this->getPhysicsWorld()->setSubsteps(3);
+    this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+
+    this->getPhysicsWorld()->setAutoStep(true);
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // map_1
-    auto map_1 = TMXTiledMap::create("maps/map_boss.tmx");
+    // bossæµ‹è¯•åœºæ™¯
+    // auto map_1 = TMXTiledMap::create("maps/map_boss.tmx");
+    auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // ±éÀúµØÍ¼Éú³É¶à±ßÐÎÅö×²Ïä
-    buildPolyPhysicsFromLayer(map_1);
+    // éåŽ†åœ°å›¾ç”Ÿæˆå¤šè¾¹å½¢ç¢°æ’žç®±
+    buildPolyPhysicsFromLayer(this, map_1);
+    switchLevelBox(this, map_1);
     this->addChild(map_1, -1);
 
-    //Sprite* background = Sprite::create("player/PlayerTest.jpg");
-    //background->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-    //this->addChild(background);
-
-    //¼ÓÔØ¶¯»­ÎÄ¼þ
+    //åŠ è½½åŠ¨ç”»æ–‡ä»¶
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    //´´½¨playerÀà
+    //åˆ›å»ºplayerç±»
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
     _player->setScale(2 * 32 / contentSize.width);
-    this->addChild(_player, 1);///äÖÈ¾player
+    this->addChild(_player, 1);///æ¸²æŸ“player
     setupInput();
-    initBar();
 
-    auto fly = Mage::create();
-    fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
-    this->addChild(fly, 1);
+    // flyæ•Œäººæµ‹è¯•
+    //auto fly = Mage::create();
+    //fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
+    //this->addChild(fly, 1);
+    // æ·»åŠ ä¸¤ä¸ªSlimeå®žä¾‹ç”¨äºŽæµ‹è¯•
+    auto slime1 = Slime::create();
+    slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+    this->addChild(slime1, 1);
 
+    auto slime2 = Slime::create();
+    slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
+    this->addChild(slime2, 1);
+
+    setupCollisionListener(this);
+
+    // åˆå§‹åŒ–æ‘„åƒæœºå’Œ UI æŽ§åˆ¶å™¨
+    _cameraController = GameCamera::create(this, _player, map_1);
+    _cameraController->retain(); // å› ä¸ºæ˜¯ Ref ç±»åž‹ï¼Œéœ€è¦ retain é˜²æ­¢è¢«è‡ªåŠ¨é‡Šæ”¾
+    this->scheduleUpdate();
+
+    // æ’­æ”¾èƒŒæ™¯éŸ³ä¹
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
     return true;
 }
 
+void PlayerTestScene::update(float dt) {
+    // æ¯ä¸€å¸§åªéœ€è¦é€šçŸ¥æŽ§åˆ¶å™¨æ›´æ–°
+    _cameraController->update(dt);
+}
 
 void PlayerTestScene::setupInput() {
-    // ´´½¨ÊäÈë¼àÌý
+    // åˆ›å»ºè¾“å…¥ç›‘å¬
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
@@ -103,6 +146,14 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_1:
                 _player->skillAttack("IceSpear");
                 break;
+            case EventKeyboard::KeyCode::KEY_O:
+            case EventKeyboard::KeyCode::KEY_2:
+                _player->skillAttack("ArcaneJet");
+                break;
+            case EventKeyboard::KeyCode::KEY_P:
+            case EventKeyboard::KeyCode::KEY_3:
+                _player->skillAttack("ArcaneShield");
+                break;
         }
         };
 
@@ -124,57 +175,7 @@ void PlayerTestScene::setupInput() {
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 }
 
-void PlayerTestScene::initBar() {
-    // »ñÈ¡´°¿Ú´óÐ¡
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    // ÑªÌõ
-    auto sprite = Sprite::create("player/hp_border.png");   //´´½¨½ø¶È¿ò
-    auto size = sprite->getContentSize();
-    sprite->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5)); //ÉèÖÃ¿òµÄÎ»ÖÃ
-    this->addChild(sprite);            //¼Óµ½Ä¬ÈÏÍ¼²ãÀïÃæÈ¥
-    auto sprBlood = Sprite::create("player/hp.png");  //´´½¨ÑªÌõ
-    ProgressTimer* progress_health = ProgressTimer::create(sprBlood); //´´½¨progress¶ÔÏó
-    progress_health->setType(ProgressTimer::Type::BAR);        //ÀàÐÍ£ºÌõ×´
-    progress_health->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5));
-    //´ÓÓÒµ½×ó¼õÉÙÑªÁ¿
-    progress_health->setMidpoint(Point(0, 0.5));     //Èç¹ûÊÇ´Ó×óµ½ÓÒµÄ»°£¬¸Ä³É(1,0.5)¼´¿É
-    progress_health->setBarChangeRate(Point(1, 0));
-    progress_health->setTag(BLOOD_BAR);       //×öÒ»¸ö±ê¼Ç
-    this->addChild(progress_health);
-    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //Ë¢ÐÂº¯Êý£¬Ã¿¸ô0.1Ãë
-    // À¶Ìõ
-    sprite = Sprite::create("player/mp_border.png");   //´´½¨½ø¶È¿ò
-    size = sprite->getContentSize();
-    sprite->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5)); //ÉèÖÃ¿òµÄÎ»ÖÃ
-    this->addChild(sprite);            //¼Óµ½Ä¬ÈÏÍ¼²ãÀïÃæÈ¥
-    auto sprMagic = Sprite::create("player/mp.png");  //´´½¨À¶Ìõ
-    auto progress_magic = ProgressTimer::create(sprMagic); //´´½¨progress¶ÔÏó
-    progress_magic->setType(ProgressTimer::Type::BAR);        //ÀàÐÍ£ºÌõ×´
-    progress_magic->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5));
-    //´ÓÓÒµ½×ó¼õÉÙÀ¶Ìõ
-    progress_magic->setMidpoint(Point(0, 0.5));     //Èç¹ûÊÇ´Ó×óµ½ÓÒµÄ»°£¬¸Ä³É(1,0.5)¼´¿É
-    progress_magic->setBarChangeRate(Point(1, 0));
-    progress_magic->setTag(MAGIC_BAR);       //×öÒ»¸ö±ê¼Ç
-    this->addChild(progress_magic);
-    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //Ë¢ÐÂº¯Êý£¬Ã¿¸ô0.1Ãë
-}
-
-void PlayerTestScene::scheduleBlood(float delta) {
-    auto progress_health = (ProgressTimer*)this->getChildByTag(BLOOD_BAR);
-    progress_health->setPercentage(static_cast<float>(_player->getHealth() / _player->getMaxHealth()) * 100);  //ÕâÀïÊÇ°Ù·ÖÖÆÏÔÊ¾
-    if (progress_health->getPercentage() < 0) {
-        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
-    }
-    auto progress_magic = (ProgressTimer*)this->getChildByTag(MAGIC_BAR);
-    progress_magic->setPercentage(static_cast<float>(_player->getMagic() / _player->getMaxMagic()) * 100);  //ÕâÀïÊÇ°Ù·ÖÖÆÏÔÊ¾
-    if (progress_magic->getPercentage() < 0) {
-        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
-    }
-}
-
-// ÅÐ¶Ïµã¼¯Ë³/ÄæÊ±Õë·½Ïò
-static bool isCounterClockwise(const std::vector<Vec2>& v)
+PlayerTestScene::~PlayerTestScene()
 {
     if (v.size() < 3) return true;
     float crossl = 0;
@@ -183,13 +184,13 @@ static bool isCounterClockwise(const std::vector<Vec2>& v)
     Vec2 v_2 = v[2] - v[1];
     double cross = v_1.x * v_2.y - v_1.y * v_2.x;
 
-    return cross > 0;   // >0 ÄæÊ±Õë
+    return cross > 0;   // >0 ï¿½ï¿½Ê±ï¿½ï¿½
 }
 
-// Éú³É¶à±ßÐÎµØÐÎ
+// ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½Îµï¿½ï¿½ï¿½
 void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
 {
-    // ¶à±ßÐÎÅö×²
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²
     auto layer = map->getLayer("platform");
     auto mapsize = map->getMapSize();
     auto tilesize = map->getTileSize();
@@ -197,22 +198,22 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
     map->setScale(siz);
 
 
-    TMXObjectGroup* objectGroup = map->getObjectGroup("obj"); // Ìæ»»ÎªÄãµÄ¶ÔÏó²ãÃû³Æ
+    TMXObjectGroup* objectGroup = map->getObjectGroup("obj"); // ï¿½æ»»Îªï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (objectGroup)
     {
-        // »ñÈ¡¶ÔÏó×éÖÐµÄËùÓÐ¶ÔÏó
+        // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½
         ValueVector objects = objectGroup->getObjects();
 
         for (const auto& objValue : objects)
         {
             ValueMap objMap = objValue.asValueMap();
 
-            // ¼ì²éÊÇ·ñ´æÔÚpoints
+            // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½points
             if (objMap.count("points"))
             {
                 ValueVector points = objMap.at("points").asValueVector();
 
-                // »ñÈ¡×ø±ê
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
                 std::vector<Vec2> test_clock;
                 for (const auto& pointValue : points)
                 {
@@ -249,7 +250,7 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
                     polygonVertices.size());
 
                 if (physicsBody) {
-                    // ÉèÖÃÎïÀíÌåµÄÊôÐÔ
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     physicsBody->setDynamic(false);
                     float objectX = objMap.at("x").asFloat();
                     float objectY = objMap.at("y").asFloat();
@@ -264,16 +265,16 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
                         localVertices.size());
 
                     localPhysicsBody->setDynamic(false);
-                    // ÆäËûÅö×²ÊôÐÔÉèÖÃ
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     auto polygonNode = Node::create();
                     polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
-                    //ÉèÖÃÑÚÂë
+                    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     localPhysicsBody->setCategoryBitmask(WALL_MASK);
                     localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
                     localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
 
                     polygonNode->setPhysicsBody(localPhysicsBody);
-                    polygonNode->setPosition(objectPos); // ½«½ÚµãÎ»ÖÃÉèÖÃÎª¶à±ßÐÎµÄ TMX ×ø±ê
+                    polygonNode->setPosition(objectPos); // ï¿½ï¿½ï¿½Úµï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îµï¿½ TMX ï¿½ï¿½ï¿½ï¿½
 
                     this->addChild(polygonNode, 1);
                 }
@@ -284,4 +285,6 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
     {
         log("Object group 'Objects' not found in TMX map.");
     }
+}
+    _cameraController->release();
 }
