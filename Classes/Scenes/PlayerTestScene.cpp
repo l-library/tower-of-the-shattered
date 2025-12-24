@@ -1,6 +1,10 @@
 #include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
+#include "Entities/Enemy/Bosses/Boss1.h"
+#include"Entities/Enemy/Fly.h"
+#include"Entities/Enemy/Bomber.h"
+#include"Entities/Enemy/Mage.h"
 #include "Maps/ChangeLevel.h"
 
 USING_NS_CC;
@@ -57,6 +61,8 @@ bool PlayerTestScene::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // map_1
+    // boss测试场景
+    // auto map_1 = TMXTiledMap::create("maps/map_boss.tmx");
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
     // 遍历地图生成多边形碰撞箱
@@ -78,6 +84,10 @@ bool PlayerTestScene::init()
     this->addChild(_player, 1);///渲染player
     setupInput();
 
+    // fly敌人测试
+    //auto fly = Mage::create();
+    //fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
+    //this->addChild(fly, 1);
     // 添加两个Slime实例用于测试
     auto slime1 = Slime::create();
     slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
@@ -167,5 +177,114 @@ void PlayerTestScene::setupInput() {
 
 PlayerTestScene::~PlayerTestScene()
 {
+    if (v.size() < 3) return true;
+    float crossl = 0;
+
+    Vec2 v_1 = v[1] - v[0];
+    Vec2 v_2 = v[2] - v[1];
+    double cross = v_1.x * v_2.y - v_1.y * v_2.x;
+
+    return cross > 0;   // >0 ��ʱ��
+}
+
+// ���ɶ���ε���
+void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
+{
+    // �������ײ
+    auto layer = map->getLayer("platform");
+    auto mapsize = map->getMapSize();
+    auto tilesize = map->getTileSize();
+    auto siz = 1;// visibleSize.height / (mapsize.height * tilesize.height);
+    map->setScale(siz);
+
+
+    TMXObjectGroup* objectGroup = map->getObjectGroup("obj"); // �滻Ϊ��Ķ��������
+    if (objectGroup)
+    {
+        // ��ȡ�������е����ж���
+        ValueVector objects = objectGroup->getObjects();
+
+        for (const auto& objValue : objects)
+        {
+            ValueMap objMap = objValue.asValueMap();
+
+            // ����Ƿ����points
+            if (objMap.count("points"))
+            {
+                ValueVector points = objMap.at("points").asValueVector();
+
+                // ��ȡ����
+                std::vector<Vec2> test_clock;
+                for (const auto& pointValue : points)
+                {
+                    ValueMap pointMap = pointValue.asValueMap();
+                    float x = pointMap.at("x").asFloat();
+                    float y = pointMap.at("y").asFloat();
+                    test_clock.push_back(Vec2(x, y));
+                }
+                const int is_clock = isCounterClockwise(test_clock);
+                log("id=%d,isclock=%d", objMap.at("id").asInt(), is_clock);
+                if (!is_clock)
+                {
+                    Vec2 v = test_clock[0];
+                    std::reverse(test_clock.begin() + 1, test_clock.end());
+                }
+
+                int num = 0;
+                std::vector<Vec2> polygonVertices;
+                for (const auto& pointValue : points)
+                {
+                    ValueMap pointMap = pointValue.asValueMap();
+                    float x = test_clock[num].x;
+                    float y = -test_clock[num].y;
+
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+
+                    Vec2 worldPoint(objectX + x, objectY + y);
+                    polygonVertices.push_back(siz * worldPoint);
+                    num++;
+                }
+
+                auto physicsBody = PhysicsBody::createPolygon(polygonVertices.data(),
+                    polygonVertices.size());
+
+                if (physicsBody) {
+                    // ���������������
+                    physicsBody->setDynamic(false);
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+                    Vec2 objectPos(objectX, objectY);
+
+                    std::vector<Vec2> localVertices;
+                    for (const auto& worldPoint : polygonVertices) {
+                        localVertices.push_back(worldPoint - objectPos);
+                    }
+
+                    auto localPhysicsBody = PhysicsBody::createPolygon(localVertices.data(),
+                        localVertices.size());
+
+                    localPhysicsBody->setDynamic(false);
+                    // ������ײ��������
+                    auto polygonNode = Node::create();
+                    polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+                    //��������
+                    localPhysicsBody->setCategoryBitmask(WALL_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+
+                    polygonNode->setPhysicsBody(localPhysicsBody);
+                    polygonNode->setPosition(objectPos); // ���ڵ�λ������Ϊ����ε� TMX ����
+
+                    this->addChild(polygonNode, 1);
+                }
+            }
+        }
+    }
+    else
+    {
+        log("Object group 'Objects' not found in TMX map.");
+    }
+}
     _cameraController->release();
 }
