@@ -1,4 +1,5 @@
 #include "Maps.h"
+#include "TowerOfTheShattered.h"
 
 USING_NS_CC;
 
@@ -22,33 +23,169 @@ bool Maps::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    auto map_1 = TMXTiledMap::create("maps/maps.tmx");
-    auto layer = map_1->getLayer("layer_1");
-    auto mapsize = map_1->getMapSize();
-    auto tilesize = map_1->getTileSize();
-    auto siz = visibleSize.height / (mapsize.height * tilesize.height);
+    auto map_1 = TMXTiledMap::create("maps/map_middle.tmx");
+    buildPolyPhysicsFromLayer(map_1);
 
-    for (int y = 0; y < mapsize.height; ++y)
-    {
-        for (int x = 0; x < mapsize.width; ++x)
-        {
-            int gid = layer->getTileGIDAt(Vec2(x, y));
-            if (gid == 0) 
-                continue;          // 跳过空白格
-
-            auto shape = PhysicsShapeBox::create(tilesize);
-            auto body = PhysicsBody::create();
-            body->addShape(shape);
-            body->setDynamic(false);
-            auto node = Sprite::create("maps/platform.png");
-            node->setPosition(siz * Vec2(
-                x * tilesize.width + tilesize.width / 2,
-                (mapsize.height - 1 - y) * tilesize.height + tilesize.height / 2));
-            node->setPhysicsBody(body);
-            node->setScale(siz);
-            this->addChild(node);
-        }
-    }
     return true;
 }
 
+// 生成多边形地形
+void Maps::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
+{
+    // 多边形碰撞
+    auto layer = map->getLayer("platform");
+    auto mapsize = map->getMapSize();
+    auto tilesize = map->getTileSize();
+    map->setScale(MAP_SIZE);
+
+
+    TMXObjectGroup* objectGroup = map->getObjectGroup("obj"); // 替换为你的对象层名称
+    if (objectGroup)
+    {
+        // 获取对象组中的所有对象
+        ValueVector objects = objectGroup->getObjects();
+
+        for (const auto& objValue : objects)
+        {
+            ValueMap objMap = objValue.asValueMap();
+
+            // 检查是否存在points
+            if (objMap.count("points"))
+            {
+                ValueVector points = objMap.at("points").asValueVector();
+
+                // 获取坐标
+                std::vector<Vec2> polygonVertices;
+                for (const auto& pointValue : points)
+                {
+                    ValueMap pointMap = pointValue.asValueMap();
+                    float x = pointMap.at("x").asFloat();
+                    float y = -pointMap.at("y").asFloat();
+
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+
+                    Vec2 worldPoint(objectX + x, objectY + y);
+                    polygonVertices.push_back(MAP_SIZE * worldPoint);
+                }
+
+                auto physicsBody = PhysicsBody::createPolygon(polygonVertices.data(),
+                    polygonVertices.size());
+
+                if (physicsBody) {
+                    // 设置物理体的属性
+                    physicsBody->setDynamic(false);
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+                    Vec2 objectPos(objectX, objectY);
+
+                    std::vector<Vec2> localVertices;
+                    for (const auto& worldPoint : polygonVertices) {
+                        localVertices.push_back(worldPoint - objectPos);
+                    }
+
+                    auto localPhysicsBody = PhysicsBody::createPolygon(localVertices.data(),
+                        localVertices.size());
+
+                    localPhysicsBody->setDynamic(false);
+                    // 其他碰撞属性设置
+                    auto polygonNode = Node::create();
+                    polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+                    //设置掩码
+                    localPhysicsBody->setCategoryBitmask(WALL_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
+                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
+
+                    polygonNode->setPhysicsBody(localPhysicsBody);
+                    polygonNode->setPosition(objectPos); // 将节点位置设置为多边形的 TMX 坐标
+
+                    this->addChild(polygonNode, 1);
+                }
+            }
+        }
+    }
+    else
+    {
+        log("Object group 'Objects' not found in TMX map.");
+    }
+}
+
+// 生成边界切换碰撞箱
+void Maps::switchLevelBox(cocos2d::TMXTiledMap* map)
+{
+    // 多边形碰撞
+    auto mapsize = map->getMapSize();
+    auto tilesize = map->getTileSize();
+    map->setScale(MAP_SIZE);
+
+
+    TMXObjectGroup* objectGroup = map->getObjectGroup("sensor");
+    if (objectGroup)
+    {
+        // 获取对象组中的所有对象
+        ValueVector objects = objectGroup->getObjects();
+
+        for (const auto& objValue : objects)
+        {
+            ValueMap objMap = objValue.asValueMap();
+
+            // 检查是否存在points
+            if (objMap.count("points"))
+            {
+                ValueVector points = objMap.at("points").asValueVector();
+
+                // 获取坐标
+                std::vector<Vec2> polygonVertices;
+                for (const auto& pointValue : points)
+                {
+                    ValueMap pointMap = pointValue.asValueMap();
+                    float x = pointMap.at("x").asFloat();
+                    float y = -pointMap.at("y").asFloat();
+
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+
+                    Vec2 worldPoint(objectX + x, objectY + y);
+                    polygonVertices.push_back(MAP_SIZE * worldPoint);
+                }
+
+                auto physicsBody = PhysicsBody::createPolygon(polygonVertices.data(),
+                    polygonVertices.size());
+
+                if (physicsBody) {
+                    // 设置物理体的属性
+                    physicsBody->setDynamic(false);
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+                    Vec2 objectPos(objectX, objectY);
+
+                    std::vector<Vec2> localVertices;
+                    for (const auto& worldPoint : polygonVertices) {
+                        localVertices.push_back(worldPoint - objectPos);
+                    }
+
+                    auto localPhysicsBody = PhysicsBody::createPolygon(localVertices.data(),
+                        localVertices.size());
+
+                    localPhysicsBody->setDynamic(false);
+                    // 其他属性设置
+                    auto polygonNode = Node::create();
+                    polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+                    //设置掩码
+                    localPhysicsBody->setCategoryBitmask(SENSOR_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK);
+                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK);
+
+                    polygonNode->setPhysicsBody(localPhysicsBody);
+                    polygonNode->setPosition(objectPos); // 将节点位置设置为多边形的 TMX 坐标
+
+                    this->addChild(polygonNode, 1);
+                }
+            }
+        }
+    }
+    else
+    {
+        log("Object group 'sensor' not found in TMX map.");
+    }
+}

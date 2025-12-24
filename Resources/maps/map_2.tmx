@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="80" height="45" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="58">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <layer id="2" name="background" width="80" height="45">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKFL+f2jrMdQcNVUVVVVVVVVVVVVVVVV1VcPIQG5nQ==
+  </data>
+ </layer>
+ <layer id="1" name="platform" width="80" height="45">
+  <data encoding="base64" compression="zlib">
+   eJztWtFNAzEMfSsAC7io/QYEc5QFEAsA47IPjahFdOQSJ3ZySXRPsvrRxj4/RfazrwcAh91229heLvaYsE/Bb7ayZ8M8Y7muxbnH2HhAmkPH3VOlOKPz5xDj0IK7WJwZ+HNodT+osv8t0eJ+0ML/6WK3VztfP++MY7bEksPa/M3aU7hvWtU+BiHd361jzgRC3R41Owi/fNXm7ga6WsrnX82eyAauNji+atc6UvrXnq8N5u+94KzkbhH+8v8uMP98j9DcP8J/7eOb00HHxG9Spj3PVkuLWfA3gtW6vxr/vr6quavJ9dVyvp9FK/toMb9x7Z+RP4fW81uqPo84CxPW8zsjnm/q+yPy6m+JvtkahLY9KrTb5to94lwX62+aPhbqT/vsK8cH2vUnbd3sdf4l1OWP/Wv9WvmxBqEdfyVzb+/zLyFPv6T6ucXcG4oR85PzTKXx1+rPkr/dwrZ2798iZ2Lv6LVzrfX5paaQ/r9AGiukSVxPW9PPLv7XCuc9g9CuTnKsmTQgYVv+RubOgbAtf73pg1wQdv40IOz8aUDQ5+H6qq8B1/RlqPda8MezqkSb5mhVSRzOSZMHoVwnxvZ70l2AJn5O7rE4Gv4k+67l3kWy3+PnTT2bdt8m7f8cx9fSnFftOrR8LyABof8ayZy20GA+hxIQ+udPAr9uaveSBBl//qx3Moi7JQh2/ZJ9xRCak0fmkNCOv9iOYVQOCfb8lb7f1P6fx2q/mWN+TrHnl8TJff+7W9h+AF4HzHk=
+  </data>
+ </layer>
+ <objectgroup id="6" name="damage">
+  <object id="56" x="400" y="400">
+   <polygon points="0,0 240,0 240,16 0,16"/>
+  </object>
+  <object id="57" x="432" y="208">
+   <polygon points="0,0 208,0 208,16 0,16"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="3" name="obj">
+  <object id="2" x="96" y="464">
+   <polygon points="0,0 -48,48 -96,48 -96,0 0,0"/>
+  </object>
+  <object id="3" x="0" y="512">
+   <polygon points="0,0 48,0 48,96 0,96"/>
+  </object>
+  <object id="4" x="0" y="304">
+   <polygon points="0,0 176,0 176,48 64,48"/>
+  </object>
+  <object id="5" x="0" y="304">
+   <polygon points="0,0 64,48 64,64 0,64"/>
+  </object>
+  <object id="6" x="0" y="368">
+   <polygon points="0,0 48,0 48,96 0,96"/>
+  </object>
+  <object id="8" x="48" y="416">
+   <polygon points="0,0 1120,0 1120,48 0,48"/>
+  </object>
+  <object id="10" x="352" y="368">
+   <polygon points="0,0 48,0 48,48 0,48"/>
+  </object>
+  <object id="11" x="640" y="368">
+   <polygon points="0,0 48,0 48,48 0,48"/>
+  </object>
+  <object id="12" x="800" y="464">
+   <polygon points="0,0 48,0 48,160 0,160"/>
+  </object>
+  <object id="13" x="720" y="560">
+   <polygon points="0,0 80,0 80,48 0,48"/>
+  </object>
+  <object id="14" x="944" y="624">
+   <polygon points="0,0 64,0 64,64 0,64"/>
+  </object>
+  <object id="16" x="304" y="560">
+   <polygon points="0,0 272,0 272,48 0,48"/>
+  </object>
+  <object id="17" x="144" y="576">
+   <polygon points="0,0 48,0 48,64 0,64"/>
+  </object>
+  <object id="18" x="128" y="640">
+   <polygon points="0,0 80,0 80,16 0,16"/>
+  </object>
+  <object id="19" x="112" y="656">
+   <polygon points="0,0 112,0 112,16 0,16"/>
+  </object>
+  <object id="20" x="96" y="672">
+   <polygon points="0,0 144,0 144,16 0,16"/>
+  </object>
+  <object id="21" x="0" y="688">
+   <polygon points="0,0 1280,0 1280,32 0,32"/>
+  </object>
+  <object id="22" x="1216" y="592">
+   <polygon points="0,0 64,0 64,32 32,32"/>
+  </object>
+  <object id="23" x="1248" y="624">
+   <polygon points="0,0 32,0 32,64 0,64"/>
+  </object>
+  <object id="25" x="1072" y="544">
+   <polygon points="0,0 208,0 208,48 0,48"/>
+  </object>
+  <object id="26" x="1232" y="448">
+   <polygon points="0,0 48,0 48,96 0,96 0,0"/>
+  </object>
+  <object id="27" x="1248" y="368">
+   <polygon points="0,0 32,0 32,80 0,80"/>
+  </object>
+  <object id="28" x="1232" y="352">
+   <polygon points="0,0 48,0 48,16 0,16"/>
+  </object>
+  <object id="29" x="1248" y="272">
+   <polygon points="0,0 32,0 32,32 0,32"/>
+  </object>
+  <object id="30" x="880" y="304">
+   <polygon points="0,0 400,0 400,48 0,48"/>
+  </object>
+  <object id="33" x="688" y="224">
+   <polygon points="0,0 256,0 256,48 0,48"/>
+  </object>
+  <object id="34" x="848" y="272">
+   <polygon points="0,0 96,0 96,32 32,32"/>
+  </object>
+  <object id="35" x="640" y="176">
+   <polygon points="0,0 48,0 48,96 0,96"/>
+  </object>
+  <object id="36" x="240" y="208">
+   <polygon points="0,0 48,0 48,64 0,64"/>
+  </object>
+  <object id="37" x="288" y="224">
+   <polygon points="0,0 352,0 352,48 0,48"/>
+  </object>
+  <object id="38" x="384" y="176">
+   <polygon points="0,0 48,0 48,48 0,48"/>
+  </object>
+  <object id="39" x="0" y="192">
+   <polygon points="0,0 48,0 48,112 0,112"/>
+  </object>
+  <object id="40" x="48" y="112">
+   <polygon points="0,0 80,0 80,48 0,48"/>
+  </object>
+  <object id="41" x="0" y="160">
+   <polygon points="0,0 80,0 48,32 0,32"/>
+  </object>
+  <object id="42" x="0" y="0">
+   <polygon points="0,0 48,0 48,160 0,160"/>
+  </object>
+  <object id="43" x="48" y="0">
+   <polygon points="0,0 1232,0 1232,48 0,48"/>
+  </object>
+  <object id="45" x="800" y="48">
+   <polygon points="0,0 144,0 144,96 96,96"/>
+  </object>
+  <object id="46" x="944" y="48">
+   <polygon points="0,0 32,0 0,32"/>
+  </object>
+  <object id="47" x="1216" y="48">
+   <polygon points="0,0 64,0 64,32 32,32"/>
+  </object>
+  <object id="48" x="1248" y="80">
+   <polygon points="0,0 32,0 32,112 0,112"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="sensor">
+  <object id="50" name="right_up" x="1264" y="192">
+   <polygon points="0,0 16,0 16,80 0,80"/>
+  </object>
+  <object id="51" name="left_down" x="0" y="608">
+   <polygon points="0,0 16,0 16,80 0,80"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="trigger">
+  <object id="54" x="944" y="256">
+   <polygon points="0,0 304,0 304,48 0,48"/>
+  </object>
+ </objectgroup>
+</map>

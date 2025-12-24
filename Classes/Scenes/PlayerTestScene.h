@@ -9,8 +9,9 @@ class PlayerTestScene : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();//创建场景
+    static cocos2d::Scene* createWithMap(const std::string& mapFile);
 
-    virtual bool init();//初始化
+    virtual bool init() override;//初始化
 
     void setupInput();//读取输入
 
@@ -18,12 +19,11 @@ public:
 
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
-    
-    void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map);
 
     ~PlayerTestScene();
-
+    std::string _currentMapFile = "maps/map_1.tmx";
 private:
     Player* _player;
     GameCamera* _cameraController;
+
 };
