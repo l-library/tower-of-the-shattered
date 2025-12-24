@@ -6,15 +6,8 @@
 using namespace cocos2d;
 
 Fly::Fly()
-    : attackRange_(100.0f)
-    , movementSpeed_(120.0f)
-    , attackCooldown_(2.0f)
-    , attackTimer_(0.0f)
-    , detectionRange_(200.0f)
-    , chargeSpeed_(250.0f)
+    : chargeSpeed_(250.0f)
     , postChargeUpDistance_(50.0f)
-    , isMovingLeft_(true)
-    , idleTimer_(0.0f)
     , isCharging_(false)
     , isChargeAttackCollided_(false)
 {}
@@ -40,7 +33,7 @@ Fly* Fly::create()
 
 bool Fly::init()
 {
-    if (!EnemyBase::init())
+    if (!SoldierEnemyBase::init())
     {
         return false;
     }
@@ -52,13 +45,15 @@ bool Fly::init()
     this->setBaseAttackPower(8);
     this->setDefense(0);
     
+    // 设置SoldierEnemyBase的属性
+    this->setAttackRange(100.0f);
+    this->setMovementSpeed(120.0f);
+    this->setAttackCooldown(2.0f);
+    this->setDetectionRange(200.0f);
+    
     // 设置行为状态
     isCharging_ = false;
     isChargeAttackCollided_ = false;
-    
-    // 初始化动画相关属性
-    isMovingLeft_ = true;
-    idleTimer_ = 0.0f;
     
     // 设置碰撞箱信息（32x32像素，一个格子大小）
     CollisionBoxInfo collisionInfo;
@@ -146,8 +141,8 @@ void Fly::Dead()
 
 void Fly::BehaviorInit()
 {
-    // 注册行为函数
-    this->addBehavior("idle", std::bind(&Fly::idle, this, std::placeholders::_1));
+    // 注册行为函数：使用父类的idle行为
+    this->addBehavior("idle", std::bind(&SoldierEnemyBase::idle, this, std::placeholders::_1));
     this->addBehavior("recovery", std::bind(&Fly::recovery, this, std::placeholders::_1));
     this->addBehavior("chargeAttack", std::bind(&Fly::chargeAttack, this, std::placeholders::_1));
     
@@ -326,62 +321,7 @@ void Fly::InitSprite()
     }
 }
 
-BehaviorResult Fly::idle(float delta)
-{
-    // 待机行为：交替左右移动
-    idleTimer_ += delta;
-    
-    // 查找玩家
-    EnemyAi::findPlayer(this);
-    
-    // 无论玩家是否在检测范围内，都执行方向切换逻辑，但只有玩家不在时才移动
-    // 这样可以确保动画始终交替，即使玩家在远处
-    if (idleTimer_ >= 2.0f)
-    {
-        idleTimer_ = 0.0f;
-        isMovingLeft_ = !isMovingLeft_;
-        
-        // 切换动画方向
-        if (sprite_ != nullptr)
-        {
-            sprite_->stopAllActions();
-            if (isMovingLeft_ && idleLeftAnimation_ != nullptr)
-            {
-                sprite_->runAction(RepeatForever::create(Animate::create(idleLeftAnimation_)));
-            }
-            else if (!isMovingLeft_ && idleRightAnimation_ != nullptr)
-            {
-                sprite_->runAction(RepeatForever::create(Animate::create(idleRightAnimation_)));
-            }
-        }
-    }
-    
-    // 如果玩家不在检测范围内，根据当前方向移动
-    if (this->getPlayer() == nullptr || !EnemyAi::isPlayerInRange(this, detectionRange_))
-    {
-        if (physicsBody_ != nullptr)
-        {
-            float direction = isMovingLeft_ ? -1.0f : 1.0f;
-            Vec2 velocity = physicsBody_->getVelocity();
-            velocity.x = direction * movementSpeed_ * 0.5f; // 待机时移动速度较慢
-            velocity.y = 0.0f;
-            physicsBody_->setVelocity(velocity);
-        }
-    }
-    else
-    {
-        // 如果找到玩家且在检测范围内，停止移动
-        if (physicsBody_ != nullptr)
-        {
-            Vec2 velocity = physicsBody_->getVelocity();
-            velocity.x = 0.0f;
-            velocity.y = 0.0f;
-            physicsBody_->setVelocity(velocity);
-        }
-    }
-    
-    return { true, 0.0f };
-}
+
 
 BehaviorResult Fly::recovery(float delta)
 {

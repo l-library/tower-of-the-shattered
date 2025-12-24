@@ -79,6 +79,7 @@ public:
     virtual std::string DecideNextBehavior(float delta) override;
     virtual void InitSprite() override;
     virtual void otherUpdate(float delta)override;
+
     // Åö×²»Øµ÷
     virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
     virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;

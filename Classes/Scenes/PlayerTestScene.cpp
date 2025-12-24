@@ -3,6 +3,7 @@
 #include "Entities/Enemy/Slime.h"
 #include "Entities/Enemy/Bosses/Boss1.h"
 #include"Entities/Enemy/Fly.h"
+#include"Entities/Enemy/Bomber.h"
 USING_NS_CC;
 
 #define BLOOD_BAR 1002
@@ -62,7 +63,7 @@ bool PlayerTestScene::init()
     setupInput();
     initBar();
 
-    auto fly = Boss1::create();
+    auto fly = Bomber::create();
     fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
     this->addChild(fly, 1);
 
@@ -267,8 +268,8 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
                     polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
                     //设置掩码
                     localPhysicsBody->setCategoryBitmask(WALL_MASK);
-                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
-                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
+                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
 
                     polygonNode->setPhysicsBody(localPhysicsBody);
                     polygonNode->setPosition(objectPos); // 将节点位置设置为多边形的 TMX 坐标

@@ -1,4 +1,5 @@
 #include "Slime.h"
+#include "SoldierEnemyBase.h"
 #include "TowerOfTheShattered.h"
 #include "cocos2d.h"
 #include "Entities/Bullet/Bullet.h"
@@ -7,37 +8,32 @@ using namespace cocos2d;
 
 bool Slime::init()
 {
-    if (!EnemyBase::init())
+    if (!SoldierEnemyBase::init())
     {
         return false;
     }
     
-    // 设置Slime的基本属性
+    // 初始化Slime的基本属性
     this->setMaxVitality(100);
     this->setCurrentVitality(100);
-    this->setStaggerResistance(INT_MAX); // 韧性为无限大
+    this->setStaggerResistance(INT_MAX); // 史莱姆不会被打断
     this->setBaseAttackPower(10);
     this->setDefense(0);
     
-    // 设置Slime特有的属性
-    attackRange_ = 100.0f;
-    movementSpeed_ = 150.0f;
+    // 设置Slime的行为参数
+    this->setAttackRange(100.0f);
+    this->setMovementSpeed(150.0f);
+    this->setAttackCooldown(2.0f);
+    this->setDetectionRange(200.0f);
     jumpSpeed_ = 300.0f;
-    attackCooldown_ = 2.0f;
-    attackTimer_ = 0.0f;
-    detectionRange_ = 200.0f;
     
-    // 初始化行为状态
+    // 初始化行为??
     isJumping_ = false;
     isCharging_ = false;
     isJumpAttackCollided_ = false;
     isChargeAttackCollided_ = false;
     
-    // 初始化动画相关属性
-    isMovingLeft_ = true;
-    idleTimer_ = 0.0f;
-    
-    // 设置碰撞箱信息（32x32像素，一个格子大小）
+    // 创建碰撞盒信息，设置为32x32的大小
     CollisionBoxInfo collisionInfo;
     collisionInfo.width = GRID_SIZE;
     collisionInfo.height = GRID_SIZE;
@@ -48,10 +44,10 @@ bool Slime::init()
     collisionInfo.mass = 1.0f;
     this->setCollisionBoxInfo(collisionInfo);
     
-    // 初始化物理碰撞体
+    // 初始化物理体
     this->InitPhysicsBody();
     
-    // 初始化行为
+    // 减少生命值
     this->BehaviorInit();
     
     return true;
@@ -59,10 +55,10 @@ bool Slime::init()
 
 void Slime::Hitted(int damage, int poise_damage)
 {
-    // 扣除生命值
+    // 寻找玩家?
     this->setCurrentVitality(this->getCurrentVitality() - damage);
     
-    // 被击中时红一下
+    // 播放受伤动画
     if (sprite_ != nullptr)
     {
         auto redAction = TintTo::create(0.1f, 255, 0, 0);
@@ -70,18 +66,18 @@ void Slime::Hitted(int damage, int poise_damage)
         sprite_->runAction(Sequence::create(redAction, restoreAction, nullptr));
     }
     
-    // 韧性无限大，不处理破韧
+    // 这里可以添加硬直逻辑
 }
 
 void Slime::Dead()
 {
-    // 播放死亡动画
+    // 处理死亡效果
     if (sprite_ != nullptr)
     {
         sprite_->stopAllActions();
-        sprite_->setColor(Color3B::WHITE); // 恢复原色
+        sprite_->setColor(Color3B::WHITE); // 恢复颜色
         
-        // 创建死亡动画序列：播放死亡动画后淡出
+        // 如果有死亡动画，播放死亡动画然后淡出
         if (deadAnimation_ != nullptr)
         {
             auto deathAction = Animate::create(deadAnimation_);
@@ -109,7 +105,7 @@ void Slime::Dead()
         }
     }
     
-    // 立即移除碰撞箱，防止继续与其他物体碰撞
+    // 移除物理体，防止继续交互
     if (physicsBody_ != nullptr)
     {
         this->removeComponent(physicsBody_);
@@ -119,8 +115,8 @@ void Slime::Dead()
 
 void Slime::BehaviorInit()
 {
-    // 注册行为函数
-    this->addBehavior("idle", std::bind(&Slime::idle, this, std::placeholders::_1));
+    // 添加行为
+    this->addBehavior("idle", std::bind(&SoldierEnemyBase::idle, this, std::placeholders::_1));
     this->addBehavior("recovery", std::bind(&Slime::recovery, this, std::placeholders::_1));
     this->addBehavior("jumpAttack", std::bind(&Slime::jumpAttack, this, std::placeholders::_1));
     this->addBehavior("chargeAttack", std::bind(&Slime::chargeAttack, this, std::placeholders::_1));
@@ -131,19 +127,19 @@ void Slime::BehaviorInit()
 
 std::string Slime::DecideNextBehavior(float delta)
 {
-    // 查找玩家
+    // ???????
     EnemyAi::findPlayer(this);
     
     // 更新攻击计时器
     attackTimer_ += delta;
     
-    // 如果检测到玩家且攻击冷却结束
+    // 如果玩家在攻击范围内且攻击冷却结束
     if (this->getPlayer() != nullptr && attackTimer_ >= attackCooldown_)
     {
-        // 检测玩家是否可见、在攻击范围内且水平
+        // 如果玩家在可见范围内、检测范围内且在水平方向
         if (EnemyAi::isPlayerVisible(this) && EnemyAi::isPlayerInRange(this, detectionRange_) && EnemyAi::isPlayerHorizontal(this, GRID_SIZE * 2))
         {
-            // 随机选择跳跃攻击或冲撞攻击
+            // 随机选择跳跃攻击或冲锋攻击
             int random = rand() % 2;
             attackTimer_ = 0.0f;
             
@@ -158,19 +154,19 @@ std::string Slime::DecideNextBehavior(float delta)
         }
     }
     
-    // 默认返回待机行为
+    // 否则保持待机状态
     return "idle";
 }
 
 void Slime::InitSprite()
 {
-    // 加载纹理图集到精灵帧缓存
+    // 加载精灵帧缓存
     auto cache = SpriteFrameCache::getInstance();
     cache->addSpriteFramesWithFile("Enemy/Slime/slime_walk_left.plist", "Enemy/Slime/slime_walk_left.png");
     cache->addSpriteFramesWithFile("Enemy/Slime/slime_walk_right.plist", "Enemy/Slime/slime_walk_right.png");
     cache->addSpriteFramesWithFile("Enemy/Slime/slime_dead.plist", "Enemy/Slime/slime_dead.png");
     
-    // 创建向左行走动画
+    // 创建向左移动的动画
     Vector<SpriteFrame*> leftFrames;
     for (int i = 0; i < 2; i++)
     {
@@ -191,7 +187,7 @@ void Slime::InitSprite()
         }
     }
     
-    // 创建向右行走动画
+    // 创建向右移动的动画
     Vector<SpriteFrame*> rightFrames;
     for (int i = 0; i < 2; i++)
     {
@@ -243,23 +239,23 @@ void Slime::InitSprite()
         }
     }
     
-    // 先移除基类创建的精灵（如果存在）
+    // 移除旧精灵，避免内存泄漏
     if (sprite_ != nullptr)
     {
         sprite_->removeFromParent();
         sprite_ = nullptr;
     }
     
-    // 创建精灵并设置初始帧
+    // 创建新精灵实例
     sprite_ = Sprite::createWithSpriteFrame(cache->getSpriteFrameByName("slime_walk_left0000"));
     if (sprite_ != nullptr)
     {
         // 设置精灵大小为32x32像素
         sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
-        sprite_->setPosition(Vec2::ZERO); // 设置精灵在节点中心
+        sprite_->setPosition(Vec2::ZERO); // 设置精灵相对于父节点的位置
         this->addChild(sprite_);
         
-        // 开始播放向左行走动画
+        // 播放初始的向左移动动画
         if (idleLeftAnimation_ != nullptr)
         {
             sprite_->runAction(RepeatForever::create(Animate::create(idleLeftAnimation_)));
@@ -267,86 +263,11 @@ void Slime::InitSprite()
     }
 }
 
-BehaviorResult Slime::idle(float delta)
-{
-    // 待机行为：交替左右移动
-    idleTimer_ += delta;
-    
-    // 查找玩家
-    EnemyAi::findPlayer(this);
-    
-    // 无论玩家是否在检测范围内，都执行方向切换逻辑，但只有玩家不在时才移动
-    // 这样可以确保动画始终交替，即使玩家在远处
-    if (idleTimer_ >= 2.0f)
-    {
-        idleTimer_ = 0.0f;
-        isMovingLeft_ = !isMovingLeft_;
-        
-        // 切换动画方向
-            if (sprite_ != nullptr)
-            {
-                sprite_->stopAllActions();
-                if (isMovingLeft_ && idleLeftAnimation_ != nullptr)
-                {
-                    log("Playing idleLeftAnimation_");
-                    auto animate = Animate::create(idleLeftAnimation_);
-                    if (animate != nullptr)
-                    {
-                        sprite_->runAction(RepeatForever::create(animate));
-                    }
-                    else
-                    {
-                        log("Failed to create animate from idleLeftAnimation_");
-                    }
-                }
-                else if (!isMovingLeft_ && idleRightAnimation_ != nullptr)
-                {
-                    log("Playing idleRightAnimation_");
-                    auto animate = Animate::create(idleRightAnimation_);
-                    if (animate != nullptr)
-                    {
-                        sprite_->runAction(RepeatForever::create(animate));
-                    }
-                    else
-                    {
-                        log("Failed to create animate from idleRightAnimation_");
-                    }
-                }
-                else
-                {
-                    log("No valid animation to play: isMovingLeft_=%d, idleLeftAnimation_=%p, idleRightAnimation_=%p", isMovingLeft_, idleLeftAnimation_, idleRightAnimation_);
-                }
-            }
-    }
-    
-    // 如果玩家不在检测范围内，根据当前方向移动
-    if (this->getPlayer() == nullptr || !EnemyAi::isPlayerInRange(this, detectionRange_))
-    {
-        if (physicsBody_ != nullptr)
-        {
-            float direction = isMovingLeft_ ? -1.0f : 1.0f;
-            Vec2 velocity = physicsBody_->getVelocity();
-            velocity.x = direction * movementSpeed_ * 0.5f; // 待机时移动速度较慢
-            physicsBody_->setVelocity(velocity);
-        }
-    }
-    else
-    {
-        // 如果找到玩家且在检测范围内，停止移动
-        if (physicsBody_ != nullptr)
-        {
-            Vec2 velocity = physicsBody_->getVelocity();
-            velocity.x = 0.0f;
-            physicsBody_->setVelocity(velocity);
-        }
-    }
-    
-    return { true, 0.0f };
-}
+
 
 BehaviorResult Slime::recovery(float delta)
 {
-    // 后摇行为：原地不动，持续0.5秒
+    // 恢复状态持续0.5秒
     static float recoveryTimer = 0.0f;
     recoveryTimer += delta;
     
@@ -361,13 +282,13 @@ BehaviorResult Slime::recovery(float delta)
 
 BehaviorResult Slime::jumpAttack(float delta)
 {
-    // 如果已经死亡，立即结束攻击行为
+    // 如果敌人已经死亡，结束行为
     if (currentState_ == EnemyState::DEAD)
     {
         return { true, 0.0f };
     }
     
-    // 跳跃攻击行为
+    // 如果还没开始跳跃
     if (!isJumping_)
     {
         // 开始跳跃
@@ -375,19 +296,19 @@ BehaviorResult Slime::jumpAttack(float delta)
         // 重置碰撞标志
         isJumpAttackCollided_ = false;
         
-        // 计算向玩家的方向
+        // 计算跳跃方向
         Vec2 direction = Vec2::ZERO;
         if (this->getPlayer() != nullptr)
         {
             direction = (this->getPlayer()->getPosition() - this->getPosition()).getNormalized();
         }
         
-        // 根据玩家方向设置精灵动画
+        // 更新精灵动画和颜色
         if (sprite_ != nullptr)
         {
             sprite_->stopAllActions();
             
-            // 根据方向设置正确的动画
+            // 根据方向选择动画
             if (direction.x < 0 && idleLeftAnimation_ != nullptr) // 向左
             {
                 auto animate = Animate::create(idleLeftAnimation_);
@@ -405,7 +326,7 @@ BehaviorResult Slime::jumpAttack(float delta)
                 }
             }
             
-            // 攻击时让精灵变红
+            // 如果还没开始冲锋??
             auto tintAction = TintTo::create(0.1f, 255, 0, 0);
             if (tintAction != nullptr)
             {
@@ -413,16 +334,16 @@ BehaviorResult Slime::jumpAttack(float delta)
             }
         }
         
-        // 设置跳跃速度（向上跳跃，同时向玩家方向移动）
+        // 设置跳跃速度
         if (physicsBody_ != nullptr)
         {
             Vec2 jumpVelocity = Vec2(direction.x * movementSpeed_, jumpSpeed_);
             physicsBody_->setVelocity(jumpVelocity);
         }
         
-        // 创建跳跃攻击子弹，碰撞箱为Slime的1.2倍
+        // 创建跳跃攻击的碰撞区域，比Slime大1.2倍
         auto jumpBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
-            // 检查自身是否已经死亡或被移除
+            // 子弹更新回调
             if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
             {
                 bullet->cleanupBullet();
@@ -444,18 +365,18 @@ BehaviorResult Slime::jumpAttack(float delta)
         }
     }
     
-    // 检查是否落地或撞到其他碰撞箱
+    // 如果跳跃结束或发生碰撞
     if (isJumping_ && physicsBody_ != nullptr && (physicsBody_->getVelocity().y == 0 || isJumpAttackCollided_))
     {
         isJumping_ = false;
         
-        // 攻击结束后恢复原色
+        // 恢复精灵颜色
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
         
-        return { true, 2.0f }; // 攻击完成，后摇2秒
+        return { true, 2.0f }; // 完成跳跃攻击，冷却2秒
     }
     
     return { false, 0.0f };
@@ -463,33 +384,33 @@ BehaviorResult Slime::jumpAttack(float delta)
 
 BehaviorResult Slime::chargeAttack(float delta)
 {
-    // 如果已经死亡，立即结束攻击行为
+    // 如果敌人已经死亡，结束行为
     if (currentState_ == EnemyState::DEAD)
     {
         return { true, 0.0f };
     }
     
-    // 冲撞攻击行为
+    // ??????????
     if (!isCharging_)
     {
-        // 开始冲撞
+        // 开始冲锋
         isCharging_ = true;
         // 重置碰撞标志
         isChargeAttackCollided_ = false;
         
-        // 计算向玩家的方向
+        // 计算冲锋方向
         Vec2 direction = Vec2::ZERO;
         if (this->getPlayer() != nullptr)
         {
             direction = (this->getPlayer()->getPosition() - this->getPosition()).getNormalized();
         }
         
-        // 根据玩家方向设置精灵动画
+        // 更新精灵动画和颜色
         if (sprite_ != nullptr)
         {
             sprite_->stopAllActions();
             
-            // 根据方向设置正确的动画
+            // 根据方向选择动画
             if (direction.x < 0 && idleLeftAnimation_ != nullptr) // 向左
             {
                 auto animate = Animate::create(idleLeftAnimation_);
@@ -507,7 +428,7 @@ BehaviorResult Slime::chargeAttack(float delta)
                 }
             }
             
-            // 攻击时让精灵变红
+            // 停止冲锋???????
             auto tintAction = TintTo::create(0.1f, 255, 0, 0);
             if (tintAction != nullptr)
             {
@@ -515,16 +436,16 @@ BehaviorResult Slime::chargeAttack(float delta)
             }
         }
         
-        // 设置冲撞速度（向玩家方向快速移动）
+        // 设置冲锋速度
         if (physicsBody_ != nullptr)
         {
             Vec2 chargeVelocity = Vec2(direction.x * movementSpeed_ * 2, 0);
             physicsBody_->setVelocity(chargeVelocity);
         }
         
-        // 创建冲撞攻击子弹，碰撞箱为Slime的1.2倍
+        // 创建冲锋攻击的碰撞区域，比Slime大1.2倍
         auto chargeBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
-            // 检查自身是否已经死亡或被移除
+            // 子弹更新回调
             if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
             {
                 bullet->cleanupBullet();
@@ -546,7 +467,7 @@ BehaviorResult Slime::chargeAttack(float delta)
         }
     }
     
-    // 冲撞持续一段时间后结束或撞到其他碰撞箱
+    // 控制冲锋持续时间
     static float chargeTimer = 0.0f;
     chargeTimer += delta;
     
@@ -555,18 +476,17 @@ BehaviorResult Slime::chargeAttack(float delta)
         chargeTimer = 0.0f;
         isCharging_ = false;
         
-        // 停止冲撞
         if (physicsBody_ != nullptr)
         {
             physicsBody_->setVelocity(Vec2::ZERO);
         }
         
-        // 攻击结束后恢复原色
+        // 恢复精灵颜色
         if (sprite_ != nullptr)
         {
             sprite_->runAction(TintTo::create(0.1f, 255, 255, 255));
         }
-        return { true, 2.0f }; // 攻击完成，后摇2秒
+        return { true, 2.0f }; // 完成冲锋攻击，冷却2秒
     }
 
     return { false, 0.0f };
@@ -579,7 +499,7 @@ bool Slime::onContactBegin(PhysicsContact& contact)
     auto nodeA = contact.getShapeA()->getBody()->getNode();
     auto nodeB = contact.getShapeB()->getBody()->getNode();
     
-    // 确定当前Slime节点和对方节点
+    // 确定哪一方是Slime
     Node* slimeNode = nullptr;
     Node* otherNode = nullptr;
     
@@ -599,13 +519,13 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         return true;
     }
     
-    // 检测是否在跳跃攻击或冲撞攻击中
+    // 如果正在跳跃或冲锋攻击
     if (isJumping_ || isCharging_)
     {
-        // 检测是否撞到了其他碰撞箱（除了自身）
+        // 如果碰撞到其他物体
         if (otherNode != this)
         {
-            // 设置相应的碰撞标志
+            // 设置碰撞标志
             if (isJumping_)
             {
                 isJumpAttackCollided_ = true;
@@ -617,18 +537,18 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         }
     }
     
-    // 检测是否碰到墙
+    // 如果碰撞到墙
     if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
     {
-        // 碰到墙，不处理特殊逻辑（物理引擎会自动处理穿墙问题）
+        // 允许与墙碰撞，不做特殊处理
         return true;
     }
     
-    // 检测是否碰到主角
+    // 如果碰撞到玩家
     if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
     {
         
-        // 反方向弹开一点距离
+        // 给玩家施加一个力
         Vec2 direction = (otherNode->getPosition() - slimeNode->getPosition()).getNormalized();
         otherNode->getPhysicsBody()->setVelocity(direction * 100);
         
