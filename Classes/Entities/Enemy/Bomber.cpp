@@ -126,7 +126,7 @@ std::string Bomber::DecideNextBehavior(float delta)
     attackTimer_ += delta;
     
     // 如果玩家在攻击范围内且攻击冷却结束
-    if (this->getPlayer() != nullptr && attackTimer_ >= attackCooldown_)
+    if ((this->getPlayer() != nullptr && attackTimer_ >= attackCooldown_))
     {
         // 如果玩家在可见范围内、检测范围内
         if (EnemyAi::isPlayerVisible(this) && EnemyAi::isPlayerInRange(this, detectionRange_))
@@ -272,27 +272,21 @@ BehaviorResult Bomber::throwBombAttack(float delta)
             direction = (this->getPlayer()->getPosition() - this->getPosition()).getNormalized();
         }
         
-        // 更新精灵动画为停止动画
+        // 更新精灵动画和朝向
         if (sprite_ != nullptr)
         {
             sprite_->stopAllActions();
             
-            // 获取停止动画的精灵帧
-            auto cache = SpriteFrameCache::getInstance();
-            SpriteFrame* stopFrame = nullptr;
-            
-            if (direction.x < 0)
+            // 根据方向设置精灵朝向
+            if (direction.x < 0) // 玩家在左侧，敌人朝左
             {
-                stopFrame = cache->getSpriteFrameByName("hero_stop0000");
+                sprite_->setFlippedX(false);
+                sprite_->setSpriteFrame("bomber_stop0000");
             }
-            else
+            else // 玩家在右侧，敌人朝右
             {
-                stopFrame = cache->getSpriteFrameByName("hero_stop0000");
-            }
-            
-            if (stopFrame != nullptr)
-            {
-                sprite_->setSpriteFrame(stopFrame);
+                sprite_->setFlippedX(true);
+                sprite_->setSpriteFrame("bomber_stop0000");
             }
         }
         
@@ -440,60 +434,11 @@ BehaviorResult Bomber::throwBombAttack(float delta)
 
 bool Bomber::onContactBegin(cocos2d::PhysicsContact& contact)
 {
-    auto nodeA = contact.getShapeA()->getBody()->getNode();
-    auto nodeB = contact.getShapeB()->getBody()->getNode();
-    
-    // 确定哪一方是Bomber
-    Node* bomberNode = nullptr;
-    Node* otherNode = nullptr;
-    
-    if (nodeA == this)
-    {
-        bomberNode = nodeA;
-        otherNode = nodeB;
-    }
-    else if (nodeB == this)
-    {
-        bomberNode = nodeB;
-        otherNode = nodeA;
-    }
-    
-    if (bomberNode == nullptr || otherNode == nullptr)
-    {
-        return true;
-    }
-    
-    // 如果碰撞到墙
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
-    {
-        // 允许与墙碰撞，不做特殊处理
-        return true;
-    }
-    
-    // 如果碰撞到玩家
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
-    {
-        // 给玩家施加一个力
-        Vec2 direction = (otherNode->getPosition() - bomberNode->getPosition()).getNormalized();
-        otherNode->getPhysicsBody()->setVelocity(direction * 100);
-        
-        return true;
-    }
-    
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_BULLET_MASK)
-    {
-        Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
-        if (bullet != nullptr)
-        {
-            Hitted(bullet->getDamage());
-        }
-        return true;
-    }
-    
-    return EnemyBase::onContactBegin(contact);
+    // 调用父类的碰撞处理逻辑
+    return SoldierEnemyBase::onContactBegin(contact);
 }
 
 bool Bomber::onContactSeparate(cocos2d::PhysicsContact& contact)
 {
-    return EnemyBase::onContactSeparate(contact);
+    return SoldierEnemyBase::onContactSeparate(contact);
 }

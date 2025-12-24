@@ -519,7 +519,7 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         return true;
     }
     
-    // 如果正在跳跃或冲锋攻击
+    // Slime特有的碰撞逻辑：跳跃和冲锋攻击的碰撞检测
     if (isJumping_ || isCharging_)
     {
         // 如果碰撞到其他物体
@@ -537,39 +537,11 @@ bool Slime::onContactBegin(PhysicsContact& contact)
         }
     }
     
-    // 如果碰撞到墙
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
-    {
-        // 允许与墙碰撞，不做特殊处理
-        return true;
-    }
-    
-    // 如果碰撞到玩家
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
-    {
-        
-        // 给玩家施加一个力
-        Vec2 direction = (otherNode->getPosition() - slimeNode->getPosition()).getNormalized();
-        otherNode->getPhysicsBody()->setVelocity(direction * 100);
-        
-        return true;
-    }
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_BULLET_MASK)
-    {
-        Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
-        if (bullet!= nullptr)
-        {
-            Hitted(bullet->getDamage());
-
-        }
-        return true;
-
-    }
-    
-    return EnemyBase::onContactBegin(contact);
+    // 调用父类的碰撞处理逻辑
+    return SoldierEnemyBase::onContactBegin(contact);
 }
 
 bool Slime::onContactSeparate(PhysicsContact& contact)
 {
-    return EnemyBase::onContactSeparate(contact);
+    return SoldierEnemyBase::onContactSeparate(contact);
 }

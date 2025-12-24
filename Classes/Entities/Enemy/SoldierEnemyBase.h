@@ -62,4 +62,8 @@ public:
     void setIdleLeftAnimation(cocos2d::RefPtr<cocos2d::Animation> animation);
     void setIdleRightAnimation(cocos2d::RefPtr<cocos2d::Animation> animation);
     void setDeadAnimation(cocos2d::RefPtr<cocos2d::Animation> animation);
+    
+    // 重写碰撞回调函数
+    virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
+    virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;
 };

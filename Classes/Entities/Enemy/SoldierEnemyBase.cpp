@@ -179,3 +179,64 @@ void SoldierEnemyBase::setDeadAnimation(RefPtr<Animation> animation)
 {
     deadAnimation_ = animation;
 }
+
+bool SoldierEnemyBase::onContactBegin(cocos2d::PhysicsContact& contact)
+{
+    auto nodeA = contact.getShapeA()->getBody()->getNode();
+    auto nodeB = contact.getShapeB()->getBody()->getNode();
+    
+    // 确定哪一方是敌人
+    Node* enemyNode = nullptr;
+    Node* otherNode = nullptr;
+    
+    if (nodeA == this)
+    {
+        enemyNode = nodeA;
+        otherNode = nodeB;
+    }
+    else if (nodeB == this)
+    {
+        enemyNode = nodeB;
+        otherNode = nodeA;
+    }
+    
+    if (enemyNode == nullptr || otherNode == nullptr)
+    {
+        return true;
+    }
+    
+    // 如果碰撞到墙
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
+    {
+        // 允许与墙碰撞，不做特殊处理
+        return true;
+    }
+    
+    // 如果碰撞到玩家
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
+    {
+        // 给玩家施加一个力
+        Vec2 direction = (otherNode->getPosition() - enemyNode->getPosition()).getNormalized();
+        otherNode->getPhysicsBody()->setVelocity(direction * 100);
+        
+        return true;
+    }
+    
+    // 如果碰撞到玩家子弹
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_BULLET_MASK)
+    {
+        Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
+        if (bullet != nullptr)
+        {
+            Hitted(bullet->getDamage());
+        }
+        return true;
+    }
+    
+    return EnemyBase::onContactBegin(contact);
+}
+
+bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
+{
+    return EnemyBase::onContactSeparate(contact);
+}

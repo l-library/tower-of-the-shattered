@@ -4,6 +4,7 @@
 #include "Entities/Enemy/Bosses/Boss1.h"
 #include"Entities/Enemy/Fly.h"
 #include"Entities/Enemy/Bomber.h"
+#include"Entities/Enemy/Mage.h"
 USING_NS_CC;
 
 #define BLOOD_BAR 1002
@@ -63,7 +64,7 @@ bool PlayerTestScene::init()
     setupInput();
     initBar();
 
-    auto fly = Bomber::create();
+    auto fly = Mage::create();
     fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
     this->addChild(fly, 1);
 

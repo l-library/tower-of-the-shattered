@@ -478,7 +478,7 @@ bool Fly::onContactBegin(PhysicsContact& contact)
         return true;
     }
     
-    // 检测是否在冲撞攻击中
+    // Fly特有的碰撞逻辑：检测冲撞攻击的碰撞标志
     if (isCharging_)
     {
         // 检测是否撞到了其他碰撞箱（除了自身）
@@ -489,37 +489,11 @@ bool Fly::onContactBegin(PhysicsContact& contact)
         }
     }
     
-    // 检测是否碰到墙
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == WALL_MASK)
-    {
-        // 碰到墙，不处理特殊逻辑（物理引擎会自动处理穿墙问题）
-        return true;
-    }
-    
-    // 检测是否碰到主角
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_MASK)
-    {
-        // 反方向弹开一点距离
-        Vec2 direction = (otherNode->getPosition() - flyNode->getPosition()).getNormalized();
-        otherNode->getPhysicsBody()->setVelocity(direction * 100);
-        
-        return true;
-    }
-    
-    if (otherNode->getPhysicsBody()->getCategoryBitmask() == PLAYER_BULLET_MASK)
-    {
-        Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
-        if (bullet != nullptr)
-        {
-            Hitted(bullet->getDamage());
-        }
-        return true;
-    }
-    
-    return EnemyBase::onContactBegin(contact);
+    // 调用父类的碰撞处理逻辑
+    return SoldierEnemyBase::onContactBegin(contact);
 }
 
 bool Fly::onContactSeparate(PhysicsContact& contact)
 {
-    return EnemyBase::onContactSeparate(contact);
+    return SoldierEnemyBase::onContactSeparate(contact);
 }

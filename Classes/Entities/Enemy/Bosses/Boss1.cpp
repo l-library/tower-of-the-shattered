@@ -1290,7 +1290,7 @@ bool Boss1::onContactBegin(PhysicsContact& contact)
         Bullet* bullet = dynamic_cast<Bullet*>(otherNode);
         if (bullet != nullptr)
         {
-            Hitted(bullet->getDamage()-this->getDefense(), bullet->getDamage() * 2); // 子弹造成双倍韧性伤害
+            Hitted(bullet->getDamage()-this->getDefense()); // 子弹造成双倍韧性伤害
         }
         return true;
     }
