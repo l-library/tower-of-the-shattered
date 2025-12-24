@@ -50,7 +50,7 @@ bool Player::init()
     _maxMagic = 100.0;
     _magic = _maxMagic;
     _speed = 300.0;     // 水平移动最大速度
-    _jumpForce = 500.0; // 跳跃冲量 
+    _jumpForce = 900.0; // 跳跃冲量 
     _dodgeForce = 300.0;
     _acceleration = 1000.0;
     _deceleration = 2000.0; 
@@ -162,8 +162,8 @@ void Player::initPhysics()
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
     footShape->setCategoryBitmask(PLAYER_MASK);
-    footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
-    footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK);
+    footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | WALL_MASK | SENSOR_MASK);
+    footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | SENSOR_MASK);
     footShape->setTag(TAG_FEET); // 标记为脚
 
     _physicsBody->addShape(footShape);

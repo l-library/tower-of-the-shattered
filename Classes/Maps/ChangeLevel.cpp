@@ -218,8 +218,8 @@ void setupCollisionListener(cocos2d::Scene* scene)
         unsigned int maskB = bodyB->getCategoryBitmask();
 
         // 玩家碰到了传感器
-        if ((maskA == PLAYER_MASK && maskB == SENSOR_MASK) ||
-            (maskA == SENSOR_MASK && maskB == PLAYER_MASK)) {
+        if ((maskA & PLAYER_MASK && maskB & SENSOR_MASK) ||
+            (maskA & SENSOR_MASK && maskB & PLAYER_MASK)) {
 
             // 找出哪个是传感器节点
             Node* sensorNode = nullptr;

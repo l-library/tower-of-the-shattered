@@ -1,10 +1,7 @@
 #include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
-#include "Entities/Enemy/Bosses/Boss1.h"
-#include"Entities/Enemy/Fly.h"
-#include"Entities/Enemy/Bomber.h"
-#include"Entities/Enemy/Mage.h"
+#include "Entities/Enemy/Fly.h"
 #include "Maps/ChangeLevel.h"
 
 USING_NS_CC;
@@ -17,14 +14,14 @@ Scene* PlayerTestScene::createScene()
 }
 
 Scene* PlayerTestScene::createWithMap(const std::string& mapFile) {
-    // 1. 直接创建实例，不调用默认的 create()
+    // 1. ֱ�Ӵ���ʵ����������Ĭ�ϵ� create()
     PlayerTestScene* pRet = new(std::nothrow) PlayerTestScene();
 
     if (pRet) {
-        // 2. 先设置地图文件名
+        // 2. �����õ�ͼ�ļ���
         pRet->_currentMapFile = mapFile;
 
-        // 3. 再调用 init()
+        // 3. �ٵ��� init()
         if (pRet->init()) {
             pRet->autorelease();
             return pRet;
@@ -61,62 +58,57 @@ bool PlayerTestScene::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // map_1
-    // boss测试场景
-    // auto map_1 = TMXTiledMap::create("maps/map_boss.tmx");
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // 遍历地图生成多边形碰撞箱
+    // ������ͼ���ɶ������ײ��
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
     this->addChild(map_1, -1);
 
-    //加载动画文件
+    //���ض����ļ�
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    //创建player类
+    //����player��
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
     _player->setScale(2 * 32 / contentSize.width);
-    this->addChild(_player, 1);///渲染player
+    this->addChild(_player, 1);///��Ⱦplayer
     setupInput();
 
-    // fly敌人测试
-    //auto fly = Mage::create();
-    //fly->setPosition(Vec2(visibleSize.width / 1.5f + origin.x, visibleSize.height / 15 + origin.y + 30));
-    //this->addChild(fly, 1);
-    // 添加两个Slime实例用于测试
-    auto slime1 = Slime::create();
+    // ��������Slimeʵ�����ڲ���
+    auto slime1 = Fly::create();
     slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime1, 1);
 
-    auto slime2 = Slime::create();
+    auto slime2 = Fly::create();
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 
     setupCollisionListener(this);
 
-    // 初始化摄像机和 UI 控制器
+    // ��ʼ��������� UI ������
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
+    _cameraController->retain(); // ��Ϊ�� Ref ���ͣ���Ҫ retain ��ֹ���Զ��ͷ�
     this->scheduleUpdate();
 
     // 播放背景音乐
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
+
     return true;
 }
 
 void PlayerTestScene::update(float dt) {
-    // 每一帧只需要通知控制器更新
+    // ÿһֻ֡��Ҫ֪ͨ����������
     _cameraController->update(dt);
 }
 
 void PlayerTestScene::setupInput() {
-    // 创建输入监听
+    // �����������
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
@@ -177,114 +169,5 @@ void PlayerTestScene::setupInput() {
 
 PlayerTestScene::~PlayerTestScene()
 {
-    if (v.size() < 3) return true;
-    float crossl = 0;
-
-    Vec2 v_1 = v[1] - v[0];
-    Vec2 v_2 = v[2] - v[1];
-    double cross = v_1.x * v_2.y - v_1.y * v_2.x;
-
-    return cross > 0;   // >0 ��ʱ��
-}
-
-// ���ɶ���ε���
-void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
-{
-    // �������ײ
-    auto layer = map->getLayer("platform");
-    auto mapsize = map->getMapSize();
-    auto tilesize = map->getTileSize();
-    auto siz = 1;// visibleSize.height / (mapsize.height * tilesize.height);
-    map->setScale(siz);
-
-
-    TMXObjectGroup* objectGroup = map->getObjectGroup("obj"); // �滻Ϊ��Ķ��������
-    if (objectGroup)
-    {
-        // ��ȡ�������е����ж���
-        ValueVector objects = objectGroup->getObjects();
-
-        for (const auto& objValue : objects)
-        {
-            ValueMap objMap = objValue.asValueMap();
-
-            // ����Ƿ����points
-            if (objMap.count("points"))
-            {
-                ValueVector points = objMap.at("points").asValueVector();
-
-                // ��ȡ����
-                std::vector<Vec2> test_clock;
-                for (const auto& pointValue : points)
-                {
-                    ValueMap pointMap = pointValue.asValueMap();
-                    float x = pointMap.at("x").asFloat();
-                    float y = pointMap.at("y").asFloat();
-                    test_clock.push_back(Vec2(x, y));
-                }
-                const int is_clock = isCounterClockwise(test_clock);
-                log("id=%d,isclock=%d", objMap.at("id").asInt(), is_clock);
-                if (!is_clock)
-                {
-                    Vec2 v = test_clock[0];
-                    std::reverse(test_clock.begin() + 1, test_clock.end());
-                }
-
-                int num = 0;
-                std::vector<Vec2> polygonVertices;
-                for (const auto& pointValue : points)
-                {
-                    ValueMap pointMap = pointValue.asValueMap();
-                    float x = test_clock[num].x;
-                    float y = -test_clock[num].y;
-
-                    float objectX = objMap.at("x").asFloat();
-                    float objectY = objMap.at("y").asFloat();
-
-                    Vec2 worldPoint(objectX + x, objectY + y);
-                    polygonVertices.push_back(siz * worldPoint);
-                    num++;
-                }
-
-                auto physicsBody = PhysicsBody::createPolygon(polygonVertices.data(),
-                    polygonVertices.size());
-
-                if (physicsBody) {
-                    // ���������������
-                    physicsBody->setDynamic(false);
-                    float objectX = objMap.at("x").asFloat();
-                    float objectY = objMap.at("y").asFloat();
-                    Vec2 objectPos(objectX, objectY);
-
-                    std::vector<Vec2> localVertices;
-                    for (const auto& worldPoint : polygonVertices) {
-                        localVertices.push_back(worldPoint - objectPos);
-                    }
-
-                    auto localPhysicsBody = PhysicsBody::createPolygon(localVertices.data(),
-                        localVertices.size());
-
-                    localPhysicsBody->setDynamic(false);
-                    // ������ײ��������
-                    auto polygonNode = Node::create();
-                    polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
-                    //��������
-                    localPhysicsBody->setCategoryBitmask(WALL_MASK);
-                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
-                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | BULLET_MASK);
-
-                    polygonNode->setPhysicsBody(localPhysicsBody);
-                    polygonNode->setPosition(objectPos); // ���ڵ�λ������Ϊ����ε� TMX ����
-
-                    this->addChild(polygonNode, 1);
-                }
-            }
-        }
-    }
-    else
-    {
-        log("Object group 'Objects' not found in TMX map.");
-    }
-}
     _cameraController->release();
 }
