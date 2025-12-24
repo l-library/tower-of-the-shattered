@@ -31,6 +31,7 @@ bool SkillArcaneJet::execute(Player* owner) {
     if (!isReady() || !isUnlocked()) return false;
     if (owner->getMagic() < _config.cost) return false;
 
+
     // 消耗与进入冷却 (立即触发动画)
     _currentCooldown = _config.cooldown;
     owner->setMagic(owner->getMagic() - _config.cost);
@@ -41,6 +42,8 @@ bool SkillArcaneJet::execute(Player* owner) {
     // 延迟 1.3 秒后再发射子弹
     auto delay = DelayTime::create(1.3f);
     auto fireFunc = CallFunc::create([this, owner]() {
+        // 播放音效
+        AudioManager::getInstance()->playEffect("sounds/ArcaneJet.ogg");
         this->spawnBullet(owner);
         });
 
@@ -54,7 +57,7 @@ void SkillArcaneJet::spawnBullet(Player* owner) {
     auto bullet_animation = cocos2d::AnimationCache::getInstance()->getAnimation(_config.name);
     if (!bullet_animation) return;
 
-    // 创建子弹对象，update逻辑留空，因为我们使用schedule手动控制缩放
+    // 创建子弹对象，update逻辑留空
     auto skill = Bullet::create("player/ArcaneJet-0.png", static_cast<int>(_config.basic_damage), [](Bullet* b, float d) {});
     if (!skill) return;
 

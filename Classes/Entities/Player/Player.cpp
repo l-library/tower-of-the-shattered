@@ -83,6 +83,7 @@ bool Player::init()
     _attackCooldown = 0.0;
     _invincibilityTime = 0.0;
     _attackEngageTime = 0.0;
+    _stepSoundsInterval = 0.0f;
 
     // 输入
     _moveInput = 0.0;
@@ -113,6 +114,11 @@ bool Player::init()
     contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
 
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+    AudioManager::getInstance()->preload("sounds/FireBall.ogg");
+    AudioManager::getInstance()->preload("sounds/PlayerFootstep.ogg");
+    AudioManager::getInstance()->preload("sounds/FlameSlash.ogg");
+    AudioManager::getInstance()->preload("sounds/Dodge.ogg");
 
     // 播放初始动画
     playAnimation("idle", true);
@@ -423,6 +429,9 @@ void Player::updateTimers(float dt) {
     // 自动恢复魔法值
     if (_magic < _maxMagic)
         _magic = std::min(_maxMagic, _magic + _magicRestore * dt);
+
+    if (_stepSoundsInterval > 0)
+        _stepSoundsInterval -= dt;
 }
 
 void Player::updatePhysics(float dt) {
@@ -563,7 +572,10 @@ void Player::changeState(PlayerState newState) {
 
     // 状态进入逻辑
     // 可以考虑后续加入切换状态时的操作
-    if (newState == PlayerState::FALLING) {
+    if (newState == PlayerState::RUNNING) {
+        if (_stepSoundsInterval <= 0)
+            AudioManager::getInstance()->playEffect("sounds/PlayerFootstep.ogg");
+        _stepSoundsInterval = kStepSoundsInterval;
     }
 }
 
@@ -679,16 +691,19 @@ void Player::shootBullet()
         case 0:
             attack = Bullet::create("player/FireBall-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setMaxExistTime(1.0f);
+            AudioManager::getInstance()->playEffect("sounds/FireBall.ogg");
         break;
         case 1:
             attack = Bullet::create("player/FlameSlash-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setCollisionHeight(75);
             attack->setCollisionWidth(60);
+            AudioManager::getInstance()->playEffect("sounds/FlameSlash.ogg");
             break;
         case 2:
             attack = Bullet::create("player/FrozenSpike-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setCollisionHeight(_sprite->getContentSize().height);
             attack->setCollisionWidth(65);
+            AudioManager::getInstance()->playEffect("sounds/FrozenSpike.ogg");
             break;
     }
     // 加载动画资源
@@ -789,7 +804,6 @@ void Player::attack() {
     _isAttacking = true;
     _attackCooldown = _maxAttackCooldown;
     _attackEngageTime = kMaxAttackEngageTime; // 多段攻击的衔接
-
     shootBullet();
 }
 
@@ -810,6 +824,9 @@ void Player::dodge() {
     if (!_physicsBody) return;
     if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
 
+    // 播放音效
+    AudioManager::getInstance()->playEffect("sounds/Dodge.ogg");
+
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;
     _dodgeTime = _maxDodgeTime; // 闪避持续时间
@@ -827,6 +844,7 @@ void Player::dodge() {
     //闪避时无敌
     _isInvincible = true;
     _invincibilityTime = _dodgeTime;
+
 }
 
 bool Player::isUnlocked(const std::string& name)

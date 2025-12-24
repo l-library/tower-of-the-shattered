@@ -31,6 +31,9 @@ bool SkillIceSpear::execute(Player* owner) {
     if (owner->getMagic() < _config.cost) return false;
     if (!isUnlocked()) return false;
 
+    // 播放音效
+    AudioManager::getInstance()->playEffect("sounds/IceSpire.ogg");
+
     // 创建子弹
     auto bullet_animation = cocos2d::AnimationCache::getInstance()->getAnimation(_config.name);
     if (!bullet_animation) return false;

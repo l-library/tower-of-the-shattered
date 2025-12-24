@@ -2,6 +2,7 @@
 
 #include "cocos2d.h"
 #include <string>
+#include "../../Audio/AudioManager.h"
 
 class Player;
 

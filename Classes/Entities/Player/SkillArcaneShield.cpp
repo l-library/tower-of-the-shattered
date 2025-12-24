@@ -33,10 +33,24 @@ bool SkillArcaneShield::execute(Player* owner) {
     if (!isReady() || !isUnlocked()) return false;
     if (owner->getMagic() < _config.cost) return false;
 
+    // 播放音效
+    int sound_id = AudioManager::getInstance()->playEffect("sounds/ArcaneShield.ogg",true);
+    AudioManager::getInstance()->setEffectsVolumeById(sound_id, 0.6f);
+
     auto shield_animation = cocos2d::AnimationCache::getInstance()->getAnimation(_config.name);
 
     // 创建护盾实体
-    auto shield = Bullet::create("player/ArcaneShield-0.png", 0, [](Bullet* b, float d) {});
+    auto shield = Bullet::create("player/ArcaneShield-0.png", 0, [sound_id](Bullet* b, float d) {});
+
+    // 延迟数秒后结束音效
+    auto delay = DelayTime::create(_config.speed);
+    auto fireFunc = CallFunc::create([sound_id]() {
+        // 播放音效
+        AudioManager::getInstance()->stopById(sound_id);
+        });
+    // 在当前玩家身上运行这个序列
+    owner->runAction(Sequence::create(delay, fireFunc, nullptr));
+
     if (!shield) return false;
 
     // 播放护盾循环动画
@@ -68,7 +82,7 @@ bool SkillArcaneShield::execute(Player* owner) {
 
     // 添加碰撞监听器 (受击与破碎逻辑)
     auto contactListener = EventListenerPhysicsContact::create();
-    contactListener->onContactBegin = [shield, owner](PhysicsContact& contact) -> bool {
+    contactListener->onContactBegin = [shield, owner,sound_id](PhysicsContact& contact) -> bool {
 
         // 安全检查：确保 shield 和它的渲染节点都存在
         if (!shield || !shield->getParent() || !shield->getSprite()) return false;
@@ -106,6 +120,7 @@ bool SkillArcaneShield::execute(Player* owner) {
                 ),
                 nullptr
             );
+            AudioManager::getInstance()->playEffect("sounds/ShieldHit.ogg");
             hitSequence->setTag(999);
             sprite->runAction(hitSequence);
 
@@ -117,7 +132,8 @@ bool SkillArcaneShield::execute(Player* owner) {
             // 破碎逻辑
             if (currentHP <= 0) {
                 auto particle = ParticleSystemQuad::createWithTotalParticles(50);
-
+                AudioManager::getInstance()->stopById(sound_id);
+                AudioManager::getInstance()->playEffect("sounds/ShieldBroken.ogg");
                 // 设置纹理
                 auto texture = Director::getInstance()->getTextureCache()->addImage("player/ArcaneShield-03.png");
                 if (texture) {

@@ -65,6 +65,10 @@ bool PlayerTestScene::init()
     _cameraController = GameCamera::create(this, _player, map_1);
     _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
     this->scheduleUpdate();
+
+    // 播放背景音乐
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.6f);
     return true;
 }
 void PlayerTestScene::update(float dt) {
