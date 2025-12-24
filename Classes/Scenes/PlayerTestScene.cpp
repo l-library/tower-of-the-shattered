@@ -4,18 +4,11 @@
 
 USING_NS_CC;
 
-#define BLOOD_BAR 1002
-#define MAGIC_BAR 1003
+#define COOL_DOWN 900
 
 Scene* PlayerTestScene::createScene()
 {
-    Scene* scene = Scene::createWithPhysics();
-    scene->getPhysicsWorld()->setGravity(Vec2(0, -980));
-    // 显示碰撞箱
-    /*scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
-    PlayerTestScene* layer = PlayerTestScene::create();
-    scene->addChild(layer);
-    return scene;
+    return PlayerTestScene::create();
 }
 
 
@@ -32,6 +25,9 @@ bool PlayerTestScene::init()
         return false;
     }
 
+    this->getPhysicsWorld()->setGravity(Vec2(0, -980));
+    this->getPhysicsWorld()->setSubsteps(3);
+    /*this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);*/
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -41,10 +37,6 @@ bool PlayerTestScene::init()
     // 遍历地图生成多边形碰撞箱
     buildPolyPhysicsFromLayer(map_1);
     this->addChild(map_1, -1);
-
-    //Sprite* background = Sprite::create("player/PlayerTest.jpg");
-    //background->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-    //this->addChild(background);
 
     //加载动画文件
     auto cache = AnimationCache::getInstance();
@@ -59,7 +51,6 @@ bool PlayerTestScene::init()
     _player->setScale(2 * 32 / contentSize.width);
     this->addChild(_player, 1);///渲染player
     setupInput();
-    initBar();
 
     // 添加两个Slime实例用于测试
     auto slime1 = Slime::create();
@@ -70,9 +61,20 @@ bool PlayerTestScene::init()
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 
+    // 初始化摄像机和 UI 控制器
+    _cameraController = GameCamera::create(this, _player, map_1);
+    _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
+    this->scheduleUpdate();
+
+    // 播放背景音乐
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
     return true;
 }
-
+void PlayerTestScene::update(float dt) {
+    // 每一帧只需要通知控制器更新
+    _cameraController->update(dt);
+}
 
 void PlayerTestScene::setupInput() {
     // 创建输入监听
@@ -105,6 +107,14 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_1:
                 _player->skillAttack("IceSpear");
                 break;
+            case EventKeyboard::KeyCode::KEY_O:
+            case EventKeyboard::KeyCode::KEY_2:
+                _player->skillAttack("ArcaneJet");
+                break;
+            case EventKeyboard::KeyCode::KEY_P:
+            case EventKeyboard::KeyCode::KEY_3:
+                _player->skillAttack("ArcaneShield");
+                break;
         }
         };
 
@@ -124,55 +134,6 @@ void PlayerTestScene::setupInput() {
         };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
-}
-
-void PlayerTestScene::initBar() {
-    // 获取窗口大小
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    // 血条
-    auto sprite = Sprite::create("player/hp_border.png");   //创建进度框
-    auto size = sprite->getContentSize();
-    sprite->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5)); //设置框的位置
-    this->addChild(sprite);            //加到默认图层里面去
-    auto sprBlood = Sprite::create("player/hp.png");  //创建血条
-    ProgressTimer* progress_health = ProgressTimer::create(sprBlood); //创建progress对象
-    progress_health->setType(ProgressTimer::Type::BAR);        //类型：条状
-    progress_health->setPosition(Point(size.width/2 + 5, visibleSize.height - size.height/2 - 5));
-    //从右到左减少血量
-    progress_health->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
-    progress_health->setBarChangeRate(Point(1, 0));
-    progress_health->setTag(BLOOD_BAR);       //做一个标记
-    this->addChild(progress_health);
-    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
-    // 蓝条
-    sprite = Sprite::create("player/mp_border.png");   //创建进度框
-    size = sprite->getContentSize();
-    sprite->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5)); //设置框的位置
-    this->addChild(sprite);            //加到默认图层里面去
-    auto sprMagic = Sprite::create("player/mp.png");  //创建蓝条
-    auto progress_magic = ProgressTimer::create(sprMagic); //创建progress对象
-    progress_magic->setType(ProgressTimer::Type::BAR);        //类型：条状
-    progress_magic->setPosition(Point(size.width / 2 + 5, visibleSize.height - size.height * 3 / 2 - 5 - 5));
-    //从右到左减少蓝条
-    progress_magic->setMidpoint(Point(0, 0.5));     //如果是从左到右的话，改成(1,0.5)即可
-    progress_magic->setBarChangeRate(Point(1, 0));
-    progress_magic->setTag(MAGIC_BAR);       //做一个标记
-    this->addChild(progress_magic);
-    schedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood), 0.1f);  //刷新函数，每隔0.1秒
-}
-
-void PlayerTestScene::scheduleBlood(float delta) {
-    auto progress_health = (ProgressTimer*)this->getChildByTag(BLOOD_BAR);
-    progress_health->setPercentage(static_cast<float>(_player->getHealth() / _player->getMaxHealth()) * 100);  //这里是百分制显示
-    if (progress_health->getPercentage() < 0) {
-        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
-    }
-    auto progress_magic = (ProgressTimer*)this->getChildByTag(MAGIC_BAR);
-    progress_magic->setPercentage(static_cast<float>(_player->getMagic() / _player->getMaxMagic()) * 100);  //这里是百分制显示
-    if (progress_magic->getPercentage() < 0) {
-        this->unschedule(CC_SCHEDULE_SELECTOR(PlayerTestScene::scheduleBlood));
-    }
 }
 
 // 判断点集顺/逆时针方向
@@ -286,4 +247,10 @@ void PlayerTestScene::buildPolyPhysicsFromLayer(cocos2d::TMXTiledMap* map)
     {
         log("Object group 'Objects' not found in TMX map.");
     }
+}
+
+
+PlayerTestScene::~PlayerTestScene()
+{
+    _cameraController->release();
 }

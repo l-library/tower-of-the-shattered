@@ -58,12 +58,10 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 25.0;
-    _iceSpearSpeed = 300.0f;	
-    _iceSpearMagic = 25.0f;
-    _iceSpearDamage = 50.0f;
+    _magicRestore = 1.0;
 
     _maxAttackCooldown = 0.3;
-    _maxDodgeCooldown = 0.2;
+    _maxDodgeCooldown = 1.0;
     _dodgeTime = 0;
 
     // 状态标志
@@ -85,10 +83,26 @@ bool Player::init()
     _attackCooldown = 0.0;
     _invincibilityTime = 0.0;
     _attackEngageTime = 0.0;
+    _stepSoundsInterval = 0.0f;
 
     // 输入
     _moveInput = 0.0;
     _velocity = Vec2::ZERO;
+
+    // 技能管理器初始化
+    _skillManager = SkillManager::create(this);
+    _skillManager->retain();
+
+    // 注册技能
+    auto iceSpear = SkillIceSpear::create();
+    iceSpear->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("IceSpear", iceSpear);
+    auto ArcaneJet = SkillArcaneJet::create();
+    ArcaneJet->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("ArcaneJet", ArcaneJet);
+    auto ArcaneShield = SkillArcaneShield::create();
+    ArcaneShield->setUnlocked(true); // 默认解锁，等待存档功能，从存档读取
+    _skillManager->addSkill("ArcaneShield", ArcaneShield);
 
     // 初始化物理身体
     initPhysics();
@@ -100,6 +114,11 @@ bool Player::init()
     contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
 
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+    AudioManager::getInstance()->preload("sounds/FireBall.ogg");
+    AudioManager::getInstance()->preload("sounds/PlayerFootstep.ogg");
+    AudioManager::getInstance()->preload("sounds/FlameSlash.ogg");
+    AudioManager::getInstance()->preload("sounds/Dodge.ogg");
 
     // 播放初始动画
     playAnimation("idle", true);
@@ -139,7 +158,7 @@ void Player::initPhysics()
     //这是一个比身体底部略小且略低的矩形，用于检测是否站在地上
     //只检测碰撞，不产生物理推力
     Size footSize = Size(_physicsSize.width * 0.8f, 10);
-    Vec2 footOffset = Vec2(0, 2); // 位于身体底部
+    Vec2 footOffset = Vec2(0, 5); // 位于身体底部
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
     footShape->setCategoryBitmask(PLAYER_MASK);
@@ -211,17 +230,18 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
     }
     // 伤害判定逻辑
     int otherCategory = otherShape->getCategoryBitmask();
-    bool isEnemy = (otherCategory & ENEMY_BULLET_MASK);
+    bool isEnemyBullet = (otherCategory & ENEMY_BULLET_MASK);
+    bool isEnemy = (otherCategory & ENEMY_MASK);
     bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
 
-    if (isEnemy || isTrap)
+    if (isEnemyBullet || isTrap || isEnemy)
     {
         // 如果没有处于无敌状态且没有死亡
         if (!_isInvincible && _currentState != PlayerState::DEAD)
         {
             // 扣血
             float damage = 10;
-            if (isEnemy && otherNode)
+            if (isEnemyBullet && otherNode)
             {
                 // 尝试将 Node* 转换为 Enemy*
                 auto enemy = dynamic_cast<Bullet*>(otherNode);
@@ -238,6 +258,8 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             {
                 damage = 20.0f; // 陷阱的固定伤害
             }
+            else if (isEnemy)
+                damage = 5.0; //敌人的固定碰撞伤害
             _health -= damage;
 
             // 状态判断
@@ -323,10 +345,10 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
     }
 
     int otherCategory = otherShape->getCategoryBitmask();
-    bool isEnemy = (otherCategory & ENEMY_MASK);
+    bool isEnemyBullet = (otherCategory & ENEMY_MASK);
     bool isTrap = (otherCategory & DAMAGE_WALL_MASK);
 
-    if (isEnemy || isTrap)
+    if (isEnemyBullet || isTrap)
     {
         _isHurt = false;
     }
@@ -400,6 +422,16 @@ void Player::updateTimers(float dt) {
             _sprite->setOpacity(static_cast<uint8_t>(blink * 255));
         }
     }
+    
+    // 更新技能状态
+    _skillManager->update(dt);
+
+    // 自动恢复魔法值
+    if (_magic < _maxMagic)
+        _magic = std::min(_maxMagic, _magic + _magicRestore * dt);
+
+    if (_stepSoundsInterval > 0)
+        _stepSoundsInterval -= dt;
 }
 
 void Player::updatePhysics(float dt) {
@@ -540,7 +572,10 @@ void Player::changeState(PlayerState newState) {
 
     // 状态进入逻辑
     // 可以考虑后续加入切换状态时的操作
-    if (newState == PlayerState::FALLING) {
+    if (newState == PlayerState::RUNNING) {
+        if (_stepSoundsInterval <= 0)
+            AudioManager::getInstance()->playEffect("sounds/PlayerFootstep.ogg");
+        _stepSoundsInterval = kStepSoundsInterval;
     }
 }
 
@@ -609,7 +644,8 @@ void Player::playAnimation(const std::string& name, bool loop)
                 action,
                 CallFunc::create([this]()
                     { _isAttacking = false;
-            _isSkilling = false; }),
+            _isSkilling = false;
+            _isHurt = false; }),
                 nullptr));
         }
     }
@@ -655,16 +691,19 @@ void Player::shootBullet()
         case 0:
             attack = Bullet::create("player/FireBall-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setMaxExistTime(1.0f);
+            AudioManager::getInstance()->playEffect("sounds/FireBall.ogg");
         break;
         case 1:
             attack = Bullet::create("player/FlameSlash-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setCollisionHeight(75);
             attack->setCollisionWidth(60);
+            AudioManager::getInstance()->playEffect("sounds/FlameSlash.ogg");
             break;
         case 2:
             attack = Bullet::create("player/FrozenSpike-0.png", _playerAttackDamage, [this](Bullet* bullet, float delta) {});
             attack->setCollisionHeight(_sprite->getContentSize().height);
             attack->setCollisionWidth(65);
+            AudioManager::getInstance()->playEffect("sounds/FrozenSpike.ogg");
             break;
     }
     // 加载动画资源
@@ -690,10 +729,10 @@ void Player::shootBullet()
             speed = 200.0;
             attack->getSprite()->setScale(3.0f);       // 调整视觉大小
             // 播放完动画后播放爆炸动画（待实现）
-            //auto finishCallback = CallFunc::create([attack]() {
-            //    auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
-            //    attack->getSprite()->runAction(Animate::create(burst));
-            //    });
+            auto finishCallback = CallFunc::create([attack]() {
+                auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
+                attack->getSprite()->runAction(Animate::create(burst));
+                });
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
         else {
@@ -738,7 +777,7 @@ void Player::shootBullet()
         attack->setPosition(worldPos);
         auto gameScene = Director::getInstance()->getRunningScene();
         if (gameScene) {
-            gameScene->addChild(attack, 10);
+            gameScene->addChild(attack, 9);
         }
     }
     else {
@@ -749,7 +788,7 @@ void Player::shootBullet()
         attack->getSprite()->setPosition(current_pos + offset);
         attack->getPhysicsBody()->setPositionOffset(Vec2(directionVec.x * (_attack_num == 1 ? 70 : 0), 
             (_attack_num == 1 ? 20 : 0) + attack->getSprite()->getContentSize().height));
-        this->addChild(attack, 10);
+        this->addChild(attack, 9);
     }
 }
 
@@ -765,57 +804,17 @@ void Player::attack() {
     _isAttacking = true;
     _attackCooldown = _maxAttackCooldown;
     _attackEngageTime = kMaxAttackEngageTime; // 多段攻击的衔接
-
     shootBullet();
 }
 
 bool Player::skillAttack(const std::string& name)
 {
     if (!canBeControled()) return false;
-    auto bullet_animation = AnimationCache::getInstance()->getAnimation(name);
-    Bullet* skill;
-    skill = Bullet::create("player/IceSpear-0.png", 0, [](Bullet* bullet, float delta) {});
-    if (!bullet_animation||!skill)return false;
-    _isSkilling = true;
-    changeState(PlayerState::SKILLING);
-    // 获取玩家当前位置
-    Vec2 current_pos = _sprite->getPosition();
-    auto action = Animate::create(bullet_animation);
-    // 设置方向 (同时处理物理速度方向和贴图翻转)
-    Vec2 directionVec;
-    if (_direction == Direction::RIGHT) {
-        directionVec = Vec2(1, 0);
-        skill->getSprite()->setFlippedX(false);
-    }
-    else {
-        directionVec = Vec2(-1, 0);
-        skill->getSprite()->setFlippedX(true);
-    }
-    if (name == "IceSpear")
-    {
-        skill->setDamage(_iceSpearDamage);
-        playAnimation("IceSpear-Action");
-        skill->setCategoryBitmask(PLAYER_BULLET_MASK);
-        skill->setCollisionBitmask(NULL);
-        skill->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-        skill->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
-        skill->getSprite()->runAction(RepeatForever::create(action));
-        skill->setMaxExistTime(3.0f);
-        Vec2 worldPos = this->convertToWorldSpace(current_pos);
-        // 微调发射位置，使其不完全重叠在玩家中心
-        worldPos += (directionVec * 30.0f);
-        worldPos.y += _sprite->getContentSize().height;
-        skill->setPosition(worldPos);
-        // 设置速度
-        skill->getPhysicsBody()->setVelocity(_iceSpearSpeed * directionVec);
-        //微调碰撞箱
-        skill->getPhysicsBody()->setPositionOffset(directionVec*20);
-        // 添加为场景的子节点
-        auto gameScene = Director::getInstance()->getRunningScene();
-        if (gameScene) {
-            gameScene->addChild(skill, 10);
-        }
-        _magic -= _iceSpearMagic;
+
+    if (_skillManager->useSkill(name)) {
+        changeState(PlayerState::SKILLING);
+        _isSkilling = true;
+        return true;
     }
     return false;
 }
@@ -824,6 +823,9 @@ bool Player::skillAttack(const std::string& name)
 void Player::dodge() {
     if (!_physicsBody) return;
     if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
+
+    // 播放音效
+    AudioManager::getInstance()->playEffect("sounds/Dodge.ogg");
 
     _isDodge = true;
     _dodgeCooldown = _maxDodgeCooldown;
@@ -842,6 +844,12 @@ void Player::dodge() {
     //闪避时无敌
     _isInvincible = true;
     _invincibilityTime = _dodgeTime;
+
+}
+
+bool Player::isUnlocked(const std::string& name)
+{
+    return _skillManager->getSkill(name)->isUnlocked();
 }
 
 const std::string Player::getCurrentState() const
