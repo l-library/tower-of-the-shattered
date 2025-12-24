@@ -20,6 +20,14 @@
 #define MACHINE_MASK		0x00002000	// 触发机关检测碰撞体
 #define EVERYTHING_MASK		0xFFFFFFFF	// 碰撞一切
 
+// 房间出口
+#define LD "left_down"
+#define LU "left_up"
+#define RD "right_down"
+#define RU "right_up"
+#define UP "up"
+#define DN "down"
+
 #include "Entities/Enemy/EnemyBase.h"
 #include "Entities/Player/Player.h"
 #include "Entities/Bullet/Bullet.h"

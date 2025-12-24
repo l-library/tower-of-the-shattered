@@ -244,13 +244,13 @@
   </object>
  </objectgroup>
  <objectgroup id="4" name="sensor">
-  <object id="89" x="0" y="192">
+  <object id="89" name="left_up" x="0" y="192">
    <polygon points="0,0 16,0 16,80 0,80"/>
   </object>
-  <object id="90" x="1264" y="608">
+  <object id="90" name="right_down" x="1264" y="608">
    <polygon points="0,0 16,0 16,80 0,80"/>
   </object>
-  <object id="91" x="608" y="704">
+  <object id="91" name="down" x="608" y="704">
    <polygon points="0,0 64,0 64,16 0,16"/>
   </object>
  </objectgroup>
