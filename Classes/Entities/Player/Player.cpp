@@ -146,9 +146,9 @@ void Player::initPhysics()
 
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
-    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK);
-    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK);
-    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | DAMAGE_WALL_MASK;
+    _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | NPC_MASK);
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | DAMAGE_WALL_MASK | NPC_MASK;
     _dodgeMask = WALL_MASK | BORDER_MASK;
 
     //给主身体一个Tag
