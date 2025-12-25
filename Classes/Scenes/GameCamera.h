@@ -18,6 +18,7 @@ private:
     void initUI();
     void initBar();
     void initSkillIcons();
+    void initGold();
 
     // 内部引用
     cocos2d::Scene* _scene;
@@ -33,7 +34,11 @@ private:
     cocos2d::ProgressTimer* _skillCDTimer;
     cocos2d::ProgressTimer* _skillCDTimer_2;
     cocos2d::ProgressTimer* _skillCDTimer_3;
-
+    cocos2d::Label* _hp_label;
+    cocos2d::Label* _mp_label;
+    cocos2d::Label* _gold_num;
+    
+    
     //放大倍数
     float _zoom_factor;
 };

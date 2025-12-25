@@ -85,6 +85,9 @@ public:
 	* @return (const double)玩家当前血量
 	***/
 	const double getHealth() const { return _health; };
+	const void setHealth(double health) { _health = health; }
+	const void restoreHealth(double restore) { _health += restore; }
+
 
 	/**
 	* @brief 获得玩家当前最大血量
@@ -100,6 +103,7 @@ public:
 	***/
 	const double getMagic() const { return _magic; };
 	const void setMagic(double magic) { _magic = magic; }
+	const void restoreMagic(double restore) { _magic += restore; }
 
 	/**
 	* @brief 获得玩家当前最大法力值
@@ -139,6 +143,18 @@ public:
 	* @return 解锁/没有解锁
 	***/
 	bool isUnlocked(const std::string& name);
+
+	// 设置主角属性，用于商店/遗物
+	void modifyMaxHealth(double value) { _maxHealth += value; _health += value; } // 增加上限并回血
+	void modifyMaxMagic(double value) { _maxMagic += value; _magic += value; }
+	void modifyAttackDamage(double value) { _playerAttackDamage += value; }
+	void modifySpeed(double value) { _speed += value; }
+	void modifyJumpForce(double value) { _jumpForce += value; }
+	void modifyMagicRestore(double value) { _magicRestore += value; }
+	void modifyDodgeTime(double value) { _maxDodgeTime += value; }
+	void modifyDodgeCooldown(double value) { _maxDodgeCooldown -= value; }
+	void setSkillDamage(double skillDamage) { _skillDamage = skillDamage; }
+	void setDoubleDODGE(double value) { _maxDodgeTimes+= static_cast<int>(value); }
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -207,6 +223,8 @@ private:
 	int _maxDodgeTimes;
 	//主角每秒恢复的魔法值
 	double _magicRestore;
+	//主角技能伤害倍率
+	double _skillDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间

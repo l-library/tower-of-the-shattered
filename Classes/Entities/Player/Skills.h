@@ -18,7 +18,7 @@ public:
         float speed;
     };
 
-    virtual bool execute(Player* owner) = 0; // 纯虚函数，由子类实现具体逻辑
+    virtual bool execute(Player* owner, double damage) = 0; // 纯虚函数，由子类实现具体逻辑
 
     // 公共接口
     void update(float dt);

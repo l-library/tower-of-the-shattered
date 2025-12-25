@@ -25,7 +25,7 @@ SkillIceSpear* SkillIceSpear::create() {
     return nullptr;
 }
 
-bool SkillIceSpear::execute(Player* owner) {
+bool SkillIceSpear::execute(Player* owner, double damage) {
     // 确认技能能被释放
     if (!isReady() || !isUnlocked()) return false;
     if (owner->getMagic() < _config.cost) return false;
@@ -54,7 +54,7 @@ bool SkillIceSpear::execute(Player* owner) {
     }
 
     // 设置子弹各属性
-    skill->setDamage(_config.basic_damage);
+    skill->setDamage(_config.basic_damage * damage);
 
     skill->setCategoryBitmask(PLAYER_BULLET_MASK);
     skill->setCollisionBitmask(NULL);

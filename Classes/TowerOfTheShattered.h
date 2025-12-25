@@ -19,6 +19,7 @@
 #define NPC_MASK            0x00000400  // NPC
 #define SENSOR_MASK			0x00001000	// 切换关卡检测碰撞体
 #define MACHINE_MASK		0x00002000	// 触发机关检测碰撞体
+#define ITEM_MASK           0x00004000  // 掉落物
 #define EVERYTHING_MASK		0xFFFFFFFF	// 碰撞一切
 
 // 房间出口
@@ -34,3 +35,5 @@
 #include "Entities/Bullet/Bullet.h"
 #include "Scenes/PlayerTestScene.h"
 #include "Audio/AudioManager.h"
+#include "Entities/Items/ItemManager.h"
+#include "Entities/Items/Items.h"

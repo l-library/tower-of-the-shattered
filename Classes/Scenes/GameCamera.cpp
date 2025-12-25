@@ -1,4 +1,6 @@
 #include "GameCamera.h"
+#include "../Entities/Items/ItemManager.h"
+#include <string>
 
 USING_NS_CC;
 
@@ -51,6 +53,7 @@ bool GameCamera::init(Scene* scene, Player* player, TMXTiledMap* map) {
 void GameCamera::initUI() {
     initBar();
     initSkillIcons();
+    initGold();
 }
 
 void GameCamera::initBar() {
@@ -68,6 +71,16 @@ void GameCamera::initBar() {
     _hpBar->setBarChangeRate(Vec2(1, 0));
     _hpBar->setPosition(hpBorder->getPosition());
     _uiRoot->addChild(_hpBar);
+    {
+        char out_put[20];
+        sprintf(out_put, "%.2f / %.2f", _player->getHealth(), _player->getMaxHealth());
+        _hp_label = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+        if (_hp_label) {
+            _hp_label->setAnchorPoint(Vec2(0.5f, 0.5f));
+            _hp_label->setPosition(hpBorder->getPosition());
+        }
+        _uiRoot->addChild(_hp_label);
+    }
 
     // 蓝条
     auto mpBorder = Sprite::create("player/mp_border.png");
@@ -80,6 +93,17 @@ void GameCamera::initBar() {
     _mpBar->setBarChangeRate(Vec2(1, 0));
     _mpBar->setPosition(mpBorder->getPosition());
     _uiRoot->addChild(_mpBar);
+
+    {
+        char out_put[20];
+        sprintf(out_put, "%.2f / %.2f", _player->getMagic(), _player->getMaxMagic());
+        _mp_label = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+        if (_mp_label) {
+            _mp_label->setAnchorPoint(Vec2(0.5f, 0.5f));
+            _mp_label->setPosition(mpBorder->getPosition());
+        }
+        _uiRoot->addChild(_mp_label);
+    }
 }
 
 void GameCamera::initSkillIcons() {
@@ -146,6 +170,25 @@ void GameCamera::initSkillIcons() {
     _uiRoot->addChild(_skillCDTimer_3);
 }
 
+void GameCamera::initGold()
+{
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    auto gold = Sprite::create("items/gold.png");
+    if (!gold)
+        return;
+    auto position = Vec2(visibleSize.width - 100, visibleSize.height - gold->getContentSize().height);
+    gold->setPosition(position);
+    gold->setScale(2.0);
+    _uiRoot->addChild(gold);
+
+    std::string out_put = std::to_string(ItemManager::getInstance()->getGold());
+    _gold_num = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+    auto gold_position = Vec2(position.x + gold->getContentSize().width + _gold_num->getContentSize().width, position.y);
+    _gold_num->setPosition(gold_position);
+    _uiRoot->addChild(_gold_num);
+}
+
 void GameCamera::update(float dt) {
     if (!_player || !_defaultCamera) return;
     // 相机跟随逻辑
@@ -173,6 +216,14 @@ void GameCamera::update(float dt) {
     // 血条蓝条百分比更新
     if (_player->getHealth() >= 0)
         _hpBar->setPercentage((_player->getHealth() / _player->getMaxHealth()) * 100.0f);
+    char out_put[20];
+    sprintf(out_put, "%.2f / %.2f", _player->getHealth(), _player->getMaxHealth());
+    _hp_label->setString(out_put);
+
+    char out_put_1[20];
+    sprintf(out_put_1, "%.2f / %.2f", _player->getMagic(), _player->getMaxMagic());
+    _mp_label->setString(out_put_1);
+
     if (_player->getMagic() >= 0)
         _mpBar->setPercentage((_player->getMagic() / _player->getMaxMagic()) * 100.0f);
 
@@ -195,6 +246,10 @@ void GameCamera::update(float dt) {
         _skillCDTimer_3->setPercentage(percent);
         _skillCDTimer_3->setVisible(percent > 0);
     }
+
+    // 金币更新
+    std::string out_put_2 = std::to_string(ItemManager::getInstance()->getGold());
+    _gold_num->setString(out_put_2);
 }
 
 GameCamera::GameCamera() : _hpBar(nullptr), _mpBar(nullptr), _skillCDTimer(nullptr) {}
