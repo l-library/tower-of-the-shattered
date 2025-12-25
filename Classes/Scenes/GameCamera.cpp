@@ -1,4 +1,5 @@
 #include "GameCamera.h"
+#include "../Entities/Items/ItemManager.h"
 #include <string>
 
 USING_NS_CC;
@@ -52,6 +53,7 @@ bool GameCamera::init(Scene* scene, Player* player, TMXTiledMap* map) {
 void GameCamera::initUI() {
     initBar();
     initSkillIcons();
+    initGold();
 }
 
 void GameCamera::initBar() {
@@ -168,6 +170,25 @@ void GameCamera::initSkillIcons() {
     _uiRoot->addChild(_skillCDTimer_3);
 }
 
+void GameCamera::initGold()
+{
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    auto gold = Sprite::create("items/gold.png");
+    if (!gold)
+        return;
+    auto position = Vec2(visibleSize.width - 100, visibleSize.height - gold->getContentSize().height);
+    gold->setPosition(position);
+    gold->setScale(2.0);
+    _uiRoot->addChild(gold);
+
+    std::string out_put = std::to_string(ItemManager::getInstance()->getGold());
+    _gold_num = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+    auto gold_position = Vec2(position.x + gold->getContentSize().width + _gold_num->getContentSize().width, position.y);
+    _gold_num->setPosition(gold_position);
+    _uiRoot->addChild(_gold_num);
+}
+
 void GameCamera::update(float dt) {
     if (!_player || !_defaultCamera) return;
     // 相机跟随逻辑
@@ -225,6 +246,10 @@ void GameCamera::update(float dt) {
         _skillCDTimer_3->setPercentage(percent);
         _skillCDTimer_3->setVisible(percent > 0);
     }
+
+    // 金币更新
+    std::string out_put_2 = std::to_string(ItemManager::getInstance()->getGold());
+    _gold_num->setString(out_put_2);
 }
 
 GameCamera::GameCamera() : _hpBar(nullptr), _mpBar(nullptr), _skillCDTimer(nullptr) {}

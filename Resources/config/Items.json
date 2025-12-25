@@ -4,7 +4,7 @@
         "name": "旅行者斗篷",
         "icon": "items/cape.png",
         "desc": "增加 50 点最大生命值。",
-        "tucao": "大灾变前很流行的斗篷，现在已经破旧不堪了。",
+        "information": "大灾变前很流行的斗篷，现在已经破旧不堪了。",
         "effect_type": "HP_MAX_UP",
         "value": 50.0
     },
@@ -13,17 +13,80 @@
         "name": "风灵之靴",
         "icon": "items/boots.png",
         "desc": "稍微增加移动速度。",
-        "tucao": "穿上它，感觉这地板变滑了。",
+        "information": "穿上它，感觉地板变滑了。",
         "effect_type": "SPEED_UP",
-        "value": 20.0
+        "value": 200.0
     },
     {
         "id": 103,
         "name": "贤者之杖",
-        "icon": "items/cane.png",
-        "desc": "增加 10 点基础攻击力。",
-        "tucao": "这把法杖似乎充盈着古老的力量。",
+        "icon": "items/wand.png",
+        "desc": "增加 25 点基础攻击力。",
+        "information": "这把法杖似乎充盈着古老的力量。",
         "effect_type": "ATTACK_UP",
-        "value": 10.0
+        "value": 25.0
+    },
+    {
+        "id": 104,
+        "name": "鲜血之石",
+        "icon": "items/Bloodstone.png",
+        "desc": "技能伤害变为1.2倍。",
+        "information": "人们曾经热衷于制作这种石头",
+        "effect_type": "SKILL_DAMAGE_UP",
+        "value": 10.2
+    },
+    {
+        "id": 105,
+        "name": "奥术宝典",
+        "icon": "items/magicBook.png",
+        "desc": "增加50点最大魔法值。",
+        "information": "晦涩的文字似乎声嘶力竭地诉说着什么",
+        "effect_type": "MP_MAX_UP",
+        "value": 50.0
+    },
+    {
+        "id": 106,
+        "name": "幽魂玩偶",
+        "icon": "items/ghost.png",
+        "desc": "增加0.3秒的闪避时长。",
+        "information": "塔中没有幽灵，真让人遗憾",
+        "effect_type": "DODGE_TIME_UP",
+        "value": 0.3
+    },
+    {
+        "id": 107,
+        "name": "黑龙玩偶",
+        "icon": "items/dragon.png",
+        "desc": "提升魔力值自动回复的速度。",
+        "information": "这座塔中处处是曾经的人留下的痕迹",
+        "effect_type": "MP_RESTORE_UP",
+        "value": 0.5
+    },
+    {
+        "id": 108,
+        "name": "魔法师帽",
+        "icon": "items/hat.png",
+        "desc": "减少冲刺冷却。",
+        "information": "大小很合适，简直就像是我自己的帽子",
+        "effect_type": "DODGE_COOLDOWN",
+        "value": 0.8
+    },
+    {
+        "id": 109,
+        "name": "兔子玩偶",
+        "icon": "items/rabbit.png",
+        "desc": "提升跳跃高度。",
+        "information": "地上的人已经很久没有见过活着的兔子了",
+        "effect_type": "JUMP_FORCE_UP",
+        "value": 300.0
+    },
+    {
+        "id": 110,
+        "name": "闪避者之眼",
+        "icon": "items/eyeball.png",
+        "desc": "允许在闪避时进行二次连续闪避。",
+        "information": "它的主人是一位擅长用胡乱闪避闪过敌人攻击的魔法师",
+        "effect_type": "DOUBLE_DODGE",
+        "value": 1.0
     }
 ]

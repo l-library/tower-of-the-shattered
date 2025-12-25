@@ -22,7 +22,7 @@ void ItemManager::destroyInstance() {
     }
 }
 
-ItemManager::ItemManager() : _gold(0) {}
+ItemManager::ItemManager() : _gold(100) {}
 
 ItemManager::~ItemManager() {
     _itemConfigCache.clear();
@@ -77,6 +77,8 @@ bool ItemManager::init(const std::string& configFilename) {
         else if (typeStr == "DODGE_COOLDOWN") data.effectType = ItemEffectType::DODGE_COOLDOWN;
         else if (typeStr == "JUMP_FORCE_UP") data.effectType = ItemEffectType::JUMP_FORCE_UP;
         else if (typeStr == "DODGE_TIME_UP") data.effectType = ItemEffectType::DODGE_TIME_UP;
+        else if (typeStr == "SKILL_DAMAGE_UP") data.effectType = ItemEffectType::SKILL_DAMAGE_UP;
+        else if (typeStr == "DOUBLE_DODGE") data.effectType = ItemEffectType::DOUBLE_DODGE;
         else data.effectType = ItemEffectType::NONE;
 
         // ´æÈë»º´æ
@@ -127,6 +129,10 @@ void ItemManager::applyEffect(Player* player, const ItemData& item, bool isAdd) 
             player->modifyMaxHealth(value); 
             log("Applied HP change: %f", value);
             break;
+        case ItemEffectType::MP_MAX_UP:
+            player->modifyMaxMagic(value);
+            log("Applied MP change: %f", value);
+            break;
 
         case ItemEffectType::ATTACK_UP:
             player->modifyAttackDamage(value);
@@ -135,10 +141,32 @@ void ItemManager::applyEffect(Player* player, const ItemData& item, bool isAdd) 
 
         case ItemEffectType::SPEED_UP:
             player->modifySpeed(value);
+            log("Applied Speed change: %f", value);
             break;
 
         case ItemEffectType::MP_RESTORE_UP:
             player->modifyMagicRestore(value);
+            log("Applied mp resutore change: %f", value);
+            break;
+        case ItemEffectType::SKILL_DAMAGE_UP:
+            player->setSkillDamage(value);
+            log("Applied skill damage change: %f", value);
+            break;
+        case ItemEffectType::DODGE_TIME_UP:
+            player->modifyDodgeTime(value);
+            log("Applied dodge time change: %f", value);
+            break;
+        case ItemEffectType::DODGE_COOLDOWN:
+            player->modifyDodgeCooldown(value);
+            log("Applied dodge cool down change: %f", value);
+            break;
+        case ItemEffectType::JUMP_FORCE_UP:
+            player->modifyJumpForce(value);
+            log("Applied jump force change: %f", value);
+            break;
+        case ItemEffectType::DOUBLE_DODGE:
+            player->setDoubleDODGE(value);
+            log("Applied double_dodge change: %f", value);
             break;
 
         case ItemEffectType::NONE:

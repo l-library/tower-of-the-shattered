@@ -18,9 +18,9 @@ public:
         _skills.insert(name, skill);
     }
 
-    bool useSkill(const std::string& name) {
+    bool useSkill(const std::string& name, double damage) {
         if (_skills.find(name) != _skills.end()) {
-            return _skills.at(name)->execute(_owner);
+            return _skills.at(name)->execute(_owner,damage);
         }
         return false;
     }

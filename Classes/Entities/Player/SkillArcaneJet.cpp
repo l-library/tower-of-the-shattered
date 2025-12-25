@@ -26,7 +26,7 @@ SkillArcaneJet* SkillArcaneJet::create() {
     return nullptr;
 }
 
-bool SkillArcaneJet::execute(Player* owner) {
+bool SkillArcaneJet::execute(Player* owner, double damage) {
     // 基础检查
     if (!isReady() || !isUnlocked()) return false;
     if (owner->getMagic() < _config.cost) return false;
@@ -41,10 +41,10 @@ bool SkillArcaneJet::execute(Player* owner) {
 
     // 延迟 1.3 秒后再发射子弹
     auto delay = DelayTime::create(1.3f);
-    auto fireFunc = CallFunc::create([this, owner]() {
+    auto fireFunc = CallFunc::create([this, owner, damage]() {
         // 播放音效
         AudioManager::getInstance()->playEffect("sounds/ArcaneJet.ogg");
-        this->spawnBullet(owner);
+        this->spawnBullet(owner, damage);
         });
 
     // 在当前场景或玩家身上运行这个序列
@@ -53,12 +53,12 @@ bool SkillArcaneJet::execute(Player* owner) {
     return true;
 }
 
-void SkillArcaneJet::spawnBullet(Player* owner) {
+void SkillArcaneJet::spawnBullet(Player* owner, double damage) {
     auto bullet_animation = cocos2d::AnimationCache::getInstance()->getAnimation(_config.name);
     if (!bullet_animation) return;
 
     // 创建子弹对象，update逻辑留空
-    auto skill = Bullet::create("player/ArcaneJet-0.png", static_cast<int>(_config.basic_damage), [](Bullet* b, float d) {});
+    auto skill = Bullet::create("player/ArcaneJet-0.png", static_cast<int>(_config.basic_damage * damage), [](Bullet* b, float d) {});
     if (!skill) return;
 
     // 获取基础信息

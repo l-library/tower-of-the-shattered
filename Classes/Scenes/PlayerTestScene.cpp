@@ -100,8 +100,8 @@ bool PlayerTestScene::init()
 
     // 初始化物品管理器
     ItemManager::getInstance()->init("config/items.json");
-    // 以下初始化了一个物品供测试 物品id101
-    auto item = Items::createWithId(101);
+    // 示例：以下初始化了一个物品供测试 物品id107
+    auto item = Items::createWithId(110);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
@@ -110,6 +110,8 @@ bool PlayerTestScene::init()
 
         this->addChild(item, 5); // Z-order 在背景之上
     }
+    // 示例：增加金币
+    ItemManager::getInstance()->addGold(50);
     return true;
 }
 

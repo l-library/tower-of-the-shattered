@@ -29,7 +29,7 @@ SkillArcaneShield* SkillArcaneShield::create() {
     return nullptr;
 }
 
-bool SkillArcaneShield::execute(Player* owner) {
+bool SkillArcaneShield::execute(Player* owner , double damage) {
     if (!isReady() || !isUnlocked()) return false;
     if (owner->getMagic() < _config.cost) return false;
 
@@ -61,14 +61,14 @@ bool SkillArcaneShield::execute(Player* owner) {
 
     // 设置物理属性
     shield->getPhysicsBody()->setMass(0); // 质量为0，不受重力影响
-    shield->setDamage(_config.basic_damage); // 如果有反伤可以保留，没有则为0
-    shield->getPhysicsBody()->setDynamic(false); // 静态物体，跟随玩家移动
+    shield->setDamage(_config.basic_damage * damage); // 如果有反伤可以保留，没有则为0
 
-    // 设置掩码：作为墙壁(WALL)，与敌人和子弹产生碰撞
-    shield->setCategoryBitmask(WALL_MASK);
+    // 设置掩码：作为墙壁，与敌人和子弹产生碰撞；作为玩家，会受到敌人攻击
+    shield->setCategoryBitmask(PLAYER_MASK | WALL_MASK);
     shield->setCollisionBitmask(ENEMY_MASK | ENEMY_BULLET_MASK);
     shield->setContactTestBitmask(ENEMY_MASK | ENEMY_BULLET_MASK); 
     shield->setCLearBitmask(NULL);
+    shield->getPhysicsBody()->setDynamic(false); // 静态物体，跟随玩家移动
 
     // 定位与层级
     Size playerSize = owner->getSprite()->getContentSize();

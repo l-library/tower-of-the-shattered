@@ -76,6 +76,9 @@ void Items::bePickedUp(Player* player) {
     if (_isPickedUp) return;
     _isPickedUp = true;
 
+    // 播放音效
+    AudioManager::getInstance()->playEffect("sounds/Pickup.ogg");
+
     // 调用 Manager 增加物品效果
     ItemManager::getInstance()->gainItem(player, _itemId);
 

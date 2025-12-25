@@ -50,7 +50,7 @@ bool Player::init()
     _maxMagic = 100.0;
     _magic = _maxMagic;
     _speed = 300.0;     // 水平移动最大速度
-    _jumpForce = 600.0; // 跳跃冲量 
+    _jumpForce = 500.0; // 跳跃冲量 
     _dodgeForce = 300.0;
     _acceleration = 1000.0;
     _deceleration = 2000.0; 
@@ -58,9 +58,10 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 25.0;
-    _magicRestore = 1.0;
+    _magicRestore = 0.5;
+    _skillDamage = 1.0;
 
-    _maxAttackCooldown = 0.3;
+    _maxAttackCooldown = 1.0;
     _maxDodgeCooldown = 1.0;
     _dodgeTime = 0;
 
@@ -235,7 +236,7 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
         itemNode = dynamic_cast<Items*>(otherNode);
     }
 
-    // 如果发生了 玩家 <-> 物品 的碰撞
+    // 如果发生了 玩家 - 物品 的碰撞
     if (this && itemNode) {
         itemNode->bePickedUp(this);
         return false; // 返回 false 表示忽略物理碰撞处理（虽然在这里已经通过掩码过滤了物理碰撞，但逻辑上返回false更安全）
@@ -285,6 +286,12 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
                 playAnimation("dead");
                 this->removeComponent(_physicsBody);//移除所有物理效果
                 _physicsBody = nullptr;
+
+                // 关闭所有声音
+                AudioManager::getInstance()->stopBGM();
+                // 播放死亡音效
+                AudioManager::getInstance()->playEffect("sounds/Death.ogg");
+                return true;
             }
             else {
                 _isHurt = true;
@@ -309,9 +316,10 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
 
                 // 设置击退速度 (覆盖当前速度)
                 _physicsBody->setVelocity(knockbackDir * 500.0f);
-                // 播放受伤音效
-                // AudioEngine::play2d("hurt.mp3");
             }
+
+            // 播放受伤音效
+            AudioManager::getInstance()->playEffect("sounds/Hurt.ogg");
         }
     }
 
@@ -392,10 +400,11 @@ void Player::update(float dt) {
 void Player::updateTimers(float dt) {
     if (_jumpBufferTime > 0) _jumpBufferTime -= dt;
 
-    if (_isGrounded) {
+    if (_isGrounded && !_isDodge) {
         _coyoteTime = kCoyoteTime;
         _dodgeTimes = _maxDodgeTimes;
     }
+
     else if (_coyoteTime > 0) {
         _coyoteTime -= dt;
     }
@@ -824,7 +833,7 @@ bool Player::skillAttack(const std::string& name)
 {
     if (!canBeControled()) return false;
 
-    if (_skillManager->useSkill(name)) {
+    if (_skillManager->useSkill(name, _skillDamage)) {
         changeState(PlayerState::SKILLING);
         _isSkilling = true;
         return true;
@@ -835,29 +844,51 @@ bool Player::skillAttack(const std::string& name)
 
 void Player::dodge() {
     if (!_physicsBody) return;
-    if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
+
+    if (_dodgeCooldown > 0 || _dodgeTimes <= 0 || _isAttacking || _isSkilling) return;
 
     // 播放音效
     AudioManager::getInstance()->playEffect("sounds/Dodge.ogg");
-
     _isDodge = true;
-    _dodgeCooldown = _maxDodgeCooldown;
-    _dodgeTime = _maxDodgeTime; // 闪避持续时间
     _dodgeTimes--;
 
-    //闪避忽略初始速度
+    // 冷却逻辑分流
+    if (_dodgeTimes > 0) {
+        // 如果还有剩余次数，设置一个极短的冷却，防止误操作
+        _dodgeCooldown = 0.1f;
+    }
+    else {
+        _dodgeCooldown = _maxDodgeCooldown;
+    }
+
+    _dodgeTime = _maxDodgeTime;
+
+    // 刷新无敌时间
+    _isInvincible = true;
+    _invincibilityTime = _dodgeTime;
+
+    // 如果玩家在第一次冲刺中改变了输入方向，第二次冲刺应该立刻响应新方向
+    if (_moveInput > 0.1f) {
+        _direction = Direction::RIGHT;
+        _sprite->setFlippedX(false);
+    }
+    else if (_moveInput < -0.1f) {
+        _direction = Direction::LEFT;
+        _sprite->setFlippedX(true);
+    }
+
+    // 闪避忽略初始速度 (清零，为 updatePhysics 的新冲力做准备)
     Vec2 current_velocity = _physicsBody->getVelocity();
     current_velocity.x = 0;
     _physicsBody->setVelocity(current_velocity);
 
-    //闪避可以穿过敌人
+    // 闪避可以穿过敌人
     _physicsBody->setCollisionBitmask(_dodgeMask);
     _physicsBody->setContactTestBitmask(_dodgeMask | DAMAGE_WALL_MASK);
 
-    //闪避时无敌
-    _isInvincible = true;
-    _invincibilityTime = _dodgeTime;
+    playAnimation("dodge", false);
 
+    changeState(PlayerState::DODGING);
 }
 
 bool Player::isUnlocked(const std::string& name)

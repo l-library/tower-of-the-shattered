@@ -19,8 +19,9 @@ enum class ItemEffectType {
     JUMP_FORCE_UP,  // 提升跳跃高度
     DODGE_TIME_UP,  // 提升闪避时间
     DODGE_COOLDOWN, // 减少闪避冷却
+    SKILL_DAMAGE_UP,// 提高技能伤害
     //DOUBLE_JUMP,    // 二段跳
-    //DOUBLE_DOUDGE,  // 空中二段闪避
+    DOUBLE_DODGE,  // 空中二段闪避
     SPECIAL         // 特殊机制（需要脚本或硬编码支持）
 };
 
