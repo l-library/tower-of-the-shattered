@@ -1,24 +1,24 @@
-ï»¿#pragma once
+#pragma once
 #include "cocos2d.h"
 #include "Entities/Player/Player.h"
 #include "Scenes/GameCamera.h"
 
-//ï¿½ï¿½ï¿½ï¿½Sceneï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PlayerTestScene
-//ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//´´½¨SceneµÄ×ÓÀàPlayerTestScene
+//¸Ã³¡¾°ÓÃÓÚ²âÊÔÍæ¼ÒµÄ»ù±¾²Ù×÷
 class PlayerTestScene : public cocos2d::Scene
 {
 public:
-    static cocos2d::Scene* createScene();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    static cocos2d::Scene* createScene();//´´½¨³¡¾°
     static cocos2d::Scene* createWithMap(const std::string& mapFile);
 
-    virtual bool init() override;//ï¿½ï¿½Ê¼ï¿½ï¿½
+    virtual bool init() override;//³õÊ¼»¯
 
-    void setupInput();//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+    void setupInput();//¶ÁÈ¡ÊäÈë
 
     void PlayerTestScene::update(float dt);
 
     // implement the "static create()" method manually
-    CREATE_FUNC(PlayerTestScene);//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½createï¿½ï¿½ï¿½ï¿½
+    CREATE_FUNC(PlayerTestScene);//Éú³ÉÒ»¸öcreateº¯Êý
 
     ~PlayerTestScene();
     std::string _currentMapFile = "maps/map_1.tmx";

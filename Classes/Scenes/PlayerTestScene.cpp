@@ -1,7 +1,6 @@
 #include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
-#include "Entities/Enemy/Fly.h"
 #include "Maps/ChangeLevel.h"
 
 USING_NS_CC;
@@ -14,14 +13,14 @@ Scene* PlayerTestScene::createScene()
 }
 
 Scene* PlayerTestScene::createWithMap(const std::string& mapFile) {
-    // 1. Ö±ï¿½Ó´ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ïµï¿½ create()
+    // 1. Ö±½Ó´´½¨ÊµÀý£¬²»µ÷ÓÃÄ¬ÈÏµÄ create()
     PlayerTestScene* pRet = new(std::nothrow) PlayerTestScene();
 
     if (pRet) {
-        // 2. ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½Í¼ï¿½Ä¼ï¿½ï¿½ï¿½
+        // 2. ÏÈÉèÖÃµØÍ¼ÎÄ¼þÃû
         pRet->_currentMapFile = mapFile;
 
-        // 3. ï¿½Ùµï¿½ï¿½ï¿½ init()
+        // 3. ÔÙµ÷ÓÃ init()
         if (pRet->init()) {
             pRet->autorelease();
             return pRet;
@@ -60,42 +59,42 @@ bool PlayerTestScene::init()
     // map_1
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½É¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½
+    // ±éÀúµØÍ¼Éú³É¶à±ßÐÎÅö×²Ïä
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
     this->addChild(map_1, -1);
 
-    //ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
+    //¼ÓÔØ¶¯»­ÎÄ¼þ
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    //ï¿½ï¿½ï¿½ï¿½playerï¿½ï¿½
+    //´´½¨playerÀà
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(Vec2(visibleSize.width / 4 + origin.x, visibleSize.height / 4 + origin.y));
     _player->setScale(2 * 32 / contentSize.width);
-    this->addChild(_player, 1);///ï¿½ï¿½È¾player
+    this->addChild(_player, 1);///äÖÈ¾player
     setupInput();
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SlimeÊµï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½
-    auto slime1 = Fly::create();
+    // Ìí¼ÓÁ½¸öSlimeÊµÀýÓÃÓÚ²âÊÔ
+    auto slime1 = Slime::create();
     slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime1, 1);
 
-    auto slime2 = Fly::create();
+    auto slime2 = Slime::create();
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 
     setupCollisionListener(this);
 
-    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ³õÊ¼»¯ÉãÏñ»úºÍ UI ¿ØÖÆÆ÷
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // ï¿½ï¿½Îªï¿½ï¿½ Ref ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½Òª retain ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½Í·ï¿½
+    _cameraController->retain(); // ÒòÎªÊÇ Ref ÀàÐÍ£¬ÐèÒª retain ·ÀÖ¹±»×Ô¶¯ÊÍ·Å
     this->scheduleUpdate();
 
-    // æ’­æ”¾èƒŒæ™¯éŸ³ä¹
+    // ²¥·Å±³¾°ÒôÀÖ
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
@@ -103,12 +102,12 @@ bool PlayerTestScene::init()
 }
 
 void PlayerTestScene::update(float dt) {
-    // Ã¿Ò»Ö¡Ö»ï¿½ï¿½ÒªÍ¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // Ã¿Ò»Ö¡Ö»ÐèÒªÍ¨Öª¿ØÖÆÆ÷¸üÐÂ
     _cameraController->update(dt);
 }
 
 void PlayerTestScene::setupInput() {
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ´´½¨ÊäÈë¼àÌý
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {

@@ -26,15 +26,6 @@ enum class Direction {
 //动画标签
 #define ANIMATION_ACTION_TAG 1001
 
-// 定义物理掩码
-//const int PLAYER_CATEGORY_BITMASK = 0x01;
-//const int GROUND_CATEGORY_BITMASK = 0x02;
-//const int PLATFORM_CATEGORY_BITMASK = 0x04;
-//const int ENEMY_CATEGORY_BITMASK = 0x08;
-//const int TRAP_CATEGORY_BITMASK = 0x10;
-//const int ITEM_CATEGORY_BITMASK = 0x20;
-//当前使用TowerOfTheShattered头文件的掩码
-
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
 //默认两端攻击之间最大时间差

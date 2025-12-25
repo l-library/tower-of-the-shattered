@@ -1,27 +1,27 @@
 #pragma once
-// æ¸¸æˆä¸»å¤´æ–‡ä»¶ï¼ŒåŒ…å«å…¨å±€å¸¸é‡å’Œç±»åž‹å®šä¹‰
+// ÓÎÏ·Ö÷Í·ÎÄ¼þ£¬°üº¬È«¾Ö³£Á¿ºÍÀàÐÍ¶¨Òå
 
-// æ¸¸æˆåŸºç¡€å¸¸é‡å®šä¹‰
-#define GRID_SIZE	32		// æ¸¸æˆæ ¼å­å¤§å°ï¼ˆ32x32åƒç´ ï¼‰
-#define MAP_SIZE	1.25f	// åœ°å›¾ç¼©æ”¾
+// ÓÎÏ·»ù´¡³£Á¿¶¨Òå
+#define GRID_SIZE	32		// ÓÎÏ·¸ñ×Ó´óÐ¡£¨32x32ÏñËØ£©
+#define MAP_SIZE	1.25f	// µØÍ¼Ëõ·Å
 
-// ç¢°æ’žæŽ©ç å®šä¹‰
-#define ENEMY_MASK          0x00000001  // æ•Œäºº
-#define PLAYER_MASK         0x00000002  // çŽ©å®¶
-#define BORDER_MASK         0x00000004  // æ¸¸æˆè¾¹ç•Œ
-#define WALL_MASK           0x00000008  // æ¸¸æˆåœºæ™¯ä¸­çš„å¢™å£
-#define DAMAGE_WALL_MASK    0x00000010  // æ¸¸æˆåœºæ™¯ä¸­æœ‰ä¼¤å®³çš„å¢™å£
-#define BULLET_MASK         0x000000c0  // å­å¼¹(åŒ…å«ä¸‹é¢ä¸¤ç§å­å¼¹ï¼Œ4+8=c)
-#define PLAYER_BULLET_MASK  0x00000040  // çŽ©å®¶å‘å°„çš„å­å¼¹
-#define ENEMY_BULLET_MASK   0x00000080  // æ•Œäººå‘å°„çš„å­å¼¹
-#define PENETRATE_MASK      0x00000100  // å¯ç©¿é€å¢™å£çš„ç‰©ä½“
-#define BOUNCE_MASK         0x00000200  // å¯å¼¹è·³çš„ç‰©ä½“
+// Åö×²ÑÚÂë¶¨Òå
+#define ENEMY_MASK          0x00000001  // µÐÈË
+#define PLAYER_MASK         0x00000002  // Íæ¼Ò
+#define BORDER_MASK         0x00000004  // ÓÎÏ·±ß½ç
+#define WALL_MASK           0x00000008  // ÓÎÏ·³¡¾°ÖÐµÄÇ½±Ú
+#define DAMAGE_WALL_MASK    0x00000010  // ÓÎÏ·³¡¾°ÖÐÓÐÉËº¦µÄÇ½±Ú
+#define BULLET_MASK         0x000000c0  // ×Óµ¯(°üº¬ÏÂÃæÁ½ÖÖ×Óµ¯£¬4+8=c)
+#define PLAYER_BULLET_MASK  0x00000040  // Íæ¼Ò·¢ÉäµÄ×Óµ¯
+#define ENEMY_BULLET_MASK   0x00000080  // µÐÈË·¢ÉäµÄ×Óµ¯
+#define PENETRATE_MASK      0x00000100  // ¿É´©Í¸Ç½±ÚµÄÎïÌå
+#define BOUNCE_MASK         0x00000200  // ¿Éµ¯ÌøµÄÎïÌå
 #define NPC_MASK            0x00000400  // NPC
-#define SENSOR_MASK			0x00001000	// åˆ‡æ¢å…³å¡æ£€æµ‹ç¢°æ’žä½“
-#define MACHINE_MASK		0x00002000	// è§¦å‘æœºå…³æ£€æµ‹ç¢°æ’žä½“
-#define EVERYTHING_MASK		0xFFFFFFFF	// ç¢°æ’žä¸€åˆ‡
+#define SENSOR_MASK			0x00001000	// ÇÐ»»¹Ø¿¨¼ì²âÅö×²Ìå
+#define MACHINE_MASK		0x00002000	// ´¥·¢»ú¹Ø¼ì²âÅö×²Ìå
+#define EVERYTHING_MASK		0xFFFFFFFF	// Åö×²Ò»ÇÐ
 
-// æˆ¿é—´å‡ºå£
+// ·¿¼ä³ö¿Ú
 #define LD "left_down"
 #define LU "left_up"
 #define RD "right_down"
