@@ -342,7 +342,7 @@ BehaviorResult Slime::jumpAttack(float delta)
         }
         
         // 创建跳跃攻击的碰撞区域，比Slime大1.2倍
-        auto jumpBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+        auto jumpBullet = Bullet::create("", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
             // 子弹更新回调
             if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
             {
@@ -390,7 +390,6 @@ BehaviorResult Slime::chargeAttack(float delta)
         return { true, 0.0f };
     }
     
-    // ??????????
     if (!isCharging_)
     {
         // 开始冲锋
@@ -428,7 +427,7 @@ BehaviorResult Slime::chargeAttack(float delta)
                 }
             }
             
-            // 停止冲锋???????
+            // 停止冲锋
             auto tintAction = TintTo::create(0.1f, 255, 0, 0);
             if (tintAction != nullptr)
             {
@@ -444,7 +443,7 @@ BehaviorResult Slime::chargeAttack(float delta)
         }
         
         // 创建冲锋攻击的碰撞区域，比Slime大1.2倍
-        auto chargeBullet = Bullet::create("HelloWorld.png", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
+        auto chargeBullet = Bullet::create("", this->getBaseAttackPower(), [this](Bullet* bullet, float delta) {
             // 子弹更新回调
             if (this->currentState_ == EnemyState::DEAD || this->getParent() == nullptr)
             {

@@ -68,24 +68,38 @@ bool NPC1::init()
     }
     
     // 设置对话内容
-    std::vector<std::string> dialogues = {
-        "你好，冒险者！",
-        "欢迎来到这个世界！",
-        "有什么我可以帮助你的吗？"
+    std::vector<DialogueEntry> dialogues = 
+    {
+        DialogueEntry("1", 
+                     nullptr, // 通用回调函数(固定触发)
+                     []() {}, // 按键1回调
+                     []() {}, // 按键2回调
+                     []() {}), // 按键3回调
+        DialogueEntry("2", 
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry("3", 
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {})
     };
     this->setDialogues(dialogues);
     
+    //设置立绘
+    Illustration_ = Sprite::create("NPC/NPC1/npc1_illustration.png");
+    if (Illustration_)
+    {
+        Illustration_->retain();
+    }
+
     return true;
 }
 
 void NPC1::handlePlayerInteraction()
 {
-    // 检测功能是否正常，先CCLOG一个消息
-    CCLOG("NPC1: 玩家与我交互了！");
-    
-    // 这里可以添加显示对话的逻辑
-    if (!dialogues_.empty())
-    {
-        CCLOG("NPC1: %s", dialogues_[0].c_str());
-    }
+    // 显示对话背景并调用显示对话内容的函数
+    showDialogueBackground();
 }

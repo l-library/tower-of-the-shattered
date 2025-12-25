@@ -59,18 +59,21 @@ bool Bullet::init(const std::string& spriteFrameName, int damage,
     damage_ = damage;
 
     // 创建子弹精灵
-    sprite_ = Sprite::create(spriteFrameName);
-    if (!sprite_) {
-        CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
-        return false;
+    if (spriteFrameName != "")
+    {
+        sprite_ = Sprite::create(spriteFrameName);
+        if (!sprite_) {
+            CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
+            return false;
+        }
+        sprite_->retain();
+        sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
+        sprite_->setPosition(Vec2::ZERO); // 精灵居中，使碰撞体与精灵位置一致
+        this->addChild(sprite_);
+        // 根据精灵尺寸设置碰撞体大小
+        collisionWidth_ = sprite_->getContentSize().width;
+        collisionHeight_ = sprite_->getContentSize().height;
     }
-    sprite_->retain();
-    sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
-    sprite_->setPosition(Vec2::ZERO); // 精灵居中，使碰撞体与精灵位置一致
-    this->addChild(sprite_);
-    // 根据精灵尺寸设置碰撞体大小
-    collisionWidth_ = sprite_->getContentSize().width;
-    collisionHeight_ = sprite_->getContentSize().height;
 
     // 重新创建物理碰撞体
     recreatePhysicsBody();

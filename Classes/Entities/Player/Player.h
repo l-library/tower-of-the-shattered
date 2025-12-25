@@ -113,7 +113,8 @@ public:
 	* @param[in] void
 	* @return (const)Íæ¼Ò¿ØÖÆ×´Ì¬ true£¬false
 	***/
-	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; };
+	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; }
+	void setControlEnabled(bool controlEnabled) { _controlEnabled = controlEnabled; }
 
 	const Direction getDirection() const { return _direction; };
 
