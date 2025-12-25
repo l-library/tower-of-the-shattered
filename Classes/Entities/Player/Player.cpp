@@ -50,7 +50,7 @@ bool Player::init()
     _maxMagic = 100.0;
     _magic = _maxMagic;
     _speed = 300.0;     // 水平移动最大速度
-    _jumpForce = 900.0; // 跳跃冲量 
+    _jumpForce = 600.0; // 跳跃冲量 
     _dodgeForce = 300.0;
     _acceleration = 1000.0;
     _deceleration = 2000.0; 
@@ -147,9 +147,9 @@ void Player::initPhysics()
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
     _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK);
-    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK);
-    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | DAMAGE_WALL_MASK | NPC_MASK | SENSOR_MASK;
-    _dodgeMask = WALL_MASK | BORDER_MASK;
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK | ITEM_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK| NPC_MASK | SENSOR_MASK | ITEM_MASK;
+    _dodgeMask = WALL_MASK | BORDER_MASK | ITEM_MASK;
 
     //给主身体一个Tag
     _physicsBody->getShape(0)->setTag(TAG_BODY);
@@ -228,6 +228,19 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             }
         }
     }
+
+    Items* itemNode = nullptr;
+    // 检查 NodeA 是否是物品
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == ITEM_MASK) {
+        itemNode = dynamic_cast<Items*>(otherNode);
+    }
+
+    // 如果发生了 玩家 <-> 物品 的碰撞
+    if (this && itemNode) {
+        itemNode->bePickedUp(this);
+        return false; // 返回 false 表示忽略物理碰撞处理（虽然在这里已经通过掩码过滤了物理碰撞，但逻辑上返回false更安全）
+    }
+
     // 伤害判定逻辑
     int otherCategory = otherShape->getCategoryBitmask();
     bool isEnemyBullet = (otherCategory & ENEMY_BULLET_MASK);

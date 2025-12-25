@@ -65,7 +65,7 @@ void buildPolyPhysicsFromLayer(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
                     polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
                     //ÉèÖÃÑÚÂë
                     localPhysicsBody->setCategoryBitmask(WALL_MASK);
-                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK | ITEM_MASK);
                     localPhysicsBody->setContactTestBitmask(PLAYER_MASK | ENEMY_MASK | PLAYER_BULLET_MASK);
 
                     polygonNode->setPhysicsBody(localPhysicsBody);

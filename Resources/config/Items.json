@@ -1,10 +1,10 @@
 [
     {
         "id": 101,
-        "name": "巨人腰带",
-        "icon": "items/belt.png",
+        "name": "旅行者斗篷",
+        "icon": "items/cape.png",
         "desc": "增加 50 点最大生命值。",
-        "tucao": "它太大了，你只能把它当围巾用。",
+        "tucao": "大灾变前很流行的斗篷，现在已经破旧不堪了。",
         "effect_type": "HP_MAX_UP",
         "value": 50.0
     },
