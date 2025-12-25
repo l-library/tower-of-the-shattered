@@ -98,6 +98,9 @@ bool PlayerTestScene::init()
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
+    // 初始化物品管理器
+    ItemManager::getInstance()->init("config/items.json");
+    ItemManager::getInstance()->gainItem(_player, 101);
     return true;
 }
 

@@ -139,6 +139,12 @@ public:
 	***/
 	bool isUnlocked(const std::string& name);
 
+	// 设置主角属性
+	void modifyMaxHealth(double value) { _maxHealth += value; _health += value; } // 增加上限并回血
+	void modifyAttackDamage(double value) { _playerAttackDamage += value; }
+	void modifySpeed(double value) { _speed += value; }
+	void modifyMagicRestore(double value) { _magicRestore += value; }
+
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
 

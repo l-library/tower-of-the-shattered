@@ -34,3 +34,4 @@
 #include "Entities/Bullet/Bullet.h"
 #include "Scenes/PlayerTestScene.h"
 #include "Audio/AudioManager.h"
+#include "Entities/Items/ItemManager.h"

@@ -1,0 +1,29 @@
+[
+    {
+        "id": 101,
+        "name": "巨人腰带",
+        "icon": "items/belt.png",
+        "desc": "增加 50 点最大生命值。",
+        "tucao": "它太大了，你只能把它当围巾用。",
+        "effect_type": "HP_MAX_UP",
+        "value": 50.0
+    },
+    {
+        "id": 102,
+        "name": "风灵之靴",
+        "icon": "items/boots.png",
+        "desc": "稍微增加移动速度。",
+        "tucao": "穿上它，感觉这地板变滑了。",
+        "effect_type": "SPEED_UP",
+        "value": 20.0
+    },
+    {
+        "id": 103,
+        "name": "贤者之杖",
+        "icon": "items/cane.png",
+        "desc": "增加 10 点基础攻击力。",
+        "tucao": "这把法杖似乎充盈着古老的力量。",
+        "effect_type": "ATTACK_UP",
+        "value": 10.0
+    }
+]

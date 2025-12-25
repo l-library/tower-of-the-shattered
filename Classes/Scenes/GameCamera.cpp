@@ -1,4 +1,5 @@
 #include "GameCamera.h"
+#include <string>
 
 USING_NS_CC;
 
@@ -68,6 +69,16 @@ void GameCamera::initBar() {
     _hpBar->setBarChangeRate(Vec2(1, 0));
     _hpBar->setPosition(hpBorder->getPosition());
     _uiRoot->addChild(_hpBar);
+    {
+        char out_put[20];
+        sprintf(out_put, "%.2f / %.2f", _player->getHealth(), _player->getMaxHealth());
+        _hp_label = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+        if (_hp_label) {
+            _hp_label->setAnchorPoint(Vec2(0.5f, 0.5f));
+            _hp_label->setPosition(hpBorder->getPosition());
+        }
+        _uiRoot->addChild(_hp_label);
+    }
 
     // 蓝条
     auto mpBorder = Sprite::create("player/mp_border.png");
@@ -80,6 +91,17 @@ void GameCamera::initBar() {
     _mpBar->setBarChangeRate(Vec2(1, 0));
     _mpBar->setPosition(mpBorder->getPosition());
     _uiRoot->addChild(_mpBar);
+
+    {
+        char out_put[20];
+        sprintf(out_put, "%.2f / %.2f", _player->getMagic(), _player->getMaxMagic());
+        _mp_label = Label::createWithTTF(out_put, "fonts/Marker Felt.ttf", 24);
+        if (_mp_label) {
+            _mp_label->setAnchorPoint(Vec2(0.5f, 0.5f));
+            _mp_label->setPosition(mpBorder->getPosition());
+        }
+        _uiRoot->addChild(_mp_label);
+    }
 }
 
 void GameCamera::initSkillIcons() {
@@ -173,6 +195,14 @@ void GameCamera::update(float dt) {
     // 血条蓝条百分比更新
     if (_player->getHealth() >= 0)
         _hpBar->setPercentage((_player->getHealth() / _player->getMaxHealth()) * 100.0f);
+    char out_put[20];
+    sprintf(out_put, "%.2f / %.2f", _player->getHealth(), _player->getMaxHealth());
+    _hp_label->setString(out_put);
+
+    char out_put_1[20];
+    sprintf(out_put_1, "%.2f / %.2f", _player->getMagic(), _player->getMaxMagic());
+    _mp_label->setString(out_put_1);
+
     if (_player->getMagic() >= 0)
         _mpBar->setPercentage((_player->getMagic() / _player->getMaxMagic()) * 100.0f);
 

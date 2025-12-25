@@ -33,7 +33,9 @@ private:
     cocos2d::ProgressTimer* _skillCDTimer;
     cocos2d::ProgressTimer* _skillCDTimer_2;
     cocos2d::ProgressTimer* _skillCDTimer_3;
-
+    cocos2d::Label* _hp_label;
+    cocos2d::Label* _mp_label;
+    
     //·Å´ó±¶Êý
     float _zoom_factor;
 };
