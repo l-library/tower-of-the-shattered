@@ -76,10 +76,10 @@ list(APPEND GAME_SOURCE
      Classes/Entities/NPC/NpcBase.cpp
      Classes/Entities/NPC/Npc1.cpp
      Classes/Entities/Items/ItemManager.cpp
+     Classes/Entities/Items/Items.cpp
      Classes/Scenes/PlayerTestScene.cpp
      Classes/Scenes/GameCamera.cpp
      Classes/Maps/ChangeLevel.cpp
-     Classes/Maps/BaseGameScene.cpp
      Classes/Audio/AudioManager.cpp
      )
 list(APPEND GAME_HEADER
@@ -105,15 +105,10 @@ list(APPEND GAME_HEADER
      Classes/Entities/NPC/NpcBase.h
      Classes/Entities/NPC/Npc1.h
      Classes/Entities/Items/ItemManager.h
+     Classes/Entities/Items/Items.h
      Classes/Scenes/PlayerTestScene.h
      Classes/Scenes/GameCamera.h
      Classes/Maps/ChangeLevel.h
-     Classes/Maps/BaseGameScene.h
-     Classes/Maps/FixedSceneProvider.h
-     Classes/Maps/GameSceneManager.h
-     Classes/Maps/ISceneProvider.h
-     Classes/Maps/SceneFactory.h
-     Classes/Maps/SceneInfo.h
      Classes/Audio/AudioManager.h
      )
 

@@ -49,7 +49,7 @@ bool GameCamera::init(Scene* scene, Player* player, TMXTiledMap* map) {
     _uiRoot = Node::create();
     _uiRoot->setContentSize(visibleSize);
     _uiRoot->setCameraMask((uint16_t)CameraFlag::USER2, true);
-    _scene->addChild(_uiRoot, 100);
+    _scene->addChild(_uiRoot, kUIZorder);
 
     initUI();
 
@@ -62,6 +62,7 @@ void GameCamera::initUI() {
     initBar();
     initSkillIcons();
     initGold();
+    initItemIcons();
 }
 
 // 通用的状态条创建函数
@@ -70,21 +71,21 @@ ProgressTimer* GameCamera::createStatusBar(const std::string& borderPath, const 
     if (!border) return nullptr;
 
     border->setPosition(position);
-    _uiRoot->addChild(border);
+    _uiRoot->addChild(border, kUIZorder);
 
     auto bar = ProgressTimer::create(Sprite::create(barPath));
     bar->setType(ProgressTimer::Type::BAR);
     bar->setMidpoint(Vec2(0, 0.5f));
     bar->setBarChangeRate(Vec2(1, 0));
     bar->setPosition(position);
-    _uiRoot->addChild(bar);
+    _uiRoot->addChild(bar, kUIZorder);
 
     // 初始化 Label
     outLabel = Label::createWithTTF("0 / 0", "fonts/Marker Felt.ttf", 24);
     if (outLabel) {
         outLabel->setAnchorPoint(Vec2(0.5f, 0.5f));
         outLabel->setPosition(position);
-        _uiRoot->addChild(outLabel);
+        _uiRoot->addChild(outLabel, kUIZorder+1);
     }
 
     return bar;
@@ -113,7 +114,7 @@ void GameCamera::createSkillSlot(const std::string& skillName, const std::string
     auto border = Sprite::create("skill-icons/Border.png");
     border->setScale(2.0f);
     border->setPosition(position);
-    _uiRoot->addChild(border);
+    _uiRoot->addChild(border, kUIZorder);
 
     // 技能图标
     std::string finalIconPath = "skill-icons/NULL.png";
@@ -125,7 +126,7 @@ void GameCamera::createSkillSlot(const std::string& skillName, const std::string
     if (icon) {
         icon->setScale(2.0f);
         icon->setPosition(position);
-        _uiRoot->addChild(icon);
+        _uiRoot->addChild(icon, kUIZorder);
     }
 
     // 冷却遮罩 (Timer)
@@ -135,7 +136,7 @@ void GameCamera::createSkillSlot(const std::string& skillName, const std::string
     cdTimer->setScale(2.0f);
     cdTimer->setPosition(position);
     cdTimer->setVisible(false);
-    _uiRoot->addChild(cdTimer);
+    _uiRoot->addChild(cdTimer, kUIZorder+1);
 
     // 存入 Map 以便 update 使用
     _skillCDTimers[skillName] = cdTimer;
@@ -180,8 +181,13 @@ void GameCamera::initGold() {
     if (_goldLabel) {
         auto labelPos = Vec2(position.x + gold->getContentSize().width + _goldLabel->getContentSize().width, position.y);
         _goldLabel->setPosition(labelPos);
-        _uiRoot->addChild(_goldLabel);
+        _uiRoot->addChild(_goldLabel, kUIZorder+1);
     }
+}
+
+void GameCamera::initItemIcons()
+{
+    _nextIconPosition = Vec2(_itemSize / 2, _mpBar->getPosition().y - _mpBar->getContentSize().height);
 }
 
 void GameCamera::update(float dt) {
@@ -237,5 +243,19 @@ void GameCamera::update(float dt) {
     // 刷新金币
     if (_goldLabel) {
         _goldLabel->setString(std::to_string(ItemManager::getInstance()->getGold()));
+    }
+
+    // 刷新物品UI
+    // 获取玩家所有的物品列表
+    if (ItemManager::getInstance()->hasNewItems(_player)) {
+        std::vector<int> Items = ItemManager::getInstance()->getOwnedItems();
+        int item = Items.back();
+        auto itemIcon = ItemManager::getInstance()->createItemIcon(item);
+        itemIcon->setCameraMask((unsigned short)CameraFlag::USER2);
+        float scale = _itemSize / itemIcon->getContentSize().width;
+        itemIcon->setScale(scale);
+        itemIcon->setPosition(_nextIconPosition);
+        _nextIconPosition.x += _itemSize + 5.0f;
+        _uiRoot->addChild(itemIcon,kUIZorder);
     }
 }

@@ -1,11 +1,12 @@
-#ifndef __GAME_CAMERA_H__
-#define __GAME_CAMERA_H__
+#pragma once
 
 #include "cocos2d.h"
 #include "Entities/Player/Player.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
+
+constexpr int kUIZorder = 30;
 
 class GameCamera : public cocos2d::Ref {
 public:
@@ -34,6 +35,7 @@ private:
     void initBar();
     void initSkillIcons();
     void initGold();
+    void initItemIcons();
 
     // --- 内部引用 ---
     cocos2d::Scene* _scene;
@@ -52,11 +54,12 @@ private:
 
     cocos2d::Label* _goldLabel;
 
+    cocos2d::Vec2 _nextIconPosition; // 存放下一个物品的坐标
+    float _itemSize = 32.0f; // 物品图标大小
+
     // Key为技能名称，value为冷却条
     std::unordered_map<std::string, cocos2d::ProgressTimer*> _skillCDTimers;
 
     // 放大倍数
     float _zoomFactor;
 };
-
-#endif // __GAME_CAMERA_H__
