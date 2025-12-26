@@ -1,6 +1,5 @@
 #include "EnemyAi.h"
 
-
 // 构造函数和析构函数的实现（private，不会被外部调用）
 EnemyAi::EnemyAi() {};
 EnemyAi::~EnemyAi() {};

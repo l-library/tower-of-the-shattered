@@ -28,7 +28,6 @@ bool GameCamera::init(Scene* scene, Player* player, TMXTiledMap* map) {
     _scene = scene;
     _player = player;
     _map = map;
-
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     // 获取默认摄像机

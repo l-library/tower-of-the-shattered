@@ -1,6 +1,8 @@
 #pragma once
 #include "cocos2d.h"
 
+void initRoomDatabase();
+
 // 生成多边形地形
 void buildPolyPhysicsFromLayer(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map);
 

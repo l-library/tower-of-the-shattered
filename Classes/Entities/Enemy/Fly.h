@@ -1,6 +1,5 @@
 #pragma once
 #include "SoldierEnemyBase.h"
-
 class Fly : public SoldierEnemyBase
 {
 private:

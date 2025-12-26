@@ -1,6 +1,5 @@
 #include "Bomber.h"
 
-
 using namespace cocos2d;
 
 bool Bomber::init()

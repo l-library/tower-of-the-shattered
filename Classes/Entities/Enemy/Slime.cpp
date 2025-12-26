@@ -68,7 +68,6 @@ void Slime::Hitted(int damage, int poise_damage)
 
 void Slime::Dead()
 {
-
     // 处理死亡效果
     if (sprite_ != nullptr)
     {
@@ -279,7 +278,6 @@ BehaviorResult Slime::recovery(float delta)
 
 BehaviorResult Slime::jumpAttack(float delta)
 {
-
     // 如果敌人已经死亡，结束行为
     if (currentState_ == EnemyState::DEAD)
     {

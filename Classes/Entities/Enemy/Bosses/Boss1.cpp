@@ -1,6 +1,5 @@
 #include "Boss1.h"
 
-
 using namespace cocos2d;
 
 Boss1::Boss1()
