@@ -1,6 +1,7 @@
 #include "MainMenuScene.h"
 #include "../Audio/AudioManager.h" 
 #include "Tools/ReadJson.h"
+#include "../Scenes/PlayerTestScene.h"
 
 USING_NS_CC;
 
@@ -165,7 +166,7 @@ void MainMenuScene::onStartGame(Ref* sender)
 {
     AudioManager::getInstance()->playEffect("sounds/button_click.ogg");
     log("Start Game Clicked");
-    // Director::getInstance()->replaceScene(TransitionFade::create(1.0f, GameScene::createScene()));
+    Director::getInstance()->replaceScene(TransitionFade::create(1.0f, PlayerTestScene::createScene()));
 }
 
 void MainMenuScene::onLoadGame(Ref* sender)

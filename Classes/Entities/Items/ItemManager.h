@@ -65,10 +65,10 @@ public:
     void gainItem(Player* player, int itemId);
 
     /**
-     * @brief 移除物品（可选功能）
-     * @details 移除效果
+     * @brief 是否获得了新的物品
+     * @details 用于UI展示，防止每次都刷新物品列表造成浪费
      */
-    void removeItem(Player* player, int itemId);
+    bool hasNewItems(Player* player);
 
     /**
      * @brief 检查是否拥有某物品
@@ -119,4 +119,7 @@ private:
 
     // 当前金币
     int _gold;
+
+    // 获得了新物品
+    bool _hasNewItems;
 };
