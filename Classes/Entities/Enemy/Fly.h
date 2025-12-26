@@ -1,8 +1,5 @@
 #pragma once
 #include "SoldierEnemyBase.h"
-#include "cocos2d.h"
-#include "Entities/Bullet/Bullet.h"
-#include "EnemyAi/EnemyAi.h"
 class Fly : public SoldierEnemyBase
 {
 private:

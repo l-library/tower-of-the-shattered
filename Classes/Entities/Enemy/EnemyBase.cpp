@@ -1,9 +1,5 @@
 #include "EnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "Entities/Player/Player.h"
 #include <utility>
-USING_NS_CC;
-
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
     , physicsBody_(nullptr)
@@ -269,6 +265,7 @@ void EnemyBase::update(float delta)
             // 如果没有正在运行的动作，移除敌人对象
             if (!hasRunningActions)
             {
+                DropLootOnDeath();
                 this->removeFromParentAndCleanup(true);
             }
         }
@@ -444,4 +441,18 @@ void EnemyBase::removeBehavior(const std::string& name)
 bool EnemyBase::hasBehavior(const std::string& name) const
 {
     return aiBehaviors_.find(name) != aiBehaviors_.end();
+}
+
+void EnemyBase::DropLootOnDeath()
+{
+
+    auto item = Items::createWithId(110);
+    if (item) {
+        item->setPosition(this->getPosition());
+
+        // 模拟爆出来的效果：给一个向上的初速度
+        item->getPhysicsBody()->setVelocity(Vec2(0, 200));
+        this->getParent()->addChild(item, 5); // Z-order 在背景之上
+    }
+
 }

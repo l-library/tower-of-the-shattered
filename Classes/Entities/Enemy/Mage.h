@@ -1,7 +1,5 @@
 #pragma once
 #include "SoldierEnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "EnemyAi/EnemyAi.h"
 
 // Mage类 - 派生自SoldierEnemyBase，使用火球进行直线攻击的法师敌人
 class Mage : public SoldierEnemyBase

@@ -29,28 +29,28 @@ bool Player::init()
         return false;
     }
 
-    // åŠ è½½ä¸»è§’å›¾åƒ
+    // ¼ÓÔØÖ÷½ÇÍ¼Ïñ
     _sprite = Sprite::create("player/idle-0.png");
-    // è®¾ç½®é”šç‚¹
+    // ÉèÖÃÃªµã
     _sprite->setAnchorPoint(Vec2(0.5, 0));
     this->addChild(_sprite);
 
-    /*---åˆå§‹åŒ–ä¸»è§’å„å±æ€§---*/
+    /*---³õÊ¼»¯Ö÷½Ç¸÷ÊôĞÔ---*/
     _currentState = PlayerState::IDLE;
     _previousState = PlayerState::IDLE;
     _direction = Direction::RIGHT;
 
-    // åŸºç¡€å±æ€§
+    // »ù´¡ÊôĞÔ
     Size contentSize = _sprite->getContentSize();
-    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // ç¢°æ’ä½“é€šå¸¸æ¯”è´´å›¾ç¨å°
+    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // Åö×²ÌåÍ¨³£±ÈÌùÍ¼ÉÔĞ¡
 
-    // ç©å®¶åˆå§‹æ•°å€¼
+    // Íæ¼Ò³õÊ¼ÊıÖµ
     _maxHealth = 100.0;
     _health = _maxHealth;
     _maxMagic = 100.0;
     _magic = _maxMagic;
-    _speed = 300.0;     // æ°´å¹³ç§»åŠ¨æœ€å¤§é€Ÿåº¦
-    _jumpForce = 900.0; // è·³è·ƒå†²é‡ 
+    _speed = 300.0;     // Ë®Æ½ÒÆ¶¯×î´óËÙ¶È
+    _jumpForce = 900.0; // ÌøÔ¾³åÁ¿ 
     _dodgeForce = 300.0;
     _acceleration = 1000.0;
     _deceleration = 2000.0; 
@@ -58,13 +58,14 @@ bool Player::init()
     _maxDodgeTimes = 1;
     _dodgeTimes = _maxDodgeTimes;
     _playerAttackDamage = 25.0;
-    _magicRestore = 1.0;
+    _magicRestore = 0.5;
+    _skillDamage = 1.0;
 
-    _maxAttackCooldown = 0.3;
+    _maxAttackCooldown = 1.0;
     _maxDodgeCooldown = 1.0;
     _dodgeTime = 0;
 
-    // çŠ¶æ€æ ‡å¿—
+    // ×´Ì¬±êÖ¾
     _isGrounded = false;
     _isDodge = false;
     _isHurt = false;
@@ -74,9 +75,9 @@ bool Player::init()
     _isInvincible = false;
     _controlEnabled = true;
     _attack_num = 0;
-    _footContactCount = 0; // ç”¨äºè®°å½•è„šéƒ¨æ¥è§¦ç‰©ä½“çš„æ•°é‡
+    _footContactCount = 0; // ÓÃÓÚ¼ÇÂ¼½Å²¿½Ó´¥ÎïÌåµÄÊıÁ¿
 
-    // è®¡æ—¶å™¨
+    // ¼ÆÊ±Æ÷
     _jumpBufferTime = 0.0;
     _coyoteTime = 0.0;
     _dodgeCooldown = 0.0;
@@ -85,30 +86,30 @@ bool Player::init()
     _attackEngageTime = 0.0;
     _stepSoundsInterval = 0.0f;
 
-    // è¾“å…¥
+    // ÊäÈë
     _moveInput = 0.0;
     _velocity = Vec2::ZERO;
 
-    // æŠ€èƒ½ç®¡ç†å™¨åˆå§‹åŒ–
+    // ¼¼ÄÜ¹ÜÀíÆ÷³õÊ¼»¯
     _skillManager = SkillManager::create(this);
     _skillManager->retain();
 
-    // æ³¨å†ŒæŠ€èƒ½
+    // ×¢²á¼¼ÄÜ
     auto iceSpear = SkillIceSpear::create();
-    iceSpear->setUnlocked(true); // é»˜è®¤è§£é”ï¼Œç­‰å¾…å­˜æ¡£åŠŸèƒ½ï¼Œä»å­˜æ¡£è¯»å–
+    iceSpear->setUnlocked(true); // Ä¬ÈÏ½âËø£¬µÈ´ı´æµµ¹¦ÄÜ£¬´Ó´æµµ¶ÁÈ¡
     _skillManager->addSkill("IceSpear", iceSpear);
     auto ArcaneJet = SkillArcaneJet::create();
-    ArcaneJet->setUnlocked(true); // é»˜è®¤è§£é”ï¼Œç­‰å¾…å­˜æ¡£åŠŸèƒ½ï¼Œä»å­˜æ¡£è¯»å–
+    ArcaneJet->setUnlocked(true); // Ä¬ÈÏ½âËø£¬µÈ´ı´æµµ¹¦ÄÜ£¬´Ó´æµµ¶ÁÈ¡
     _skillManager->addSkill("ArcaneJet", ArcaneJet);
     auto ArcaneShield = SkillArcaneShield::create();
-    ArcaneShield->setUnlocked(true); // é»˜è®¤è§£é”ï¼Œç­‰å¾…å­˜æ¡£åŠŸèƒ½ï¼Œä»å­˜æ¡£è¯»å–
+    ArcaneShield->setUnlocked(true); // Ä¬ÈÏ½âËø£¬µÈ´ı´æµµ¹¦ÄÜ£¬´Ó´æµµ¶ÁÈ¡
     _skillManager->addSkill("ArcaneShield", ArcaneShield);
 
-    // åˆå§‹åŒ–ç‰©ç†èº«ä½“
+    // ³õÊ¼»¯ÎïÀíÉíÌå
     initPhysics();
 
-    // åˆå§‹åŒ–ç¢°æ’ç›‘å¬
-    // æ³¨å†Œç¢°æ’å›è°ƒ
+    // ³õÊ¼»¯Åö×²¼àÌı
+    // ×¢²áÅö×²»Øµ÷
     auto contactListener = EventListenerPhysicsContact::create();
     contactListener->onContactBegin = CC_CALLBACK_1(Player::onContactBegin, this);
     contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
@@ -120,10 +121,10 @@ bool Player::init()
     AudioManager::getInstance()->preload("sounds/FlameSlash.ogg");
     AudioManager::getInstance()->preload("sounds/Dodge.ogg");
 
-    // æ’­æ”¾åˆå§‹åŠ¨ç”»
+    // ²¥·Å³õÊ¼¶¯»­
     playAnimation("idle", true);
 
-    // å¯ç”¨updateå‡½æ•°
+    // ÆôÓÃupdateº¯Êı
     this->scheduleUpdate();
 
     return true;
@@ -131,47 +132,47 @@ bool Player::init()
 
 void Player::initPhysics()
 {
-    //åˆ›å»ºåç§»é‡ï¼ˆç¢°æ’ç®±å¯¹åº”å›¾ç‰‡ï¼‰
+    //´´½¨Æ«ÒÆÁ¿£¨Åö×²Ïä¶ÔÓ¦Í¼Æ¬£©
     Size originalSize = _sprite->getContentSize();
     Vec2 offset = Vec2(0, originalSize.height / 2);
-    //åˆ›å»ºä¸»èº«ä½“,æè´¨ï¼šæ‘©æ“¦åŠ›1.0(é˜²æ­¢å¡å¢™)ï¼Œå¼¹æ€§0
+    //´´½¨Ö÷ÉíÌå,²ÄÖÊ£ºÄ¦²ÁÁ¦1.0(·ÀÖ¹¿¨Ç½)£¬µ¯ĞÔ0
     auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
-    //æ ¹æ®ç¢°æ’ç®±å¤§å°ã€èº«ä½“æè´¨ã€åç§»é‡åˆ›å»ºç¢°æ’ç®±
+    //¸ù¾İÅö×²Ïä´óĞ¡¡¢ÉíÌå²ÄÖÊ¡¢Æ«ÒÆÁ¿´´½¨Åö×²Ïä
     _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
     if (!_physicsBody) return;
-    //ç¦æ­¢æ—‹è½¬
+    //½ûÖ¹Ğı×ª
     _physicsBody->setRotationEnable(false);
-    //è®¾ç½®è´¨é‡
+    //ÉèÖÃÖÊÁ¿
     _physicsBody->setMass(1.0f);
 
-    //è®¾ç½®æ©ç 
+    //ÉèÖÃÑÚÂë
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
     _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK);
-    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK);
-    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | DAMAGE_WALL_MASK | NPC_MASK | SENSOR_MASK;
-    _dodgeMask = WALL_MASK | BORDER_MASK;
+    _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK | ITEM_MASK);
+    _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK| NPC_MASK | SENSOR_MASK | ITEM_MASK;
+    _dodgeMask = WALL_MASK | BORDER_MASK | ITEM_MASK;
 
-    //ç»™ä¸»èº«ä½“ä¸€ä¸ªTag
+    //¸øÖ÷ÉíÌåÒ»¸öTag
     _physicsBody->getShape(0)->setTag(TAG_BODY);
 
-    //æ·»åŠ â€œè„šéƒ¨ä¼ æ„Ÿå™¨â€
-    //è¿™æ˜¯ä¸€ä¸ªæ¯”èº«ä½“åº•éƒ¨ç•¥å°ä¸”ç•¥ä½çš„çŸ©å½¢ï¼Œç”¨äºæ£€æµ‹æ˜¯å¦ç«™åœ¨åœ°ä¸Š
-    //åªæ£€æµ‹ç¢°æ’ï¼Œä¸äº§ç”Ÿç‰©ç†æ¨åŠ›
+    //Ìí¼Ó¡°½Å²¿´«¸ĞÆ÷¡±
+    //ÕâÊÇÒ»¸ö±ÈÉíÌåµ×²¿ÂÔĞ¡ÇÒÂÔµÍµÄ¾ØĞÎ£¬ÓÃÓÚ¼ì²âÊÇ·ñÕ¾ÔÚµØÉÏ
+    //Ö»¼ì²âÅö×²£¬²»²úÉúÎïÀíÍÆÁ¦
     Size footSize = Size(_physicsSize.width * 0.8f, 10);
-    Vec2 footOffset = Vec2(0, 5); // ä½äºèº«ä½“åº•éƒ¨
+    Vec2 footOffset = Vec2(0, 5); // Î»ÓÚÉíÌåµ×²¿
 
     auto footShape = PhysicsShapeBox::create(footSize, PhysicsMaterial(0, 0, 0), footOffset);
     footShape->setCategoryBitmask(PLAYER_MASK);
     footShape->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | WALL_MASK | SENSOR_MASK);
     footShape->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | SENSOR_MASK);
-    footShape->setTag(TAG_FEET); // æ ‡è®°ä¸ºè„š
+    footShape->setTag(TAG_FEET); // ±ê¼ÇÎª½Å
 
     _physicsBody->addShape(footShape);
 
     this->setPhysicsBody(_physicsBody);
-    this->setAnchorPoint(Vec2(0.5f, 0.5f)); // ç‰©ç†åˆšä½“ä¸­å¿ƒå¯¹é½
+    this->setAnchorPoint(Vec2(0.5f, 0.5f)); // ÎïÀí¸ÕÌåÖĞĞÄ¶ÔÆë
 
-    // æ³¨å†Œç¢°æ’å›è°ƒ
+    // ×¢²áÅö×²»Øµ÷
     auto contactListener = EventListenerPhysicsContact::create();
     contactListener->onContactBegin = CC_CALLBACK_1(Player::onContactBegin, this);
     contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
@@ -181,17 +182,17 @@ void Player::initPhysics()
 
 bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
 {
-    // è·å–å‚ä¸ç¢°æ’çš„ä¸¤ä¸ªå½¢çŠ¶
+    // »ñÈ¡²ÎÓëÅö×²µÄÁ½¸öĞÎ×´
     auto shapeA = contact.getShapeA();
     auto shapeB = contact.getShapeB();
 
-    // è·å–å¯¹åº”çš„ç‰©ä½“å’ŒèŠ‚ç‚¹
+    // »ñÈ¡¶ÔÓ¦µÄÎïÌåºÍ½Úµã
     auto bodyA = shapeA->getBody();
     auto bodyB = shapeB->getBody();
     auto nodeA = bodyA->getNode();
     auto nodeB = bodyB->getNode();
 
-    // ç¡®ä¿å…¶ä¸­æœ‰ä¸€ä¸ªæ˜¯å½“å‰ç©å®¶ï¼Œå¹¶åŒºåˆ†å‡ºç©å®¶å½¢çŠ¶å’Œå¯¹æ–¹å½¢çŠ¶
+    // È·±£ÆäÖĞÓĞÒ»¸öÊÇµ±Ç°Íæ¼Ò£¬²¢Çø·Ö³öÍæ¼ÒĞÎ×´ºÍ¶Ô·½ĞÎ×´
     PhysicsShape* playerShape = nullptr;
     PhysicsShape* otherShape = nullptr;
     Node* otherNode = nullptr;
@@ -210,10 +211,10 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
         return true;
     }
 
-    // åœ°é¢æ£€æµ‹
+    // µØÃæ¼ì²â
     if (playerShape->getTag() == TAG_FEET)
     {
-        // æ£€æŸ¥å¯¹æ–¹æ˜¯å¦æ˜¯å¢™å£ã€è¾¹ç•Œæˆ–æ•Œäºº
+        // ¼ì²é¶Ô·½ÊÇ·ñÊÇÇ½±Ú¡¢±ß½ç»òµĞÈË
         int otherMask = otherShape->getCategoryBitmask();
 
         if ((otherMask & WALL_MASK) || (otherMask & BORDER_MASK)||(otherMask & ENEMY_MASK))
@@ -221,14 +222,25 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             _footContactCount++;
             if (_footContactCount > 0) {
                 _isGrounded = true;
-                // å¦‚æœæ˜¯ä¸‹è½çŠ¶æ€ï¼Œæ’­æ”¾è½åœ°éŸ³æ•ˆ
+                // Èç¹ûÊÇÏÂÂä×´Ì¬£¬²¥·ÅÂäµØÒôĞ§
                 if (_currentState == PlayerState::FALLING) {
                     // AudioEngine::play2d("land.mp3");
                 }
             }
         }
     }
-    // ä¼¤å®³åˆ¤å®šé€»è¾‘
+
+    Items* itemNode = nullptr;
+    if (otherNode->getPhysicsBody()->getCategoryBitmask() == ITEM_MASK) {
+        itemNode = dynamic_cast<Items*>(otherNode);
+    }
+
+    
+    if (this && itemNode) {
+        itemNode->bePickedUp(this);
+        return false; 
+    }
+
     int otherCategory = otherShape->getCategoryBitmask();
     bool isEnemyBullet = (otherCategory & ENEMY_BULLET_MASK);
     bool isEnemy = (otherCategory & ENEMY_MASK);
@@ -236,14 +248,14 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
 
     if (isEnemyBullet || isTrap || isEnemy)
     {
-        // å¦‚æœæ²¡æœ‰å¤„äºæ— æ•ŒçŠ¶æ€ä¸”æ²¡æœ‰æ­»äº¡
+        // Èç¹ûÃ»ÓĞ´¦ÓÚÎŞµĞ×´Ì¬ÇÒÃ»ÓĞËÀÍö
         if (!_isInvincible && _currentState != PlayerState::DEAD)
         {
-            // æ‰£è¡€
+            // ¿ÛÑª
             float damage = 10;
             if (isEnemyBullet && otherNode)
             {
-                // å°è¯•å°† Node* è½¬æ¢ä¸º Enemy*
+                // ³¢ÊÔ½« Node* ×ª»»Îª Enemy*
                 auto enemy = dynamic_cast<Bullet*>(otherNode);
                 if (enemy)
                 {
@@ -251,58 +263,65 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
                 }
                 else
                 {
-                    damage = 10.0f; // æ€ªç‰©çš„é»˜è®¤ä¼¤å®³
+                    damage = 10.0f; // ¹ÖÎïµÄÄ¬ÈÏÉËº¦
                 }
             }
             else if (isTrap)
             {
-                damage = 20.0f; // é™·é˜±çš„å›ºå®šä¼¤å®³
+                damage = 20.0f; // ÏİÚåµÄ¹Ì¶¨ÉËº¦
             }
             else if (isEnemy)
-                damage = 5.0; //æ•Œäººçš„å›ºå®šç¢°æ’ä¼¤å®³
+                damage = 5.0; //µĞÈËµÄ¹Ì¶¨Åö×²ÉËº¦
             _health -= damage;
 
-            // çŠ¶æ€åˆ¤æ–­
+            // ×´Ì¬ÅĞ¶Ï
             if (_health <= 0) {
                 _health = 0;
                 changeState(PlayerState::DEAD);
                 _isDead = true;
-                _controlEnabled = false;//ç¦æ­¢æ§åˆ¶
-                _physicsBody->setVelocity(Vec2::ZERO);//é€Ÿåº¦å‡ä¸º0
+                _controlEnabled = false;//½ûÖ¹¿ØÖÆ
+                _physicsBody->setVelocity(Vec2::ZERO);//ËÙ¶È¼õÎª0
                 playAnimation("dead");
-                this->removeComponent(_physicsBody);//ç§»é™¤æ‰€æœ‰ç‰©ç†æ•ˆæœ
+                this->removeComponent(_physicsBody);//ÒÆ³ıËùÓĞÎïÀíĞ§¹û
                 _physicsBody = nullptr;
+
+                // ???????????
+                AudioManager::getInstance()->stopBGM();
+                // ??????????§¹
+                AudioManager::getInstance()->playEffect("sounds/Death.ogg");
+                return true;
             }
             else {
                 _isHurt = true;
-                // å¼€å¯æ— æ•Œæ—¶é—´
+                // ¿ªÆôÎŞµĞÊ±¼ä
                 _isInvincible = true;
-                _invincibilityTime = 1.0f; // æ— æ•Œ1ç§’
+                _invincibilityTime = 1.0f; // ÎŞµĞ1Ãë
 
-                // å‡»é€€æ•ˆæœ
+                // »÷ÍËĞ§¹û
                 Vec2 knockbackDir = Vec2::ZERO;
                 if (otherNode) {
-                    //ä»¥æ­¤ç‰©ä½“ä¸­å¿ƒå’Œæ•Œäººä¸­å¿ƒè®¡ç®—å‡»é€€æ–¹å‘
+                    //ÒÔ´ËÎïÌåÖĞĞÄºÍµĞÈËÖĞĞÄ¼ÆËã»÷ÍË·½Ïò
                     float diffX = this->getPositionX() - otherNode->getPositionX();
-                    knockbackDir = Vec2(diffX > 0 ? 1 : -1.0f, 0.5f); // å‘åæ–¹å‘å¼¹å¼€ï¼Œå¸¦ä¸€ç‚¹å‘ä¸Šçš„åŠ›
+                    knockbackDir = Vec2(diffX > 0 ? 1 : -1.0f, 0.5f); // Ïò·´·½Ïòµ¯¿ª£¬´øÒ»µãÏòÉÏµÄÁ¦
                     _sprite->setFlippedX(diffX > 0 ? true : false);
                     _direction = diffX > 0 ? Direction::LEFT : Direction::RIGHT;
                 }
                 else {
-                    // å¦‚æœæ˜¯é™·é˜±å¢™ï¼Œæ ¹æ®æœå‘åå¼¹
+                    // Èç¹ûÊÇÏİÚåÇ½£¬¸ù¾İ³¯Ïò·´µ¯
                     knockbackDir = Vec2(_direction == Direction::RIGHT ? -1 : 1.0f, 0.5f);
                 }
                 knockbackDir.normalize();
 
-                // è®¾ç½®å‡»é€€é€Ÿåº¦ (è¦†ç›–å½“å‰é€Ÿåº¦)
+                // ÉèÖÃ»÷ÍËËÙ¶È (¸²¸Çµ±Ç°ËÙ¶È)
                 _physicsBody->setVelocity(knockbackDir * 500.0f);
-                // æ’­æ”¾å—ä¼¤éŸ³æ•ˆ
-                // AudioEngine::play2d("hurt.mp3");
             }
+
+            // ²¥·ÅÊÜÉËÒôĞ§
+            AudioManager::getInstance()->playEffect("sounds/Hurt.ogg");
         }
     }
 
-    return true; // è¿”å› true å…è®¸ç‰©ç†å¼•æ“å¤„ç†ç¢°æ’ï¼ˆå¦‚é˜»æŒ¡ï¼‰
+    return true; // ·µ»Ø true ÔÊĞíÎïÀíÒıÇæ´¦ÀíÅö×²£¨Èç×èµ²£©
 }
 
 bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
@@ -329,16 +348,16 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
         return true;
     }
 
-    // åœ°é¢ç¦»å¼€é€»è¾‘
+    // µØÃæÀë¿ªÂß¼­
     if (playerShape->getTag() == TAG_FEET)
     {
         int otherMask = otherShape->getCategoryBitmask();
         if ((otherMask & WALL_MASK) || (otherMask & BORDER_MASK))
         {
             _footContactCount--;
-            // åªæœ‰å½“è®¡æ•°å™¨å½’é›¶ï¼Œä¸”ç¡®å®šä¸å†æ¥è§¦ä»»ä½•åœ°é¢æ—¶ï¼Œæ‰è®¾ä¸º false
+            // Ö»ÓĞµ±¼ÆÊıÆ÷¹éÁã£¬ÇÒÈ·¶¨²»ÔÙ½Ó´¥ÈÎºÎµØÃæÊ±£¬²ÅÉèÎª false
             if (_footContactCount <= 0) {
-                _footContactCount = 0; // é˜²æ­¢è´Ÿæ•°
+                _footContactCount = 0; // ·ÀÖ¹¸ºÊı
                 _isGrounded = false;
             }
         }
@@ -359,30 +378,31 @@ bool Player::onContactSeparate(cocos2d::PhysicsContact& contact)
 void Player::update(float dt) {
     if (!_controlEnabled || !_physicsBody) return;
 
-    // åŒæ­¥ç‰©ç†å¼•æ“çš„é€Ÿåº¦åˆ°é€»è¾‘å˜é‡
+    // Í¬²½ÎïÀíÒıÇæµÄËÙ¶Èµ½Âß¼­±äÁ¿
     if (_physicsBody) {
         _velocity = _physicsBody->getVelocity();
     }
-    // æ—¶é’Ÿæ›´æ–°
+    // Ê±ÖÓ¸üĞÂ
     updateTimers(dt);
 
-    // ç‰©ç†æ›´æ–°ï¼šè®¡ç®—å¹¶åº”ç”¨æ–°çš„é€Ÿåº¦
+    // ÎïÀí¸üĞÂ£º¼ÆËã²¢Ó¦ÓÃĞÂµÄËÙ¶È
     updatePhysics(dt);
 
-    // çŠ¶æ€æ›´æ–°ï¼šæ ¹æ®å½“å‰é€Ÿåº¦å’Œè¾“å…¥å†³å®šçŠ¶æ€
+    // ×´Ì¬¸üĞÂ£º¸ù¾İµ±Ç°ËÙ¶ÈºÍÊäÈë¾ö¶¨×´Ì¬
     updateState();
 
-    // åŠ¨ç”»æ›´æ–°ï¼šæ ¹æ®çŠ¶æ€æ’­æ”¾åŠ¨ç”»
+    // ¶¯»­¸üĞÂ£º¸ù¾İ×´Ì¬²¥·Å¶¯»­
     updateAnimation();
 }
 
 void Player::updateTimers(float dt) {
     if (_jumpBufferTime > 0) _jumpBufferTime -= dt;
 
-    if (_isGrounded) {
+    if (_isGrounded && !_isDodge) {
         _coyoteTime = kCoyoteTime;
         _dodgeTimes = _maxDodgeTimes;
     }
+
     else if (_coyoteTime > 0) {
         _coyoteTime -= dt;
     }
@@ -395,18 +415,18 @@ void Player::updateTimers(float dt) {
     }
     if (_dodgeTime <= 0) {
         _isDodge = false;
-        // é—ªé¿ç»“æŸï¼Œæ¢å¤æ©ç ï¼ˆå†²åˆºç©¿è¿‡éƒ¨åˆ†å®ä½“ï¼‰
+        // ÉÁ±Ü½áÊø£¬»Ö¸´ÑÚÂë£¨³å´Ì´©¹ı²¿·ÖÊµÌå£©
         _physicsBody->setCollisionBitmask(_originalMask); 
         _physicsBody->setContactTestBitmask(_originalMask | DAMAGE_WALL_MASK);
     }
 
-    // æ”»å‡»è¡”æ¥
+    // ¹¥»÷ÏÎ½Ó
     if (_attackCooldown <= 0 && _attackEngageTime > 0)
     {
         _attackEngageTime -= dt;
     }
     
-    // æ— æ•Œæ—¶é—´ï¼ˆå†²åˆºï¼Œå—å‡»ï¼‰
+    // ÎŞµĞÊ±¼ä£¨³å´Ì£¬ÊÜ»÷£©
     if (_isInvincible)
     {
         _invincibilityTime -= dt;
@@ -417,16 +437,16 @@ void Player::updateTimers(float dt) {
         }
         else
         {
-            // é—ªçƒæ•ˆæœ
+            // ÉÁË¸Ğ§¹û
             double blink = sin(_invincibilityTime * 20) * 0.5f + 0.5f;
             _sprite->setOpacity(static_cast<uint8_t>(blink * 255));
         }
     }
     
-    // æ›´æ–°æŠ€èƒ½çŠ¶æ€
+    // ¸üĞÂ¼¼ÄÜ×´Ì¬
     _skillManager->update(dt);
 
-    // è‡ªåŠ¨æ¢å¤é­”æ³•å€¼
+    // ×Ô¶¯»Ö¸´Ä§·¨Öµ
     if (_magic < _maxMagic)
         _magic = std::min(_maxMagic, _magic + _magicRestore * dt);
 
@@ -437,37 +457,37 @@ void Player::updateTimers(float dt) {
 void Player::updatePhysics(float dt) {
     if (!_physicsBody) return;
 
-    // æš‚å­˜å½“å‰é€Ÿåº¦
+    // Ôİ´æµ±Ç°ËÙ¶È
     float currentX = _velocity.x;
     float currentY = _velocity.y;
-    // ç‰©ç†å¼•æ“è®¡ç®—é€Ÿåº¦
+    // ÎïÀíÒıÇæ¼ÆËãËÙ¶È
     Vec2 realVelocity = _physicsBody->getVelocity();
     float targetX = 0;
     
-    // è®¡ç®—æ°´å¹³é€Ÿåº¦ (åŠ é€Ÿ/å‡é€Ÿ)
+    // ¼ÆËãË®Æ½ËÙ¶È (¼ÓËÙ/¼õËÙ)
     float newX = currentX;
-    // å‚ç›´é€Ÿåº¦ (é‡åŠ›é€»è¾‘ï¼‰
+    // ´¹Ö±ËÙ¶È (ÖØÁ¦Âß¼­£©
     float newY = currentY;
 
-    // å†³å®šç›®æ ‡é€Ÿåº¦
+    // ¾ö¶¨Ä¿±êËÙ¶È
     if (_isAttacking || _isSkilling) {
-        targetX = 0; // æ”»å‡»æ—¶ç›®æ ‡é€Ÿåº¦ä¸º0
+        targetX = 0; // ¹¥»÷Ê±Ä¿±êËÙ¶ÈÎª0
     }
     if (_isDodge) {
         float dashSpeed = static_cast<float>(_dodgeForce) * ((_direction == Direction::RIGHT) ? 1.0f : -1.0f);
 
-        // é˜²ç©¿å¢™é€»è¾‘ï¼š
-        // å¦‚æœæ˜¯å†²åˆºåˆšå¼€å§‹ï¼ˆå‰0.05ç§’ï¼‰ï¼Œå¼ºåˆ¶è®¾ç½®é€Ÿåº¦ï¼ˆç»™ä¸€ä¸ªåˆé€Ÿåº¦ï¼‰
+        // ·À´©Ç½Âß¼­£º
+        // Èç¹ûÊÇ³å´Ì¸Õ¿ªÊ¼£¨Ç°0.05Ãë£©£¬Ç¿ÖÆÉèÖÃËÙ¶È£¨¸øÒ»¸ö³õËÙ¶È£©
         float timeSinceDodgeStart = static_cast<float>(_maxDodgeTime - _dodgeTime);
 
         if (timeSinceDodgeStart < 0.05f) {
-            // åˆšå¼€å§‹å†²åˆºï¼Œå¼ºåˆ¶ç»™é€Ÿåº¦
+            // ¸Õ¿ªÊ¼³å´Ì£¬Ç¿ÖÆ¸øËÙ¶È
             currentX = dashSpeed;
             targetX = dashSpeed;
         }
         else {
-            // å†²åˆºä¸­é€”
-            // å¦‚æœæœ¬æ¥åº”è¯¥é«˜é€Ÿç§»åŠ¨ï¼Œä½†å®é™…é€Ÿåº¦æ¥è¿‘0ï¼Œè¯´æ˜æ’å¢™äº†
+            // ³å´ÌÖĞÍ¾
+            // Èç¹û±¾À´Ó¦¸Ã¸ßËÙÒÆ¶¯£¬µ«Êµ¼ÊËÙ¶È½Ó½ü0£¬ËµÃ÷×²Ç½ÁË
             if (std::abs(realVelocity.x) < 10.0f) {
                 newX = 0;
             }
@@ -476,25 +496,25 @@ void Player::updatePhysics(float dt) {
             }
         }
 
-        newY = 0; // å†²åˆºæ—¶å¿½ç•¥é‡åŠ›
+        newY = 0; // ³å´ÌÊ±ºöÂÔÖØÁ¦
     }
     else {
         targetX = _moveInput * static_cast<float>(_speed);
     }
 
     if (_isAttacking || _isSkilling) {
-        newX = currentX * 0.9f; //è‹¥åœ¨æ”»å‡»ï¼Œç»™äºˆæ‘©æª«åŠ›
+        newX = currentX * 0.9f; //ÈôÔÚ¹¥»÷£¬¸øÓèÄ¦éßÁ¦
     }
-    if (_isSkilling) newY = 0;// é‡Šæ”¾æŠ€èƒ½æ—¶å¿½ç•¥é‡åŠ›
+    if (_isSkilling) newY = 0;// ÊÍ·Å¼¼ÄÜÊ±ºöÂÔÖØÁ¦
     else {
-        if (fabs(targetX) > 0.01f) {//åŠ é€Ÿ
+        if (fabs(targetX) > 0.01f) {//¼ÓËÙ
             float direction = (targetX > currentX) ? 1.0f : -1.0f;
             newX = currentX + direction * _acceleration * dt;
             if ((direction > 0 && newX > targetX) || (direction < 0 && newX < targetX)) {
                 newX = targetX;
             }
         }
-        else {//å‡é€Ÿ
+        else {//¼õËÙ
             if (fabs(currentX) > 0.01f) {
                 float direction = (currentX > 0) ? -1.0f : 1.0f;
                 newX = currentX + direction * _deceleration * dt;
@@ -509,7 +529,7 @@ void Player::updatePhysics(float dt) {
     }
 
     if (newY < -800.0f) newY = -800.0f;
-    // è·³è·ƒé€»è¾‘
+    // ÌøÔ¾Âß¼­
     if (_jumpBufferTime > 0 && (_isGrounded || _coyoteTime > 0) && !_isAttacking) {
         newY = static_cast<float>(_jumpForce);
         _isGrounded = false;
@@ -521,7 +541,7 @@ void Player::updatePhysics(float dt) {
 }
 
 void Player::updateState() {
-    //æ ¹æ®æ ‡è¯†ç¡®å®šæ”»å‡»/é—ªé¿
+    //¸ù¾İ±êÊ¶È·¶¨¹¥»÷/ÉÁ±Ü
     if (_isAttacking) {
         changeState(PlayerState::ATTACKING);
         return;
@@ -543,9 +563,9 @@ void Player::updateState() {
         return;
     }
 
-    // ä½¿ç”¨ç‰©ç†å¼•æ“åˆ¤å®šçš„ _isGrounded
+    // Ê¹ÓÃÎïÀíÒıÇæÅĞ¶¨µÄ _isGrounded
     if (!_isGrounded) {
-        //æ ¹æ®å‚ç›´é€Ÿåº¦æ–¹å‘åˆ¤å®šè·³è·ƒ/ä¸‹è½
+        //¸ù¾İ´¹Ö±ËÙ¶È·½ÏòÅĞ¶¨ÌøÔ¾/ÏÂÂä
         if (_velocity.y > 0.1f) {
             changeState(PlayerState::JUMPING);
         }
@@ -554,7 +574,7 @@ void Player::updateState() {
         }
     }
     else {
-        //æ ¹æ®æ°´å¹³é€Ÿåº¦å¤§å°åˆ¤å®šå¥”è·‘/å¾…æœº
+        //¸ù¾İË®Æ½ËÙ¶È´óĞ¡ÅĞ¶¨±¼ÅÜ/´ı»ú
         if (fabs(_velocity.x) > 10.0f) {
             changeState(PlayerState::RUNNING);
         }
@@ -570,8 +590,8 @@ void Player::changeState(PlayerState newState) {
     _previousState = _currentState;
     _currentState = newState;
 
-    // çŠ¶æ€è¿›å…¥é€»è¾‘
-    // å¯ä»¥è€ƒè™‘åç»­åŠ å…¥åˆ‡æ¢çŠ¶æ€æ—¶çš„æ“ä½œ
+    // ×´Ì¬½øÈëÂß¼­
+    // ¿ÉÒÔ¿¼ÂÇºóĞø¼ÓÈëÇĞ»»×´Ì¬Ê±µÄ²Ù×÷
     if (newState == PlayerState::RUNNING) {
         if (_stepSoundsInterval <= 0)
             AudioManager::getInstance()->playEffect("sounds/PlayerFootstep.ogg");
@@ -584,7 +604,7 @@ void Player::updateAnimation() {
     std::string animationName;
     bool loop = true;
 
-    // æ‰€æœ‰åŠ¨ç”»åˆ¶ä½œå®Œæˆ
+    // ËùÓĞ¶¯»­ÖÆ×÷Íê³É
     switch (_currentState) {
         case PlayerState::IDLE: animationName = "idle"; break;
         case PlayerState::RUNNING: 
@@ -602,13 +622,13 @@ void Player::updateAnimation() {
         case PlayerState::SKILLING: return;
         default: animationName = "idle"; break;
     }
-    //å¦‚æœçŠ¶æ€å˜åŒ–ï¼Œæ›´æ–°åŠ¨ç”»
+    //Èç¹û×´Ì¬±ä»¯£¬¸üĞÂ¶¯»­
     if (_currentState != _previousState) {
         playAnimation(animationName, loop);
         _previousState = _currentState;
     }
 
-    //æ ¹æ®è¾“å…¥æˆ–é€Ÿåº¦æ–¹å‘ç¿»è½¬
+    //¸ù¾İÊäÈë»òËÙ¶È·½Ïò·­×ª
     if (_moveInput > 0.1f) {
         _direction = Direction::RIGHT;
         _sprite->setFlippedX(false);
@@ -621,19 +641,19 @@ void Player::updateAnimation() {
 
 void Player::playAnimation(const std::string& name, bool loop)
 {
-    // è·å–åŠ¨ç”»ç¼“å­˜å•ä¸ªå®ä¾‹ä¸­åä¸ºnameçš„åŠ¨ç”»
+    // »ñÈ¡¶¯»­»º´æµ¥¸öÊµÀıÖĞÃûÎªnameµÄ¶¯»­
     auto animation = AnimationCache::getInstance()->getAnimation(name);
-    // å¦‚æœæˆåŠŸè·å–
+    // Èç¹û³É¹¦»ñÈ¡
     if (animation)
     {
         _sprite->stopAllActions();
-        // å¦‚æœè¦æ’­æ”¾æ­»äº¡åŠ¨ç”»ï¼Œåˆ™è¦æ±‚åœç•™åœ¨æœ€åä¸€å¸§
+        // Èç¹ûÒª²¥·ÅËÀÍö¶¯»­£¬ÔòÒªÇóÍ£ÁôÔÚ×îºóÒ»Ö¡
         if (name == "dead" || name =="jump" || name == "fall")
             animation->setRestoreOriginalFrame(false);
-        // åˆ›å»ºaction
+        // ´´½¨action
         auto action = Animate::create(animation);
         action->setTag(ANIMATION_ACTION_TAG);
-        // æ ¹æ®æ˜¯å¦å¾ªç¯ç¡®å®šæ’­æ”¾æ–¹å¼
+        // ¸ù¾İÊÇ·ñÑ­»·È·¶¨²¥·Å·½Ê½
         if (loop)
         {
             _sprite->runAction(RepeatForever::create(action));
@@ -649,7 +669,7 @@ void Player::playAnimation(const std::string& name, bool loop)
                 nullptr));
         }
     }
-    //å¦‚æœå¤±è´¥
+    //Èç¹ûÊ§°Ü
     else
     {
         CCLOG("Error: Animation not found: %s", name.c_str());
@@ -657,7 +677,7 @@ void Player::playAnimation(const std::string& name, bool loop)
     }
 }
 
-/*---éƒ¨åˆ†å¯¹å¤–æ¥å£---*/
+/*---²¿·Ö¶ÔÍâ½Ó¿Ú---*/
 
 const Sprite* Player::getSprite() const {
     return _sprite;
@@ -685,7 +705,7 @@ void Player::jump() {
 
 void Player::shootBullet()
 {
-    // åˆ›å»ºå­å¼¹å¯¹è±¡
+    // ´´½¨×Óµ¯¶ÔÏó
     Bullet* attack = nullptr;
     switch (_attack_num) {
         case 0:
@@ -706,29 +726,29 @@ void Player::shootBullet()
             AudioManager::getInstance()->playEffect("sounds/FrozenSpike.ogg");
             break;
     }
-    // åŠ è½½åŠ¨ç”»èµ„æº
+    // ¼ÓÔØ¶¯»­×ÊÔ´
     char attack_name[20];
     sprintf(attack_name, "attack-bullet-%d", _attack_num + 1);
     auto animation = AnimationCache::getInstance()->getAnimation(attack_name);
 
-    // è·å–ç©å®¶å½“å‰ä½ç½®
+    // »ñÈ¡Íæ¼Òµ±Ç°Î»ÖÃ
     Vec2 current_pos = _sprite->getPosition();
     if (!attack) return;
 
-    // æ ¹æ®æ”»å‡»æ®µæ•°é…ç½®å­å¼¹é€»è¾‘
+    // ¸ù¾İ¹¥»÷¶ÎÊıÅäÖÃ×Óµ¯Âß¼­
     float speed = 0;
     if (animation)
     {
         auto action = Animate::create(animation);
         if (_attack_num == 0) {
-            // ç¬¬ä¸€æ®µä¸ºç«çƒ
+            // µÚÒ»¶ÎÎª»ğÇò
             attack->setCategoryBitmask(PLAYER_BULLET_MASK);
             attack->setCollisionBitmask(NULL);
             attack->setContactTestBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
             attack->setCLearBitmask(WALL_MASK | ENEMY_MASK | BORDER_MASK);
             speed = 200.0;
-            attack->getSprite()->setScale(3.0f);       // è°ƒæ•´è§†è§‰å¤§å°
-            // æ’­æ”¾å®ŒåŠ¨ç”»åæ’­æ”¾çˆ†ç‚¸åŠ¨ç”»ï¼ˆå¾…å®ç°ï¼‰
+            attack->getSprite()->setScale(3.0f);       // µ÷ÕûÊÓ¾õ´óĞ¡
+            // ²¥·ÅÍê¶¯»­ºó²¥·Å±¬Õ¨¶¯»­£¨´ıÊµÏÖ£©
             auto finishCallback = CallFunc::create([attack]() {
                 auto burst = AnimationCache::getInstance()->getAnimation("FireDestryed");
                 attack->getSprite()->runAction(Animate::create(burst));
@@ -736,14 +756,14 @@ void Player::shootBullet()
             attack->getSprite()->runAction(RepeatForever::create(action));
         }
         else {
-            // ç¬¬äºŒä¸‰æ®µä¸ºè¿‘æˆ˜æ”»å‡»
+            // µÚ¶şÈı¶ÎÎª½üÕ½¹¥»÷
             speed = 0;
-            attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//ç¬¬ä¸‰æ®µæ”»å‡»ä¸º1.5å€ä¼¤å®³
+            attack->setDamage(attack->getDamage() * (_attack_num+1) / 2);//µÚÈı¶Î¹¥»÷Îª1.5±¶ÉËº¦
             attack->setCategoryBitmask(PLAYER_BULLET_MASK);
             attack->setCollisionBitmask(NULL);
             attack->setContactTestBitmask(ENEMY_MASK);
             attack->setCLearBitmask(NULL);
-            // æ’­æ”¾å®ŒåŠ¨ç”»ååˆ é™¤æ•´ä¸ªå­å¼¹å¯¹è±¡
+            // ²¥·ÅÍê¶¯»­ºóÉ¾³ıÕû¸ö×Óµ¯¶ÔÏó
             auto finishCallback = CallFunc::create([attack]() {
                 attack->cleanupBullet();
                 });
@@ -752,7 +772,7 @@ void Player::shootBullet()
         }
     }
 
-    // è®¾ç½®æ–¹å‘ (åŒæ—¶å¤„ç†ç‰©ç†é€Ÿåº¦æ–¹å‘å’Œè´´å›¾ç¿»è½¬)
+    // ÉèÖÃ·½Ïò (Í¬Ê±´¦ÀíÎïÀíËÙ¶È·½ÏòºÍÌùÍ¼·­×ª)
     Vec2 directionVec;
     if (_direction == Direction::RIGHT) {
         directionVec = Vec2(1, 0);
@@ -765,12 +785,12 @@ void Player::shootBullet()
         attack->getSprite()->setFlippedX(true);
     }
 
-    // æ·»åŠ å­å¼¹åˆ°åœºæ™¯æˆ–ç©å®¶
+    // Ìí¼Ó×Óµ¯µ½³¡¾°»òÍæ¼Ò
     if (_attack_num == 0) {
-        // å°†ç©å®¶çš„å±€éƒ¨åæ ‡è½¬æ¢ä¸ºä¸–ç•Œåæ ‡ï¼Œé˜²æ­¢å­å¼¹è·Ÿéšç©å®¶ç§»åŠ¨
+        // ½«Íæ¼ÒµÄ¾Ö²¿×ø±ê×ª»»ÎªÊÀ½ç×ø±ê£¬·ÀÖ¹×Óµ¯¸úËæÍæ¼ÒÒÆ¶¯
         Vec2 worldPos = this->convertToWorldSpace(current_pos);
 
-        // å¾®è°ƒå‘å°„ä½ç½®ï¼Œä½¿å…¶ä¸å®Œå…¨é‡å åœ¨ç©å®¶ä¸­å¿ƒ
+        // Î¢µ÷·¢ÉäÎ»ÖÃ£¬Ê¹Æä²»ÍêÈ«ÖØµşÔÚÍæ¼ÒÖĞĞÄ
         worldPos += (directionVec * 30.0f);
         worldPos.y += _sprite->getContentSize().height;
 
@@ -781,7 +801,7 @@ void Player::shootBullet()
         }
     }
     else {
-        // æ ¹æ®æœå‘è®¾ç½®åç§»é‡ï¼Œä½¿ç å‡»ç‰¹æ•ˆå‡ºç°åœ¨ç©å®¶å‰æ–¹
+        // ¸ù¾İ³¯ÏòÉèÖÃÆ«ÒÆÁ¿£¬Ê¹¿³»÷ÌØĞ§³öÏÖÔÚÍæ¼ÒÇ°·½
         attack->setAnchorPoint(Vec2(0.5f, 0.0f));
         attack->getSprite()->setAnchorPoint(Vec2(0.5f, 0.0f));
         Vec2 offset = directionVec * (_attack_num ==1? 20.0f:0.0f);
@@ -795,7 +815,7 @@ void Player::shootBullet()
 void Player::attack() {
     if (!canBeControled()) return;
 
-    // å¤šæ®µæ”»å‡»
+    // ¶à¶Î¹¥»÷
     if (_attackEngageTime > 0)
         _attack_num = (_attack_num + 1) % 3;
     else
@@ -803,7 +823,7 @@ void Player::attack() {
 
     _isAttacking = true;
     _attackCooldown = _maxAttackCooldown;
-    _attackEngageTime = kMaxAttackEngageTime; // å¤šæ®µæ”»å‡»çš„è¡”æ¥
+    _attackEngageTime = kMaxAttackEngageTime; // ¶à¶Î¹¥»÷µÄÏÎ½Ó
     shootBullet();
 }
 
@@ -811,7 +831,7 @@ bool Player::skillAttack(const std::string& name)
 {
     if (!canBeControled()) return false;
 
-    if (_skillManager->useSkill(name)) {
+    if (_skillManager->useSkill(name, _skillDamage)) {
         changeState(PlayerState::SKILLING);
         _isSkilling = true;
         return true;
@@ -822,29 +842,49 @@ bool Player::skillAttack(const std::string& name)
 
 void Player::dodge() {
     if (!_physicsBody) return;
-    if (_dodgeCooldown > 0 || _isDodge || _dodgeTimes <= 0 || _isAttacking||_isSkilling) return; 
 
-    // æ’­æ”¾éŸ³æ•ˆ
+    if (_dodgeCooldown > 0 || _dodgeTimes <= 0 || _isAttacking || _isSkilling) return;
+
+    // ²¥·ÅÒôĞ§
     AudioManager::getInstance()->playEffect("sounds/Dodge.ogg");
-
     _isDodge = true;
-    _dodgeCooldown = _maxDodgeCooldown;
-    _dodgeTime = _maxDodgeTime; // é—ªé¿æŒç»­æ—¶é—´
     _dodgeTimes--;
 
-    //é—ªé¿å¿½ç•¥åˆå§‹é€Ÿåº¦
+    // ÖØÖÃÀäÈ´Ê±¼ä
+    if (_dodgeTimes > 0) {
+        _dodgeCooldown = 0.1f;
+    }
+    else {
+        _dodgeCooldown = _maxDodgeCooldown;
+    }
+
+    _dodgeTime = _maxDodgeTime;
+
+    // ÖØÖÃÎŞµĞÊ±¼ä
+    _isInvincible = true;
+    _invincibilityTime = _dodgeTime;
+
+    if (_moveInput > 0.1f) {
+        _direction = Direction::RIGHT;
+        _sprite->setFlippedX(false);
+    }
+    else if (_moveInput < -0.1f) {
+        _direction = Direction::LEFT;
+        _sprite->setFlippedX(true);
+    }
+
+    // ³å´Ì¿ªÊ¼Ê±£¬ºáÏòËÙ¶ÈÎª0
     Vec2 current_velocity = _physicsBody->getVelocity();
     current_velocity.x = 0;
     _physicsBody->setVelocity(current_velocity);
 
-    //é—ªé¿å¯ä»¥ç©¿è¿‡æ•Œäºº
+    // ¸ü¸ÄÑÚÂë
     _physicsBody->setCollisionBitmask(_dodgeMask);
     _physicsBody->setContactTestBitmask(_dodgeMask | DAMAGE_WALL_MASK);
 
-    //é—ªé¿æ—¶æ— æ•Œ
-    _isInvincible = true;
-    _invincibilityTime = _dodgeTime;
+    playAnimation("dodge", false);
 
+    changeState(PlayerState::DODGING);
 }
 
 bool Player::isUnlocked(const std::string& name)
@@ -870,7 +910,7 @@ const std::string Player::getCurrentState() const
             current = "fall";
             break;
         case PlayerState::ATTACKING:
-            char tmp[20]; // å­˜æ”¾æ”»å‡»æ®µæ•°å
+            char tmp[20]; // ´æ·Å¹¥»÷¶ÎÊıÃû
             sprintf(tmp, "attack-%d", _attack_num + 1);
             current = tmp;
             break;

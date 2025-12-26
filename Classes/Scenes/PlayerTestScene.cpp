@@ -2,7 +2,7 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Maps/ChangeLevel.h"
-
+#include "Entities/NPC/Npc2.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -79,14 +79,14 @@ bool PlayerTestScene::init()
     this->addChild(_player, 1);// 渲染player
     setupInput();
 
-    // 添加两个Slime实例用于测试
-   /* auto slime1 = Slime::create();
-    slime1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+
+    auto slime1 = NPC2::create();
+    slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
     auto slime2 = Slime::create();
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
-    this->addChild(slime2, 1);*/
+    this->addChild(slime2, 1);
 
     setupCollisionListener(this);
 
@@ -99,6 +99,32 @@ bool PlayerTestScene::init()
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
+
+    setupCollisionListener(this);
+
+    // 初始化摄像机和 UI 控制器
+    _cameraController = GameCamera::create(this, _player, map_1);
+    _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
+    this->scheduleUpdate();
+
+    // 播放背景音乐
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
+
+    // 初始化物品管理器
+    ItemManager::getInstance()->init("config/items.json");
+    // 示例：以下初始化了一个物品供测试 物品id107
+    auto item = Items::createWithId(110);
+    if (item) {
+        item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+
+        // 模拟爆出来的效果：给一个向上的初速度
+        item->getPhysicsBody()->setVelocity(Vec2(0, 200));
+
+        this->addChild(item, 5); // Z-order 在背景之上
+    }
+    // 示例：增加金币
+    ItemManager::getInstance()->addGold(50);
     return true;
 }
 

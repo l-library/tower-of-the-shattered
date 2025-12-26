@@ -1,7 +1,5 @@
 #pragma once
 #include "SoldierEnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "EnemyAi/EnemyAi.h"
 
 // Bomber类 - 继承自SoldierEnemyBase，会向玩家投掷炸弹的敌人
 class Bomber : public SoldierEnemyBase

@@ -35,7 +35,7 @@ if(XCODE)
     endif()
 endif()
 
-if(NOT DEFINED BUILD_ENGINE_DONE) # to test Dead-Cells into root project
+if(NOT DEFINED BUILD_ENGINE_DONE) # to test tower-of-the-shattered into root project
     set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cocos2d)
     set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
@@ -72,6 +72,9 @@ list(APPEND GAME_SOURCE
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/HelloWorldScene.h
+<<<<<<< Updated upstream
+     Classes/Entities/Enemy/Enemy.h
+=======
      Classes/Maps.h
      Classes/TowerOfTheShattered.h
      Classes/Entities/Bullet/Bullet.h
@@ -81,8 +84,26 @@ list(APPEND GAME_HEADER
      Classes/Entities/Enemy/Fly.h
      Classes/Entities/Enemy/Bosses/Boss1.h
      Classes/Entities/Enemy/EnemyAi/EnemyAi.h
+     Classes/Entities/Enemy/Mage.h
+     Classes/Entities/Enemy/Bomber.h
      Classes/Entities/Player/Player.h
+     Classes/Entities/Player/Skills.h
+     Classes/Entities/Player/SkillIceSpear.h
+     Classes/Entities/Player/SkillArcaneShield.h
+     Classes/Entities/Player/SkillArcaneJet.h
+     Classes/Entities/Player/SkillManager.h
+     Classes/Entities/NPC/NpcBase.h
+     Classes/Entities/NPC/Npc1.h
+     Classes/Entities/Items/ItemManager.h
+     Classes/Entities/Items/Items.h
      Classes/Scenes/PlayerTestScene.h
+     Classes/Scenes/MainMenuScene.h
+     Classes/Scenes/GameCamera.h
+     Classes/Maps/ChangeLevel.h
+     Classes/Maps/BaseGameScene.h
+     Classes/Tools/ReadJson.h
+     Classes/Audio/AudioManager.h
+>>>>>>> Stashed changes
      )
 
 if(ANDROID)

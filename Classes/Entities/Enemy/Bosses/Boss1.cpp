@@ -1,8 +1,4 @@
 #include "Boss1.h"
-#include "../EnemyAi/EnemyAi.h"
-#include "../../Bullet/Bullet.h"
-#include "TowerOfTheShattered.h"
-#include "cocos2d.h"
 
 using namespace cocos2d;
 

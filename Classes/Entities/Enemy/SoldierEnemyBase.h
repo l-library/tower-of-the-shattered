@@ -1,6 +1,5 @@
 #pragma once
 #include "EnemyBase.h"
-#include "cocos2d.h"
 
 // 小兵基础类 - 继承自EnemyBase，是所有小兵的父类
 class SoldierEnemyBase : public EnemyBase

@@ -1,8 +1,7 @@
 #include "SoldierEnemyBase.h"
-#include "EnemyAi/EnemyAi.h"
-#include "cocos2d.h"
+#include"Entities/Enemy/Slime.h"
 
-using namespace cocos2d;
+
 
 SoldierEnemyBase::SoldierEnemyBase()
     : attackRange_(0.0f)
@@ -240,3 +239,4 @@ bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
 {
     return EnemyBase::onContactSeparate(contact);
 }
+
