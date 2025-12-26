@@ -2,7 +2,7 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Maps/ChangeLevel.h"
-#include "Entities/NPC/Npc1.h"
+#include "Entities/NPC/Npc2.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -79,7 +79,7 @@ bool PlayerTestScene::init()
     setupInput();
 
 
-    auto slime1 = NPC1::create();
+    auto slime1 = NPC2::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "SoldierEnemyBase.h"
-#include "TowerOfTheShattered.h" // 包含GRID_SIZE宏
-#include "EnemyAi/EnemyAi.h"
+
 
 // Slime类 - 第一个具体的小兵类，继承自SoldierEnemyBase
 class Slime : public SoldierEnemyBase

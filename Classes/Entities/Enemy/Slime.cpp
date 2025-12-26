@@ -1,10 +1,7 @@
 #include "Slime.h"
-#include "SoldierEnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "cocos2d.h"
-#include "Entities/Bullet/Bullet.h"
 
-using namespace cocos2d;
+
+
 
 bool Slime::init()
 {
@@ -71,6 +68,7 @@ void Slime::Hitted(int damage, int poise_damage)
 
 void Slime::Dead()
 {
+
     // 处理死亡效果
     if (sprite_ != nullptr)
     {
@@ -127,7 +125,6 @@ void Slime::BehaviorInit()
 
 std::string Slime::DecideNextBehavior(float delta)
 {
-    // ???????
     EnemyAi::findPlayer(this);
     
     // 更新攻击计时器
@@ -282,6 +279,7 @@ BehaviorResult Slime::recovery(float delta)
 
 BehaviorResult Slime::jumpAttack(float delta)
 {
+
     // 如果敌人已经死亡，结束行为
     if (currentState_ == EnemyState::DEAD)
     {

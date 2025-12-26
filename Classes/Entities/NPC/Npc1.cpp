@@ -66,21 +66,41 @@ bool NPC1::init()
             }
         }
     }
-    
+    std::string NPC1Path = "config/NPC/NPC1.json";
     // 设置对话内容
     std::vector<DialogueEntry> dialogues = 
     {
-        DialogueEntry("1", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"1"),
                      nullptr, // 通用回调函数(固定触发)
                      []() {}, // 按键1回调
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
-        DialogueEntry("2", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"2"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry("3", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"3"),
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {}),        
+        DialogueEntry(ReadJson::getString(NPC1Path,"4"),
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC1Path,"5"),
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC1Path,"6"),
+                     nullptr,
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC1Path,"7"),
                      nullptr,
                      []() {},
                      []() {},
@@ -102,4 +122,16 @@ void NPC1::handlePlayerInteraction()
 {
     // 显示对话背景并调用显示对话内容的函数
     showDialogueBackground();
+}
+
+void NPC1::update(float delta) //直接说话（新手引导）
+{
+    if (!hasTalked)
+    {
+        isDialogueDisplaying_ = true;
+        handlePlayerInteraction();
+        hasTalked = true;
+        dialogues_.erase(dialogues_.begin());
+    }
+
 }

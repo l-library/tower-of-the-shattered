@@ -1,7 +1,8 @@
 #pragma once
 #include "cocos2d.h"
-#include "Entities/Player/Player.h" // 包含Player类头文件，用于typeid检测
-#include "Entities/Bullet/Bullet.h" // 包含Bullet类头文件，用于创建MeleeBullet
+#include "EnemyAi/EnemyAi.h"
+#include "TowerOfTheShattered.h"
+
 #include <functional>
 #include <vector>
 #include <string>
@@ -87,6 +88,8 @@ public:
     virtual void BehaviorInit() = 0; // 行为初始化，子类必须实现
     virtual std::string DecideNextBehavior(float delta) = 0; // 决定下一个行为，传入delta时间
     virtual void InitSprite();    // 初始化精灵，子类可以重写以设置不同的精灵
+
+    void DropLootOnDeath();
     virtual void otherUpdate(float delta) {};
 
     // Getter方法 - 物理碰撞体
