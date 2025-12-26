@@ -1,7 +1,7 @@
 #include "Mage.h"
-#include "Entities/Bullet/Bullet.h"
 
-USING_NS_CC;
+
+
 
 Mage::Mage()
     : isCastingSpell_(false)

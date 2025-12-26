@@ -1,5 +1,4 @@
-#pragma once
-// 游戏主头文件，包含全局常量和类型定义
+/* 这个头文件存放开发者创建的文件路径，方便之后的引用 */
 
 // 游戏基础常量定义
 #define GRID_SIZE	32		// 游戏格子大小（32x32像素）
@@ -38,3 +37,4 @@
 #include "Entities/Items/ItemManager.h"
 #include "Entities/Items/Items.h"
 #include "Scenes/MainMenuScene.h"
+#include "Tools/ReadJson.h"

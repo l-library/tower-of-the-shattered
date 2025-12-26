@@ -1,10 +1,7 @@
 #include "Slime.h"
-#include "SoldierEnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "cocos2d.h"
-#include "Entities/Bullet/Bullet.h"
 
-using namespace cocos2d;
+
+
 
 bool Slime::init()
 {
@@ -127,7 +124,6 @@ void Slime::BehaviorInit()
 
 std::string Slime::DecideNextBehavior(float delta)
 {
-    // ???????
     EnemyAi::findPlayer(this);
     
     // 更新攻击计时器

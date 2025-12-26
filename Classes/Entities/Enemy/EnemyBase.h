@@ -1,7 +1,7 @@
 #pragma once
 #include "cocos2d.h"
-#include "Entities/Player/Player.h" // 包含Player类头文件，用于typeid检测
-#include "Entities/Bullet/Bullet.h" // 包含Bullet类头文件，用于创建MeleeBullet
+#include "EnemyAi/EnemyAi.h"
+#include "TowerOfTheShattered.h"
 #include <functional>
 #include <vector>
 #include <string>

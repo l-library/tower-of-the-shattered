@@ -335,7 +335,7 @@ void NpcBase::displayDialogueContent(int dialogueIndex)
     }
     
     // 创建对话文本标签
-    dialogueLabel_ = Label::createWithTTF(dialogues_[dialogueIndex].content, "fonts/arial.ttf", 20);
+    dialogueLabel_ = Label::createWithTTF(dialogues_[dialogueIndex].content, "fonts/Gothic.ttf", 20);
     if (!dialogueLabel_)
     {
         CCLOG("Failed to create dialogue label");

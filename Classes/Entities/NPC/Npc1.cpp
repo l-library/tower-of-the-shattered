@@ -66,21 +66,21 @@ bool NPC1::init()
             }
         }
     }
-    
+    std::string NPC1Path = "config/NPC/NPC1.json";
     // 设置对话内容
     std::vector<DialogueEntry> dialogues = 
     {
-        DialogueEntry("1", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"1"),
                      nullptr, // 通用回调函数(固定触发)
                      []() {}, // 按键1回调
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
-        DialogueEntry("2", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"2"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry("3", 
+        DialogueEntry(ReadJson::getString(NPC1Path,"3"),
                      nullptr,
                      []() {},
                      []() {},

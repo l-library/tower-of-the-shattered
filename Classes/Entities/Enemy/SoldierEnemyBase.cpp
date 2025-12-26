@@ -1,8 +1,7 @@
 #include "SoldierEnemyBase.h"
-#include "EnemyAi/EnemyAi.h"
-#include "cocos2d.h"
 
-using namespace cocos2d;
+
+
 
 SoldierEnemyBase::SoldierEnemyBase()
     : attackRange_(0.0f)

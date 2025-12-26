@@ -1,9 +1,7 @@
 #include "Fly.h"
-#include "TowerOfTheShattered.h"
-#include "cocos2d.h"
-#include "Entities/Bullet/Bullet.h"
 
-using namespace cocos2d;
+
+
 
 Fly::Fly()
     : chargeSpeed_(250.0f)
