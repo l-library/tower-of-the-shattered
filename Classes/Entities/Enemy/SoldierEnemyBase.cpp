@@ -1,5 +1,5 @@
 #include "SoldierEnemyBase.h"
-
+#include"Entities/Enemy/Slime.h"
 
 
 
@@ -239,3 +239,4 @@ bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
 {
     return EnemyBase::onContactSeparate(contact);
 }
+
