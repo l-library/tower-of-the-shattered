@@ -86,6 +86,9 @@ bool ItemManager::init(const std::string& configFilename) {
     }
 
     log("ItemManager: Loaded %d items.", (int)_itemConfigCache.size());
+
+    _hasNewItems = false;
+
     return true;
 }
 
@@ -103,11 +106,22 @@ void ItemManager::gainItem(Player* player, int itemId) {
     }
 
     log("ItemManager: Gained item %s", _itemConfigCache[itemId].name.c_str());
+
+    _hasNewItems = true;
 }
 
 bool ItemManager::hasItem(int itemId) const {
     for (int id : _ownedItemIds) {
         if (id == itemId) return true;
+    }
+    return false;
+}
+
+bool ItemManager::hasNewItems(Player* player)
+{
+    if (_hasNewItems) {
+        _hasNewItems = false;
+        return true;
     }
     return false;
 }
