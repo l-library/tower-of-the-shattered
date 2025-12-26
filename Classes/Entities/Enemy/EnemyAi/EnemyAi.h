@@ -1,6 +1,8 @@
 #pragma once
 #include<string>
 #include<vector>
+#include "TowerOfTheShattered.h"
+
 // 前向声明EnemyBase类
 class EnemyBase;
 

@@ -1,9 +1,5 @@
 #include "EnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "Entities/Player/Player.h"
 #include <utility>
-USING_NS_CC;
-
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
     , physicsBody_(nullptr)
