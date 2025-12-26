@@ -124,10 +124,6 @@ public:
 
 	SkillManager* getSkillManager() const { return _skillManager; };
 
-	const Direction getDirection() const { return _direction; };
-
-	SkillManager* getSkillManager() const { return _skillManager; };
-
 	/**
 	* @brief 获得玩家图像
 	* @return 玩家当前的图像（常量指针）
