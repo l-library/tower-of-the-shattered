@@ -61,8 +61,11 @@ list(APPEND GAME_SOURCE
      Classes/Maps.cpp
      Classes/Entities/Bullet/Bullet.cpp
      Classes/Entities/Enemy/EnemyBase.cpp
-     Classes/Entities/Enemy/SoldierEnemy.cpp
+     Classes/Entities/Enemy/SoldierEnemyBase.cpp
      Classes/Entities/Enemy/Slime.cpp
+     Classes/Entities/Enemy/Fly.cpp
+     Classes/Entities/Enemy/Bosses/Boss1.cpp
+     Classes/Entities/Enemy/EnemyAi/EnemyAi.cpp
      Classes/Entities/Player/Player.cpp
      Classes/Scenes/PlayerTestScene.cpp
      )
@@ -73,8 +76,11 @@ list(APPEND GAME_HEADER
      Classes/TowerOfTheShattered.h
      Classes/Entities/Bullet/Bullet.h
      Classes/Entities/Enemy/EnemyBase.h
-     Classes/Entities/Enemy/SoldierEnemy.h
+     Classes/Entities/Enemy/SoldierEnemyBase.h
      Classes/Entities/Enemy/Slime.h
+     Classes/Entities/Enemy/Fly.h
+     Classes/Entities/Enemy/Bosses/Boss1.h
+     Classes/Entities/Enemy/EnemyAi/EnemyAi.h
      Classes/Entities/Player/Player.h
      Classes/Scenes/PlayerTestScene.h
      )

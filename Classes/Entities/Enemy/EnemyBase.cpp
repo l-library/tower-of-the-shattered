@@ -158,6 +158,7 @@ bool EnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
 
 void EnemyBase::updateAI(float delta)
 {
+    otherUpdate(delta);
     if (currentState_ == EnemyState::IDLE)
     {
         // 调用DecideNextBehavior()决定下一个行为
@@ -201,12 +202,16 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::RECOVERY)
     {
+        // 执行recovery行为
+        this->Execute("recovery", delta);
+        
         // 更新后摇计时器
         recoveryTimer_ += delta;
-        
+        sprite_->setColor(Color3B(150, 255, 150));
         // 如果后摇时间结束，进入IDLE状态
         if (recoveryTimer_ >= recoveryDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
         }
     }
@@ -222,11 +227,13 @@ void EnemyBase::updateAI(float delta)
         // 如果硬直时间结束，进入IDLE状态并重置韧性
         if (staggerTimer_ >= staggerDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
             current_stagger_resistance_ = stagger_resistance_; // 重置韧性
         }
     }
 }
+
 BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
 {
     if (hasBehavior(name)) {
@@ -285,36 +292,7 @@ CollisionBoxInfo EnemyBase::getCollisionBoxInfo() const
     return collisionBoxInfo_;
 }
 
-bool EnemyBase::isPlayerVisible()
-{
-    if (player_ == nullptr)
-    {
-        return false;
-    }
-    
-    // 获取当前场景的物理世界
-    auto scene = Director::getInstance()->getRunningScene();
-    if (scene == nullptr) return false;
-    
-    auto physicsWorld = scene->getPhysicsWorld();
-    if (physicsWorld == nullptr) return false;
-    
-    // 创建射线检测回调
-    bool hasWall = false;
-    
-    physicsWorld->rayCast([&hasWall](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data) -> float {
-        // 检查碰撞的物体是否是墙壁
-        if (info.shape->getBody()->getCategoryBitmask() == WALL_MASK)
-        {
-            hasWall = true;
-            return 0.0f; // 找到墙壁，停止检测
-        }
-        return -1.0f; // 继续检测
-    }, this->getPosition(), player_->getPosition(), nullptr);
-    
-    // 如果没有墙壁阻挡，则玩家可见
-    return !hasWall;
-}
+
 
 void EnemyBase::setPlayer(Player* player)
 {
@@ -382,6 +360,11 @@ void EnemyBase::setStaggerDuration(float duration)
     staggerDuration_ = std::max(0.0f, duration);
 }
 
+
+void EnemyBase::setCurrentBehavior(std::string name)
+{
+    currentBehavior_ = name;
+}
 // Setter方法
 void EnemyBase::setMaxVitality(int maxVitality)
 {
@@ -461,25 +444,4 @@ void EnemyBase::removeBehavior(const std::string& name)
 bool EnemyBase::hasBehavior(const std::string& name) const
 {
     return aiBehaviors_.find(name) != aiBehaviors_.end();
-}
-
-// SoldierEnemyBase类的实现
-bool SoldierEnemyBase::init()
-{
-    if (!EnemyBase::init())
-    {
-        return false;
-    }
-    
-    return true;
-}
-
-bool SoldierEnemyBase::onContactBegin(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactBegin(contact);
-}
-
-bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactSeparate(contact);
 }

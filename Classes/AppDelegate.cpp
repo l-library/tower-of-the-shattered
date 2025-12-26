@@ -86,7 +86,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     //开启帧率显示（最后关掉）
-    director->setDisplayStats(true);
+    /*director->setDisplayStats(true);*/
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);

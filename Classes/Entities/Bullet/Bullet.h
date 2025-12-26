@@ -41,6 +41,9 @@ public:
     void setMaxExistTime(float time) { maxExistTime_ = time; }
     float getMaxExistTime() const { return maxExistTime_; }
 
+    void setExistTime(float time) { existTime_ = time; }
+    float getExistTime() const { return existTime_; }
+
     virtual bool init(const std::string& spriteFrameName, int damage, 
                      const std::function<void(Bullet*, float)>& updateLogic);
 

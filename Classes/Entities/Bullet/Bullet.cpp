@@ -184,9 +184,9 @@ void Bullet::recreatePhysicsBody()
         physicsBody_ = nullptr;
     }
 
-    // 创建新的物理碰撞体
+    // 创建新的物理碰撞体，增加摩擦系数
     physicsBody_ = PhysicsBody::createBox(Size(collisionWidth_, collisionHeight_), 
-                                         PhysicsMaterial(0.0f, 0.0f, 0.0f));
+                                         PhysicsMaterial(1.0f, 0.3f, 0.8f)); // 密度:1.0, 恢复系数:0.3, 摩擦系数:0.8
     if (!physicsBody_) {
         CCLOG("Failed to create physics body for bullet");
         return;
@@ -195,8 +195,8 @@ void Bullet::recreatePhysicsBody()
     physicsBody_->retain();
     physicsBody_->setDynamic(true);
     physicsBody_->setGravityEnable(false);
-    physicsBody_->setLinearDamping(0.0f);
-    physicsBody_->setAngularDamping(0.0f);
+    physicsBody_->setLinearDamping(0.2f);
+    physicsBody_->setAngularDamping(0.5f);
     physicsBody_->setRotationEnable(false);
 
     // 设置掩码

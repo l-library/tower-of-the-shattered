@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="7">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <layer id="2" name="background" width="40" height="23">
+  <data encoding="base64" compression="zlib">
+   eJztw0ENAAAMA6FTWf9SJmJfSFg1VVVVfT5d0DUg
+  </data>
+ </layer>
+ <layer id="1" name="platform" width="40" height="23">
+  <data encoding="base64" compression="zlib">
+   eJztl8EJgEAMBLcGK9gTfCtoWVZjxZ6okId+bkEi7MD8EphnUgCU5C7VqdH1snX/zTn09cgH4T4Fwn0KhPsUCPcpEO5TINynQOTuG3HeMVn7btyn8fe+7cEv5mLfUO2SGv+QbB5/2w5biCZ8
+  </data>
+ </layer>
+ <objectgroup id="3" name="obj">
+  <object id="3" x="608" y="0">
+   <polygon points="0,0 32,0 32,256 0,256"/>
+  </object>
+  <object id="4" x="0" y="0">
+   <polygon points="0,0 608,0 608,32 0,32"/>
+  </object>
+  <object id="5" x="0" y="32">
+   <polygon points="0,0 32,0 32,304 0,304"/>
+  </object>
+  <object id="6" x="0" y="336">
+   <polygon points="0,0 640,0 640,32 0,32"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="sensor">
+  <object id="2" name="right_down" x="624" y="256">
+   <polygon points="0,0 16,0 16,80 0,80"/>
+  </object>
+ </objectgroup>
+</map>
