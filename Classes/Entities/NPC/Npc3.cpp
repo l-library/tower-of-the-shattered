@@ -1,19 +1,19 @@
-#include "NPC1.h"
+#include "NPC3.h"
 #include "TowerOfTheShattered.h"
 
 USING_NS_CC;
 
-NPC1::NPC1()
+NPC3::NPC3()
 {
 }
 
-NPC1::~NPC1()
+NPC3::~NPC3()
 {
 }
 
-NPC1* NPC1::create()
+NPC3* NPC3::create()
 {
-    NPC1* npc = new NPC1();
+    NPC3* npc = new NPC3();
     if (npc && npc->init())
     {
         npc->autorelease();
@@ -23,21 +23,21 @@ NPC1* NPC1::create()
     return nullptr;
 }
 
-bool NPC1::init()
+bool NPC3::init()
 {
     // 初始化父类，使用第一张图片作为初始精灵
-    if (!NpcBase::init("NPC/NPC1/001.png"))
+    if (!NpcBase::init("NPC/NPC3/npc3_001.png"))
     {
         return false;
     }
     
     // 加载精灵帧缓存
     auto cache = SpriteFrameCache::getInstance();
-    cache->addSpriteFramesWithFile("NPC/NPC1/npc1_idle.plist");
+    cache->addSpriteFramesWithFile("NPC/NPC3/npc3_idle.plist");
     
     // 创建待机动画
     Vector<SpriteFrame*> idleFrames;
-    for (int i = 1; i <= 6; i++)
+    for (int i = 1; i <= 5; i++)
     {
         char frameName[32];
         sprintf(frameName, "%03d.png", i);
@@ -66,50 +66,50 @@ bool NPC1::init()
             }
         }
     }
-    std::string NPC1Path = "config/NPC/NPC1.json";
+    std::string NPC3Path = "config/NPC/NPC3.json";
     // 设置对话内容
     std::vector<DialogueEntry> dialogues = 
     {
-        DialogueEntry(ReadJson::getString(NPC1Path,"1"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"1"),
                      nullptr, // 通用回调函数(固定触发)
                      []() {}, // 按键1回调
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
-        DialogueEntry(ReadJson::getString(NPC1Path,"2"),
+        /*DialogueEntry(ReadJson::getString(NPC3Path,"2"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry(ReadJson::getString(NPC1Path,"3"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"3"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),        
-        DialogueEntry(ReadJson::getString(NPC1Path,"4"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"4"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry(ReadJson::getString(NPC1Path,"5"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"5"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry(ReadJson::getString(NPC1Path,"6"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"6"),
                      nullptr,
                      []() {},
                      []() {},
                      []() {}),
-        DialogueEntry(ReadJson::getString(NPC1Path,"7"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"7"),
                      nullptr,
                      []() {},
                      []() {},
-                     []() {})
+                     []() {})*/
     };
     this->setDialogues(dialogues);
     
     //设置立绘
-    Illustration_ = Sprite::create("NPC/NPC1/npc1_illustration.png");
+    Illustration_ = Sprite::create("NPC/NPC3/npc3_illustration.png");
     if (Illustration_)
     {
         Illustration_->retain();
@@ -118,20 +118,8 @@ bool NPC1::init()
     return true;
 }
 
-void NPC1::handlePlayerInteraction()
+void NPC3::handlePlayerInteraction()
 {
     // 显示对话背景并调用显示对话内容的函数
     showDialogueBackground();
-}
-
-void NPC1::update(float delta) //直接说话（新手引导）
-{
-    if (!hasTalked)
-    {
-        isDialogueDisplaying_ = true;
-        handlePlayerInteraction();
-        hasTalked = true;
-        dialogues_.erase(dialogues_.begin());
-    }
-
 }
