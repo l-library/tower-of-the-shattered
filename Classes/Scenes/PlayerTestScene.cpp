@@ -6,6 +6,7 @@
 #include "Entities/NPC/Npc1.h"
 #include "Entities/Player/PlayerData.h"
 #include "Maps/RoomData.h"
+#include "Scenes/PauseMenuScene.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -46,15 +47,15 @@ static void problemLoading(const char* filename)
 
 bool PlayerTestScene::init()
 {
-    // æ·»åŠ ä¸€ä¸ªå…¨å±é»‘è‰²é®ç½©ï¼ŒZåºè®¾ä¸ºæœ€é«˜
+    // Ìí¼ÓÒ»¸öÈ«ÆÁºÚÉ«ÕÚÕÖ£¬ZÐòÉèÎª×î¸ß
     auto maskLayer = LayerColor::create(Color4B::BLACK);
     this->addChild(maskLayer, 9999);
 
-    // è®©é®ç½©å±‚æ·¡å‡º
+    // ÈÃÕÚÕÖ²ãµ­³ö
     auto seq = Sequence::create(
-        DelayTime::create(0.1f), // å¯é€‰ï¼šå¤šç­‰0.1ç§’ç¡®ä¿ä¸‡æ— ä¸€å¤±
-        FadeOut::create(1.0f),   // 1ç§’æ·¡å‡ºï¼Œéœ²å‡ºæ¸¸æˆç”»é¢
-        RemoveSelf::create(),    // åŠ¨ç”»ç»“æŸåŽåˆ é™¤é®ç½©
+        DelayTime::create(0.1f), // ¿ÉÑ¡£º¶àµÈ0.1ÃëÈ·±£ÍòÎÞÒ»Ê§
+        FadeOut::create(1.0f),   // 1Ãëµ­³ö£¬ÏÔÊ¾ÓÎÏ·»­Ãæ
+        RemoveSelf::create(),    // ¶¯»­½áÊøºóÒÆ³ýÕÚÕÖ
         nullptr
     );
     maskLayer->runAction(seq);
@@ -76,61 +77,62 @@ bool PlayerTestScene::init()
     // map_1
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // ç”Ÿæˆç¢°æ’žç®±
+    // Éú³ÉÅö×²Ïä
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
     buildDamageBox(this, map_1);
     this->addChild(map_1, -1);
 
-    // åŠ è½½åŠ¨ç”»æ–‡ä»¶
+    // ¼ÓÔØ¶¯»­ÎÄ¼þ
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    // ï¿½ï¿½ï¿½ï¿½playerï¿½ï¿½
+    // ´´½¨playerÀà
     //_player = Player::createNode();
     //const Sprite* player_sprite = _player->getSprite();
     //Size contentSize = player_sprite->getContentSize();
     //_player->setPosition(_playerSpawnPosition);
     //_player->setScale(2 * 32 / contentSize.width);
-    //this->addChild(_player, 1);// ï¿½ï¿½È¾player
+    //this->addChild(_player, 1);// äÖÈ¾player
+    // ´´½¨playerÀà
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
 
     auto playerData = PlayerData::getInstance();
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+    // »ñÈ¡Íæ¼ÒÉú³ÉÎ»ÖÃ
     cocos2d::Vec2 spawnPos = _playerSpawnPosition;
 
-    // ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½Ê¹ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ¼ì²éÊÇ·ñÓÐ±£´æµÄÊý¾Ý£¨À´×Ô´æµµ»ò´«ËÍ£©
     if (playerData->hasSavedData())
     {
-        // Ê¹ï¿½Ã±ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // Ê¹ÓÃ±£´æµÄÊý¾ÝÉèÖÃÍæ¼Ò×´Ì¬
         _player->setHealth(playerData->getSavedHealth());
         _player->setMagic(playerData->getSavedMagic());
 
-        CCLOG("Ó¦ï¿½Ã±ï¿½ï¿½ï¿½ï¿½×´Ì¬: Ñªï¿½ï¿½=%.1f, ï¿½ï¿½ï¿½ï¿½=%.1f",
+        CCLOG("Ó¦ÓÃ±£´æÊý¾Ý: ÑªÁ¿=%.1f, Ä§Á¦=%.1f",
             playerData->getSavedHealth(), playerData->getSavedMagic());
 
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â´Î´ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
+        // Ê¹ÓÃÍê±£´æÊý¾ÝºóÇå³ý£¬±ÜÃâÖØ¸´Ê¹ÓÃ
         playerData->clearSavedData();
     }
     else 
     {
-        // Ã»ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½Ï·ï¿½Õ¿ï¿½Ê¼ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½Ã£ï¿½
+        // Ã»ÓÐ±£´æµÄÊý¾Ý£¬Ê¹ÓÃÄ¬ÈÏ×´Ì¬
         _player->setHealth(100.0);
         _player->setMagic(100.0);
-        CCLOG("Ê¹ï¿½ï¿½Ä¬ï¿½ï¿½×´Ì¬");
+        CCLOG("Ê¹ÓÃÄ¬ÈÏ×´Ì¬");
     }
 
-    // ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½
+    // ÉèÖÃÍæ¼ÒÎ»ÖÃ£¬Ê¹ÓÃÄ¬ÈÏ»ò±£´æµÄÉú³Éµã
     _player->setPosition(spawnPos);
     _player->setScale(2 * 32 / contentSize.width);
     _player->setName("player");
 
-    this->addChild(_player, 1);
 
+    this->addChild(_player, 1);// äÖÈ¾player
     setupInput();
 
     auto slime1 = NPC2::create();
@@ -141,53 +143,39 @@ bool PlayerTestScene::init()
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 
-    setupCollisionListener(this);
-
-    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ³õÊ¼»¯ÉãÏñ»úºÍ UI ¿ØÖÆÆ÷
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // ï¿½ï¿½Îªï¿½ï¿½ Ref ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½Òª retain ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½Í·ï¿½
+    _cameraController->retain(); // ÒòÎªÊÇ Ref ÀàÐÍ£¬ÐèÒª retain ·ÀÖ¹±»×Ô¶¯ÊÍ·Å
     this->scheduleUpdate();
 
-    // ï¿½ï¿½ï¿½Å±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ²¥·Å±³¾°ÒôÀÖ
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
-
-    setupCollisionListener(this);
-
-    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // ï¿½ï¿½Îªï¿½ï¿½ Ref ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½Òª retain ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½Í·ï¿½
-    this->scheduleUpdate();
-
-    // ï¿½ï¿½ï¿½Å±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
-    AudioManager::getInstance()->setBGMVolume(0.9f);
-
-    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ³õÊ¼»¯ÎïÆ·¹ÜÀíÆ÷
     ItemManager::getInstance()->init("config/items.json");
-    // Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ·id107
-    auto item = Items::createWithId(110);
+    // Ê¾Àý£ºÒÔÏÂ³õÊ¼»¯ÁËÒ»¸öÎïÆ·¹©²âÊÔ ÎïÆ·id107
+    auto item = Items::createWithId(2000);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
-        // Ä£ï¿½â±¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÄ³ï¿½ï¿½Ù¶ï¿½
+        // Ä£Äâ±¬³öÀ´µÄÐ§¹û£º¸øÒ»¸öÏòÉÏµÄ³õËÙ¶È
         item->getPhysicsBody()->setVelocity(Vec2(0, 200));
 
-        this->addChild(item, 5); // Z-order ï¿½Ú±ï¿½ï¿½ï¿½Ö®ï¿½ï¿½
+        this->addChild(item, 5); // Z-order ÔÚ±³¾°Ö®ÉÏ
     }
-    // Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ï¿½
+    // Ê¾Àý£ºÔö¼Ó½ð±Ò
     ItemManager::getInstance()->addGold(50);
     return true;
 }
 
 void PlayerTestScene::update(float dt) {
-    // æ¯ä¸€å¸§åªéœ€è¦é€šçŸ¥æŽ§åˆ¶å™¨æ›´æ–°
+    // Ã¿Ò»Ö¡Ö»ÐèÒªÍ¨Öª¿ØÖÆÆ÷¸üÐÂ
     _cameraController->update(dt);
 }
 
 void PlayerTestScene::setupInput() {
-    // åˆ›å»ºè¾“å…¥ç›‘å¬
+    // ´´½¨ÊäÈë¼àÌý
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
@@ -224,6 +212,10 @@ void PlayerTestScene::setupInput() {
             case EventKeyboard::KeyCode::KEY_P:
             case EventKeyboard::KeyCode::KEY_3:
                 _player->skillAttack("ArcaneShield");
+                break;
+            case EventKeyboard::KeyCode::KEY_ESCAPE:
+                auto PauseScene = PauseMenuScene::createScene();
+                Director::getInstance()->pushScene(PauseScene);
                 break;
         }
         };
