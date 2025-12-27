@@ -92,6 +92,11 @@ public:
     bool spendGold(int amount);
     int getGold() const { return _gold; }
 
+    // ---- 灵魂操作 ----
+    void addSoul(int amount);
+    bool spendSoul(int amount);
+    int getSoul() const { return _soul; }
+
     // ---- UI 展示接口 ----
 
     /**
@@ -119,6 +124,9 @@ private:
 
     // 当前金币
     int _gold;
+
+    // 当前灵魂
+    int _soul;
 
     // 获得了新物品
     bool _hasNewItems;

@@ -103,7 +103,7 @@ bool PlayerTestScene::init()
     // 初始化物品管理器
     ItemManager::getInstance()->init("config/items.json");
     // 示例：以下初始化了一个物品供测试 物品id107
-    auto item = Items::createWithId(110);
+    auto item = Items::createWithId(2000);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 

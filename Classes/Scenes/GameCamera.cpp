@@ -61,6 +61,7 @@ void GameCamera::initUI() {
     initBar();
     initSkillIcons();
     initGold();
+    initSoul();
     initItemIcons();
 }
 
@@ -80,7 +81,7 @@ ProgressTimer* GameCamera::createStatusBar(const std::string& borderPath, const 
     _uiRoot->addChild(bar, kUIZorder);
 
     // 初始化 Label
-    outLabel = Label::createWithTTF("0 / 0", "fonts/Marker Felt.ttf", 24);
+    outLabel = Label::createWithTTF("0 / 0", "fonts/Gothic.ttf", 26);
     if (outLabel) {
         outLabel->setAnchorPoint(Vec2(0.5f, 0.5f));
         outLabel->setPosition(position);
@@ -171,16 +172,38 @@ void GameCamera::initGold() {
 
     auto position = Vec2(visibleSize.width - 100, visibleSize.height - gold->getContentSize().height);
     gold->setPosition(position);
-    gold->setScale(2.0f);
+    gold->setScale(_itemSize / gold->getContentSize().width);
     _uiRoot->addChild(gold);
 
     std::string goldStr = std::to_string(ItemManager::getInstance()->getGold());
-    _goldLabel = Label::createWithTTF(goldStr, "fonts/Marker Felt.ttf", 24);
-
+    _goldLabel = Label::createWithTTF(goldStr, "fonts/Gothic.ttf", 30);
+    _goldLabel->setAnchorPoint(Vec2(0, 0));
     if (_goldLabel) {
-        auto labelPos = Vec2(position.x + gold->getContentSize().width + _goldLabel->getContentSize().width, position.y);
+        auto labelPos = Vec2(position.x + _itemSize , position.y - _itemSize / 2);
         _goldLabel->setPosition(labelPos);
         _uiRoot->addChild(_goldLabel, kUIZorder+1);
+    }
+}
+
+void GameCamera::initSoul() {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    auto soul = Sprite::create("items/soul.png");
+    if (!soul) return;
+
+    auto position = Vec2(visibleSize.width - 100, visibleSize.height - _itemSize * 2);
+    soul->setPosition(position);
+    float scale = _itemSize / soul->getContentSize().width;
+    soul->setScale(scale);
+    _uiRoot->addChild(soul);
+
+    std::string soulStr = std::to_string(ItemManager::getInstance()->getSoul());
+    _soulLabel = Label::createWithTTF(soulStr, "fonts/Gothic.ttf", 30);
+    _soulLabel->setAnchorPoint(Vec2(0, 0));
+    if (_soulLabel) {
+        auto labelPos = Vec2(position.x + _itemSize , position.y - _itemSize / 2);
+        _soulLabel->setPosition(labelPos);
+        _uiRoot->addChild(_soulLabel, kUIZorder + 1);
     }
 }
 
@@ -191,6 +214,9 @@ void GameCamera::initItemIcons()
     // 如果当前已经有了部分遗物
     if(!item_vector.empty()){
         for (auto item : item_vector) {
+            // 排除掉金币和灵魂
+            if (item == 1000 || item == 2000)
+                continue;
             auto itemIcon = ItemManager::getInstance()->createItemIcon(item);
             itemIcon->setCameraMask((unsigned short)CameraFlag::USER2);
             float scale = _itemSize / itemIcon->getContentSize().width;
@@ -256,12 +282,25 @@ void GameCamera::update(float dt) {
     if (_goldLabel) {
         _goldLabel->setString(std::to_string(ItemManager::getInstance()->getGold()));
     }
+    if (_soulLabel) {
+        _soulLabel->setString(std::to_string(ItemManager::getInstance()->getSoul()));
+    }
 
     // 刷新物品UI
     // 获取玩家所有的物品列表
     if (ItemManager::getInstance()->hasNewItems(_player)) {
         std::vector<int> Items = ItemManager::getInstance()->getOwnedItems();
         int item = Items.back();
+        // 排除掉金币和灵魂
+        if (item == 1000) {
+            ItemManager::getInstance()->addGold(10);
+            return;
+        }
+        else if (item == 2000)
+        {
+            ItemManager::getInstance()->addSoul(10);
+            return;
+        }
         auto itemIcon = ItemManager::getInstance()->createItemIcon(item);
         itemIcon->setCameraMask((unsigned short)CameraFlag::USER2);
         float scale = _itemSize / itemIcon->getContentSize().width;
