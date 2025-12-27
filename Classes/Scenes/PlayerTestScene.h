@@ -3,17 +3,17 @@
 #include "Entities/Player/Player.h"
 #include "Scenes/GameCamera.h"
 
-//创建Scene的子类PlayerTestScene
-//该场景用于测试玩家的基本操作
+// 创建Scene的子类PlayerTestScene
+// 该场景用于测试玩家的基本操作
 class PlayerTestScene : public cocos2d::Scene
 {
 public:
-    static cocos2d::Scene* createScene();//创建场景
+    static cocos2d::Scene* createScene();// 创建场景
     static cocos2d::Scene* createWithMap(const std::string& tmxFile, const cocos2d::Vec2 pos = { 360,100 });
 
-    virtual bool init() override;//初始化
+    virtual bool init() override;// 初始化
 
-    void setupInput();//读取输入
+    void setupInput();// 读取输入
 
     void PlayerTestScene::update(float dt);
 
@@ -25,11 +25,11 @@ public:
     GameCamera* getGamera() { return _cameraController; }
 
     // implement the "static create()" method manually
-    CREATE_FUNC(PlayerTestScene);//生成一个create函数
+    CREATE_FUNC(PlayerTestScene);// 生成一个create函数
 
     void PlayerTestScene::resetPlayerForNewScene(Player* player);
 
-    void gameOver();
+    //void gameOver();
 
     ~PlayerTestScene();
     std::string _currentMapFile = "maps/map_start.tmx";

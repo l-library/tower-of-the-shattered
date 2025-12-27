@@ -330,8 +330,6 @@ void generateMonstersFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
         if (slime) {
             slime->setPosition(position);
             scene->addChild(slime, 1);
-
-            CCLOG("生成史莱姆在 (%.1f, %.1f)", position.x, position.y);
         }
     }
 }
@@ -359,14 +357,10 @@ void generateNPCsFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
         float x = npcMap.at("x").asFloat();
         float y = npcMap.at("y").asFloat();
 
-        // 你的多边形是16x16的矩形，计算中心点
-        // 多边形顶点: (0,0) (16,0) (16,16) (0,16)
-        float centerX = x + 8;  // x + 16/2
-        float centerY = y + 8;  // y + 16/2
+        float centerX = x + 16 / 2;
+        float centerY = y + 16 / 2;
 
         cocos2d::Vec2 position(centerX * MAP_SIZE, centerY * MAP_SIZE);
-
-        CCLOG("生成NPC: %s 位置=(%.1f,%.1f)", npcName.c_str(), position.x, position.y);
 
         // 根据名称生成
         if (npcName == "npc_1") {
@@ -396,25 +390,19 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
     // 查找当前房间
     auto currentIt = g_roomDatabase.find(currentRoomId);
     if (currentIt == g_roomDatabase.end())
-    {
         return false;
-    }
 
     RoomData& currentRoom = currentIt->second;
 
     // 查找这个出口
     Exit* exit = currentRoom.getExit(exitDir);
     if (!exit)
-    {
         return false;
-    }
 
     // 查找目标房间
     auto targetIt = g_roomDatabase.find(exit->targetRoomId);
     if (targetIt == g_roomDatabase.end()) 
-    {
         return false;
-    }
     
     RoomData& targetRoom = targetIt->second;
     auto objects = TMXTiledMap::create(targetRoom.tmxFile)->getObjectGroup("sensor")->getObjects();
@@ -450,12 +438,11 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
     // 创建新场景并设置出生点
     auto newScene = PlayerTestScene::createWithMap(targetRoom.tmxFile, spawnPos);
     if (!newScene) 
-    {
         return false;
-    }
 
     // 更新当前房间ID
     g_currentRoomId = exit->targetRoomId;
+    log("Now in %d", g_currentRoomId);
 
     // 切换场景
     cocos2d::Director::getInstance()->replaceScene(newScene);
@@ -464,18 +451,32 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
 }
 
 // 切换场景调用
-void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode) {
+void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode) 
+{
     auto player = scene->getChildByName<Player*>("player");
-    if (player) {
+    if (player) 
+    {
         auto physicsBody = player->getPhysicsBody();
-        if (physicsBody) {
+        if (physicsBody)
             player->removeComponent(physicsBody);
-            CCLOG("remove Player's PhysicsBody");
-        }
         GameManager::getInstance()->savePlayer(player);
     }
     std::string sensorName = sensorNode->getName();
     exitRoom(g_currentRoomId, sensorName);
+}
+
+// 简单重启函数
+void simpleRestart()
+{
+    // 重置所有全局状态
+    GameManager::getInstance()->reset();
+    g_currentRoomId = 1;
+
+    // 直接切换到起始房间
+    auto newScene = PlayerTestScene::createWithMap("maps/map_start.tmx", cocos2d::Vec2(360, 100));
+    if (newScene) {
+        Director::getInstance()->replaceScene(newScene);
+    }
 }
 
 // 检测碰撞
@@ -494,22 +495,58 @@ void setupCollisionListener(cocos2d::Scene* scene)
         unsigned int maskA = bodyA->getCategoryBitmask();
         unsigned int maskB = bodyB->getCategoryBitmask();
 
+        // 检查是否玩家受到伤害
+        Node* playerNode = nullptr;
+
+        // 检查是否是玩家
+        if (maskA & PLAYER_MASK) {
+            playerNode = bodyA->getNode();
+        }
+        else if (maskB & PLAYER_MASK) {
+            playerNode = bodyB->getNode();
+        }
+
+        // 如果碰撞涉及玩家
+        if (playerNode) {
+            auto player = dynamic_cast<Player*>(playerNode);
+            if (player) {
+                // 使用 getCurrentState() 检查玩家是否死亡
+                std::string playerState = player->getCurrentState();
+                CCLOG("玩家状态: %s, 血量: %.1f", playerState.c_str(), player->getHealth());
+
+                if (playerState == "dead") {
+                    CCLOG("检测到玩家死亡状态，触发重启");
+
+                    // 延迟执行重启
+                    Director::getInstance()->getScheduler()->schedule([scene](float dt) {
+                        simpleRestart();
+                        }, scene, 0.0f, 0, 1.5f, false, "player_death_restart");
+
+                    return false;
+                }
+            }
+        }
+
         // 玩家碰到了传感器
         if ((maskA & PLAYER_MASK && maskB & SENSOR_MASK) ||
-            (maskA & SENSOR_MASK && maskB & PLAYER_MASK)) {
+            (maskA & SENSOR_MASK && maskB & PLAYER_MASK)) 
+        {
 
             // 找出哪个是传感器节点
             Node* sensorNode = nullptr;
             Node* playerNode = nullptr;
 
-            if (maskA == SENSOR_MASK) {
+            if (maskA == SENSOR_MASK)
+            {
                 sensorNode = bodyA->getNode();
                 playerNode = bodyB->getNode();
             }
-            else {
+            else
+            {
                 sensorNode = bodyB->getNode();
                 playerNode = bodyA->getNode();
             }
+            log("hit sensor %s", sensorNode->getName().c_str());
             onPlayerHitSensor(scene, sensorNode);
         }
         return true;

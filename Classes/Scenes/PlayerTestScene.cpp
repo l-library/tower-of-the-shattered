@@ -125,26 +125,8 @@ bool PlayerTestScene::init()
 
     setupInput();
 
-    /*auto slime1 = NPC2::create();
-    slime1->setPosition(_player->getPosition());
-    this->addChild(slime1, 1);
-    
-    auto slime2 = Slime::create();
-    slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
-    this->addChild(slime2, 1);*/
-
     generateMonstersFromMap(this, map_1);
     generateNPCsFromMap(this, map_1);
-
-    setupCollisionListener(this);
-
-    _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain();
-    this->scheduleUpdate();
-
-    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
-    AudioManager::getInstance()->setBGMVolume(0.9f);
-
 
     setupCollisionListener(this);
 
@@ -241,22 +223,18 @@ PlayerTestScene::~PlayerTestScene()
 void PlayerTestScene::resetPlayerForNewScene(Player* player) {
     if (!player) return;
 
-    // 1. 停止所有动作
+    // 停止所有动作
     player->stopAllActions();
 
-    // 2. 重置物理状态
-    // 注意：PhysicsBody不能直接重用，需要重新创建
+    // 重置物理状态
     auto physicsBody = player->getPhysicsBody();
-    if (physicsBody) {
+    if (physicsBody)
         player->removeComponent(physicsBody);
-        // Player会在其update中重新初始化物理，或者我们手动调用
-    }
 
-    // 3. 重置一些状态标志
+    // 重置一些状态标志
     // 这些是Player的私有成员，如果需要可以添加公共方法
     // player->resetStateForNewScene();
 
-    // 4. 重新注册update（如果需要）
     player->unscheduleUpdate();
     player->scheduleUpdate();
 
