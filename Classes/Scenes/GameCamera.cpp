@@ -140,6 +140,8 @@ void GameCamera::createSkillSlot(const std::string& skillName, const std::string
 
     // 存入 Map 以便 update 使用
     _skillCDTimers[skillName] = cdTimer;
+    _skillIcons[skillName] = icon;
+    _skillNeedUpdate[skillName] = true;
 }
 
 void GameCamera::initSkillIcons() {
@@ -263,6 +265,18 @@ void GameCamera::update(float dt) {
 
     updateBarInfo(_player->getHealth(), _player->getMaxHealth(), _hpBar, _hpLabel);
     updateBarInfo(_player->getMagic(), _player->getMaxMagic(), _mpBar, _mpLabel);
+
+    // 刷新技能解锁状态
+    for (auto& pair : _skillNeedUpdate) {
+        if (pair.second)
+        {
+            std::string skillName = pair.first;
+            if (_player->getSkillManager()->getSkill(skillName)->isUnlocked()) {
+                _skillIcons[skillName]->setTexture(_player->getSkillManager()->getSkill(skillName)->getConfig().iconPath);
+                pair.second = false;
+            }
+        }
+    }
 
     // 刷新技能冷却
     // 遍历所有注册的技能 UI
