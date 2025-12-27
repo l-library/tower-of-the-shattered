@@ -135,14 +135,14 @@ bool PlayerTestScene::init()
     this->addChild(_player, 1);// 渲染player
     setupInput();
 
-    auto slime1 = NPC2::create();
+    auto slime1 = Slime::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
     auto slime2 = Slime::create();
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
-
+    setupCollisionListener(this);
     // 初始化摄像机和 UI 控制器
     _cameraController = GameCamera::create(this, _player, map_1);
     _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
