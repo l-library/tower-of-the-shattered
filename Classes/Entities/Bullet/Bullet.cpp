@@ -59,18 +59,21 @@ bool Bullet::init(const std::string& spriteFrameName, int damage,
     damage_ = damage;
 
     // 创建子弹精灵
-    sprite_ = Sprite::create(spriteFrameName);
-    if (!sprite_) {
-        CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
-        return false;
+    if (spriteFrameName != "")
+    {
+        sprite_ = Sprite::create(spriteFrameName);
+        if (!sprite_) {
+            CCLOG("Failed to create bullet sprite with frame name: %s", spriteFrameName.c_str());
+            return false;
+        }
+        sprite_->retain();
+        sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
+        sprite_->setPosition(Vec2::ZERO); // 精灵居中，使碰撞体与精灵位置一致
+        this->addChild(sprite_);
+        // 根据精灵尺寸设置碰撞体大小
+        collisionWidth_ = sprite_->getContentSize().width;
+        collisionHeight_ = sprite_->getContentSize().height;
     }
-    sprite_->retain();
-    sprite_->setContentSize(Size(GRID_SIZE, GRID_SIZE));
-    sprite_->setPosition(Vec2::ZERO); // 精灵居中，使碰撞体与精灵位置一致
-    this->addChild(sprite_);
-    // 根据精灵尺寸设置碰撞体大小
-    collisionWidth_ = sprite_->getContentSize().width;
-    collisionHeight_ = sprite_->getContentSize().height;
 
     // 重新创建物理碰撞体
     recreatePhysicsBody();
@@ -184,9 +187,9 @@ void Bullet::recreatePhysicsBody()
         physicsBody_ = nullptr;
     }
 
-    // 创建新的物理碰撞体
+    // 创建新的物理碰撞体，增加摩擦系数
     physicsBody_ = PhysicsBody::createBox(Size(collisionWidth_, collisionHeight_), 
-                                         PhysicsMaterial(0.0f, 0.0f, 0.0f));
+                                         PhysicsMaterial(1.0f, 0.3f, 0.8f)); // 密度:1.0, 恢复系数:0.3, 摩擦系数:0.8
     if (!physicsBody_) {
         CCLOG("Failed to create physics body for bullet");
         return;
@@ -195,8 +198,8 @@ void Bullet::recreatePhysicsBody()
     physicsBody_->retain();
     physicsBody_->setDynamic(true);
     physicsBody_->setGravityEnable(false);
-    physicsBody_->setLinearDamping(0.0f);
-    physicsBody_->setAngularDamping(0.0f);
+    physicsBody_->setLinearDamping(0.2f);
+    physicsBody_->setAngularDamping(0.5f);
     physicsBody_->setRotationEnable(false);
 
     // 设置掩码

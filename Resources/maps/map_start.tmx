@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="19">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <layer id="1" name="background" width="40" height="23">
+  <data encoding="base64" compression="zlib">
+   eJzt0MENgCAQBdGtQ2gAsB5CIWj9fhJOhrsbnMO7T6aaWQUAbOuWKM1By0qXQ4IUBz1v41uSPF9+3bNyzneXgxYAwL89nGQ0Fw==
+  </data>
+ </layer>
+ <layer id="2" name="platform" width="40" height="23">
+  <data encoding="base64" compression="zlib">
+   eJztl0EKhDAMRf8ZhHEdB12rjOfwBB7B+6+tYKAESztGbIQ++Ci0/TyCi9oAaF6YyWVwWY+nfP8nsXO/C14jnqNP9Jwe9pLsniHH3G5MyPGbU0pAsDk7Rs7Q0uwYQvHTQLDtt8C2H6H4aSAUPw18Z7Dqx7zBr3OplT0fl+qItsuHv0GN4+7W3tQl8e8xoV6eTWjNd9N0xfy4txJpE9bO4u+fE7rOkvs/LJYNrzImYg==
+  </data>
+ </layer>
+ <objectgroup id="3" name="obj">
+  <object id="4" x="608" y="0">
+   <polygon points="0,0 32,0 32,256 0,256"/>
+  </object>
+  <object id="5" x="608" y="112">
+   <polygon points="0,0 -16,0 -16,-64 0,-64"/>
+  </object>
+  <object id="7" x="528" y="32">
+   <polygon points="0,0 80,0 80,16 0,16"/>
+  </object>
+  <object id="8" x="560" y="48">
+   <polygon points="0,0 32,0 32,32"/>
+  </object>
+  <object id="9" x="0" y="0">
+   <polygon points="0,0 608,0 608,32 0,32 0,0"/>
+  </object>
+  <object id="10" x="32" y="32">
+   <polygon points="0,0 80,0 80,16 0,16"/>
+  </object>
+  <object id="11" x="48" y="48">
+   <polygon points="0,0 32,0 0,32"/>
+  </object>
+  <object id="12" x="32" y="48">
+   <polygon points="0,0 16,0 16,64 0,64"/>
+  </object>
+  <object id="13" x="0" y="32">
+   <polygon points="0,0 32,0 32,336 0,336"/>
+  </object>
+  <object id="14" x="32" y="288">
+   <polygon points="0,0 48,48 48,48 0,48 0,0"/>
+  </object>
+  <object id="15" x="80" y="336">
+   <polygon points="-48,0 560,0 560,32 -48,32"/>
+  </object>
+  <object id="16" x="144" y="336">
+   <polygon points="0,0 16,-16 32,-16 48,0"/>
+  </object>
+  <object id="17" x="256" y="336">
+   <polygon points="0,0 48,-48 80,-48 128,0 0,0"/>
+  </object>
+  <object id="18" x="464" y="320">
+   <polygon points="0,0 16,0 32,16 -16,16"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="sensor">
+  <object id="3" name="right_down" x="624" y="256">
+   <polygon points="0,0 16,0 16,80 0,80"/>
+  </object>
+ </objectgroup>
+</map>

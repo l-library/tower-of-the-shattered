@@ -1,0 +1,92 @@
+[
+    {
+        "id": 101,
+        "name": "�����߶���",
+        "icon": "items/cape.png",
+        "desc": "���� 50 ���������ֵ��",
+        "information": "���ֱ�ǰ�����еĶ��������Ѿ��ƾɲ����ˡ�",
+        "effect_type": "HP_MAX_UP",
+        "value": 50.0
+    },
+    {
+        "id": 102,
+        "name": "����֮ѥ",
+        "icon": "items/boots.png",
+        "desc": "��΢�����ƶ��ٶȡ�",
+        "information": "���������о��ذ�们�ˡ�",
+        "effect_type": "SPEED_UP",
+        "value": 200.0
+    },
+    {
+        "id": 103,
+        "name": "����֮��",
+        "icon": "items/wand.png",
+        "desc": "���� 25 �������������",
+        "information": "��ѷ����ƺ���ӯ�Ź��ϵ�������",
+        "effect_type": "ATTACK_UP",
+        "value": 25.0
+    },
+    {
+        "id": 104,
+        "name": "��Ѫ֮ʯ",
+        "icon": "items/Bloodstone.png",
+        "desc": "�����˺���Ϊ1.2����",
+        "information": "����������������������ʯͷ",
+        "effect_type": "SKILL_DAMAGE_UP",
+        "value": 10.2
+    },
+    {
+        "id": 105,
+        "name": "��������",
+        "icon": "items/magicBook.png",
+        "desc": "����50�����ħ��ֵ��",
+        "information": "��ɬ�������ƺ���˻���ߵ���˵��ʲô",
+        "effect_type": "MP_MAX_UP",
+        "value": 50.0
+    },
+    {
+        "id": 106,
+        "name": "�Ļ���ż",
+        "icon": "items/ghost.png",
+        "desc": "����0.3�������ʱ����",
+        "information": "����û�����飬�������ź�",
+        "effect_type": "DODGE_TIME_UP",
+        "value": 0.3
+    },
+    {
+        "id": 107,
+        "name": "������ż",
+        "icon": "items/dragon.png",
+        "desc": "����ħ��ֵ�Զ��ظ����ٶȡ�",
+        "information": "�������д����������������µĺۼ�",
+        "effect_type": "MP_RESTORE_UP",
+        "value": 0.5
+    },
+    {
+        "id": 108,
+        "name": "ħ��ʦñ",
+        "icon": "items/hat.png",
+        "desc": "���ٳ����ȴ��",
+        "information": "��С�ܺ��ʣ���ֱ���������Լ���ñ��",
+        "effect_type": "DODGE_COOLDOWN",
+        "value": 0.8
+    },
+    {
+        "id": 109,
+        "name": "������ż",
+        "icon": "items/rabbit.png",
+        "desc": "������Ծ�߶ȡ�",
+        "information": "���ϵ����Ѿ��ܾ�û�м������ŵ�������",
+        "effect_type": "JUMP_FORCE_UP",
+        "value": 300.0
+    },
+    {
+        "id": 110,
+        "name": "������֮��",
+        "icon": "items/eyeball.png",
+        "desc": "����������ʱ���ж����������ܡ�",
+        "information": "����������һλ�ó��ú��������������˹�����ħ��ʦ",
+        "effect_type": "DOUBLE_DODGE",
+        "value": 1.0
+    }
+]

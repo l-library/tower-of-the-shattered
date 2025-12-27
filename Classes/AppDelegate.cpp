@@ -25,6 +25,8 @@
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
 #include "TowerOfTheShattered.h"
+#include "Scenes/MainMenuScene.h"
+#include "Entities/Player/PlayerData.h"
 //下面是音频相关引擎的开关
 
 // #define USE_AUDIO_ENGINE 1
@@ -73,6 +75,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // initialize director
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
+    PlayerData::getInstance();
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
         {
@@ -86,7 +89,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     //开启帧率显示（最后关掉）
-    director->setDisplayStats(true);
+    /*director->setDisplayStats(true);*/
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
@@ -114,9 +117,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // 创建场景实例，自动释放
-    // 此处可以更改为了玩家测试场景
-    auto scene = PlayerTestScene::createScene();
+    //auto scene = PlayerTestScene::createScene();
     //auto scene = HelloWorld::createScene();
+    auto scene = MainMenuScene::createScene();
 
     // run
     director->runWithScene(scene);

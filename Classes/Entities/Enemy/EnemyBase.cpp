@@ -1,9 +1,5 @@
 #include "EnemyBase.h"
-#include "TowerOfTheShattered.h"
-#include "Entities/Player/Player.h"
 #include <utility>
-USING_NS_CC;
-
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
     , physicsBody_(nullptr)
@@ -158,6 +154,7 @@ bool EnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
 
 void EnemyBase::updateAI(float delta)
 {
+    otherUpdate(delta);
     if (currentState_ == EnemyState::IDLE)
     {
         // 调用DecideNextBehavior()决定下一个行为
@@ -201,12 +198,16 @@ void EnemyBase::updateAI(float delta)
     
     if (currentState_ == EnemyState::RECOVERY)
     {
+        // 执行recovery行为
+        this->Execute("recovery", delta);
+        
         // 更新后摇计时器
         recoveryTimer_ += delta;
-        
+        sprite_->setColor(Color3B(150, 255, 150));
         // 如果后摇时间结束，进入IDLE状态
         if (recoveryTimer_ >= recoveryDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
         }
     }
@@ -222,11 +223,13 @@ void EnemyBase::updateAI(float delta)
         // 如果硬直时间结束，进入IDLE状态并重置韧性
         if (staggerTimer_ >= staggerDuration_)
         {
+            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
             current_stagger_resistance_ = stagger_resistance_; // 重置韧性
         }
     }
 }
+
 BehaviorResult EnemyBase::Execute(const std::string& name, float delta)
 {
     if (hasBehavior(name)) {
@@ -262,6 +265,7 @@ void EnemyBase::update(float delta)
             // 如果没有正在运行的动作，移除敌人对象
             if (!hasRunningActions)
             {
+                DropLootOnDeath();
                 this->removeFromParentAndCleanup(true);
             }
         }
@@ -285,36 +289,7 @@ CollisionBoxInfo EnemyBase::getCollisionBoxInfo() const
     return collisionBoxInfo_;
 }
 
-bool EnemyBase::isPlayerVisible()
-{
-    if (player_ == nullptr)
-    {
-        return false;
-    }
-    
-    // 获取当前场景的物理世界
-    auto scene = Director::getInstance()->getRunningScene();
-    if (scene == nullptr) return false;
-    
-    auto physicsWorld = scene->getPhysicsWorld();
-    if (physicsWorld == nullptr) return false;
-    
-    // 创建射线检测回调
-    bool hasWall = false;
-    
-    physicsWorld->rayCast([&hasWall](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data) -> float {
-        // 检查碰撞的物体是否是墙壁
-        if (info.shape->getBody()->getCategoryBitmask() == WALL_MASK)
-        {
-            hasWall = true;
-            return 0.0f; // 找到墙壁，停止检测
-        }
-        return -1.0f; // 继续检测
-    }, this->getPosition(), player_->getPosition(), nullptr);
-    
-    // 如果没有墙壁阻挡，则玩家可见
-    return !hasWall;
-}
+
 
 void EnemyBase::setPlayer(Player* player)
 {
@@ -382,6 +357,11 @@ void EnemyBase::setStaggerDuration(float duration)
     staggerDuration_ = std::max(0.0f, duration);
 }
 
+
+void EnemyBase::setCurrentBehavior(std::string name)
+{
+    currentBehavior_ = name;
+}
 // Setter方法
 void EnemyBase::setMaxVitality(int maxVitality)
 {
@@ -463,23 +443,16 @@ bool EnemyBase::hasBehavior(const std::string& name) const
     return aiBehaviors_.find(name) != aiBehaviors_.end();
 }
 
-// SoldierEnemyBase类的实现
-bool SoldierEnemyBase::init()
+void EnemyBase::DropLootOnDeath()
 {
-    if (!EnemyBase::init())
-    {
-        return false;
+
+    auto item = Items::createWithId(110);
+    if (item) {
+        item->setPosition(this->getPosition());
+
+        // 模拟爆出来的效果：给一个向上的初速度
+        item->getPhysicsBody()->setVelocity(Vec2(0, 200));
+        this->getParent()->addChild(item, 5); // Z-order 在背景之上
     }
-    
-    return true;
-}
 
-bool SoldierEnemyBase::onContactBegin(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactBegin(contact);
-}
-
-bool SoldierEnemyBase::onContactSeparate(cocos2d::PhysicsContact& contact)
-{
-    return EnemyBase::onContactSeparate(contact);
 }

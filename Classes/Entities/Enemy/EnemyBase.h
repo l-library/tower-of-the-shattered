@@ -1,7 +1,8 @@
 #pragma once
 #include "cocos2d.h"
-#include "Entities/Player/Player.h" // 包含Player类头文件，用于typeid检测
-#include "Entities/Bullet/Bullet.h" // 包含Bullet类头文件，用于创建MeleeBullet
+#include "EnemyAi/EnemyAi.h"
+#include "TowerOfTheShattered.h"
+
 #include <functional>
 #include <vector>
 #include <string>
@@ -87,7 +88,10 @@ public:
     virtual void BehaviorInit() = 0; // 行为初始化，子类必须实现
     virtual std::string DecideNextBehavior(float delta) = 0; // 决定下一个行为，传入delta时间
     virtual void InitSprite();    // 初始化精灵，子类可以重写以设置不同的精灵
-    
+
+    void DropLootOnDeath();
+    virtual void otherUpdate(float delta) {};
+
     // Getter方法 - 物理碰撞体
     cocos2d::PhysicsBody* getPhysicsBody() const;
     
@@ -107,8 +111,6 @@ public:
     float getStaggerDuration() const;
     CollisionBoxInfo getCollisionBoxInfo() const;
     
-    // 检测玩家是否可见（路径上没有墙）
-    bool isPlayerVisible();
     
     // 设置玩家指针
     void setPlayer(Player* player);
@@ -127,7 +129,7 @@ public:
     void setBaseAttackPower(int attackPower);
     void setDefense(int defense);
     void setStaggerDuration(float duration);
-    
+    void setCurrentBehavior(std::string name);
 
     // AI更新方法
     void updateAI(float delta);
@@ -140,24 +142,4 @@ public:
 
 };
 
-// 小兵抽象类 - 继承自EnemyBase
-class SoldierEnemyBase : public EnemyBase
-{
-protected:
-    // 小兵特有的属性和方法
-    
-public:
-    
-    virtual bool init() override;
-    
-    // 实现父类的纯虚函数
-    virtual void Hitted(int damage, int poise_damage = 0) override = 0;
-    virtual void Dead() override = 0;
-    virtual void BehaviorInit() override = 0;
-    virtual std::string DecideNextBehavior(float delta) override = 0;
-    virtual void InitSprite() override = 0;
-    
-    // 实现碰撞回调函数
-    virtual bool onContactBegin(cocos2d::PhysicsContact& contact) override;
-    virtual bool onContactSeparate(cocos2d::PhysicsContact& contact) override;
-};
+

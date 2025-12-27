@@ -1,6 +1,6 @@
 #pragma once
 #include "cocos2d.h"
-#include "Box2D/Box2D.h"
+#include "SkillManager.h"
 
 // 玩家状态枚举
 enum class PlayerState {
@@ -26,15 +26,6 @@ enum class Direction {
 //动画标签
 #define ANIMATION_ACTION_TAG 1001
 
-// 定义物理掩码
-//const int PLAYER_CATEGORY_BITMASK = 0x01;
-//const int GROUND_CATEGORY_BITMASK = 0x02;
-//const int PLATFORM_CATEGORY_BITMASK = 0x04;
-//const int ENEMY_CATEGORY_BITMASK = 0x08;
-//const int TRAP_CATEGORY_BITMASK = 0x10;
-//const int ITEM_CATEGORY_BITMASK = 0x20;
-//当前使用TowerOfTheShattered头文件的掩码
-
 //默认土狼时间
 constexpr double kCoyoteTime = 0.15;
 //默认两端攻击之间最大时间差
@@ -42,6 +33,9 @@ constexpr double kMaxAttackEngageTime = 0.7;//在0.7秒内继续攻击则衔接下一段攻击
 // 定义脚部传感器Tag，用于碰撞检测区分身体和脚
 const int TAG_BODY = 10;
 const int TAG_FEET = 11;
+
+// 定义两次脚步声播放的间隔
+const float kStepSoundsInterval = 0.5f;
 
 /**
 * @brief 储存主角的各类信息 
@@ -91,6 +85,9 @@ public:
 	* @return (const double)玩家当前血量
 	***/
 	const double getHealth() const { return _health; };
+	const void setHealth(double health) { _health = health; }
+	const void restoreHealth(double restore) { _health += restore; }
+
 
 	/**
 	* @brief 获得玩家当前最大血量
@@ -105,6 +102,8 @@ public:
 	* @return (const double)玩家当前法力值
 	***/
 	const double getMagic() const { return _magic; };
+	const void setMagic(double magic) { _magic = magic; }
+	const void restoreMagic(double restore) { _magic += restore; }
 
 	/**
 	* @brief 获得玩家当前最大法力值
@@ -112,13 +111,18 @@ public:
 	* @return (const double)玩家最大法力值
 	***/
 	const double getMaxMagic() const { return _maxMagic; };
-	
+
 	/**
 	* @brief 获得玩家是否运行控制
 	* @param[in] void
 	* @return (const)玩家控制状态 true，false
 	***/
-	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; };
+	const bool canBeControled() const { return _controlEnabled && !_isAttacking && !_isSkilling && !_isDodge; }
+	void setControlEnabled(bool controlEnabled) { _controlEnabled = controlEnabled; }
+
+	const Direction getDirection() const { return _direction; };
+
+	SkillManager* getSkillManager() const { return _skillManager; };
 
 	/**
 	* @brief 获得玩家图像
@@ -132,6 +136,25 @@ public:
 	* @return 释放成功/失败（bool）
 	***/
 	bool skillAttack(const std::string& name);
+
+	/**
+	* @brief 获得某个技能是否被解锁了
+	* @param[in] string技能名称 常量引用
+	* @return 解锁/没有解锁
+	***/
+	bool isUnlocked(const std::string& name);
+
+	// 设置主角属性，用于商店/遗物
+	void modifyMaxHealth(double value) { _maxHealth += value; _health += value; } // 增加上限并回血
+	void modifyMaxMagic(double value) { _maxMagic += value; _magic += value; }
+	void modifyAttackDamage(double value) { _playerAttackDamage += value; }
+	void modifySpeed(double value) { _speed += value; }
+	void modifyJumpForce(double value) { _jumpForce += value; }
+	void modifyMagicRestore(double value) { _magicRestore += value; }
+	void modifyDodgeTime(double value) { _maxDodgeTime += value; }
+	void modifyDodgeCooldown(double value) { _maxDodgeCooldown -= value; }
+	void setSkillDamage(double skillDamage) { _skillDamage = skillDamage; }
+	void setDoubleDODGE(double value) { _maxDodgeTimes+= static_cast<int>(value); }
 
 	//利用宏生成一个create函数
 	CREATE_FUNC(Player);
@@ -198,6 +221,10 @@ private:
 	double _maxDodgeCooldown;
 	//主角的空中闪避次数
 	int _maxDodgeTimes;
+	//主角每秒恢复的魔法值
+	double _magicRestore;
+	//主角技能伤害倍率
+	double _skillDamage;
 
 	/*----计时器----*/
 	//跳跃缓冲时间
@@ -212,6 +239,8 @@ private:
 	double _invincibilityTime;
 	//两端攻击之间衔接的时间差
 	double _attackEngageTime;
+	//两次脚步声之间的声音间隔
+	float _stepSoundsInterval;
 	//普通状态下的碰撞掩码
 	int _originalMask;
 	//冲刺状态下的碰撞掩码
@@ -253,10 +282,11 @@ private:
 
 	/*----攻击和技能数值----*/
 	double _playerAttackDamage;// 普通攻击伤害
-	float _iceSpearSpeed;
-	float _iceSpearMagic;
-	float _iceSpearDamage;
 
 	/*----输入----*/
 	float _moveInput;
+
+	/*----技能管理器----*/
+	SkillManager* _skillManager;
+	
 };
