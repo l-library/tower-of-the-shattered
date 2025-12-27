@@ -3,6 +3,7 @@
 #include "json/rapidjson.h"
 #include "json/document.h"
 #include "cocos2d.h"
+#include "Tools/SaveManager.h"
 
 USING_NS_CC;
 
@@ -22,7 +23,7 @@ void ItemManager::destroyInstance() {
     }
 }
 
-ItemManager::ItemManager() : _gold(100),_soul(0) {}
+ItemManager::ItemManager() : _gold(100), _soul(SaveManager::getInstance()->getSoulCount()) {}
 
 ItemManager::~ItemManager() {
     _itemConfigCache.clear();
@@ -205,6 +206,7 @@ bool ItemManager::spendGold(int amount) {
 // ---- Áé»ê ----
 void ItemManager::addSoul(int amount) {
     _soul += amount;
+    SaveManager::getInstance()->addSoul(amount);
 }
 
 bool ItemManager::spendSoul(int amount) {
@@ -212,6 +214,7 @@ bool ItemManager::spendSoul(int amount) {
         _soul -= amount;
         return true;
     }
+    SaveManager::getInstance()->addSoul(-amount);
     return false;
 }
 

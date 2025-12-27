@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "AudioEngine.h"
 #include "TowerOfTheShattered.h"
+#include "../../Tools/SaveManager.h"
 
 USING_NS_CC;
 
@@ -35,7 +36,7 @@ bool Player::init()
     _sprite->setAnchorPoint(Vec2(0.5, 0));
     this->addChild(_sprite);
 
-    /*---初始化主角各属性---*/
+    // 初始化主角各属性
     _currentState = PlayerState::IDLE;
     _previousState = PlayerState::IDLE;
     _direction = Direction::RIGHT;
@@ -96,13 +97,13 @@ bool Player::init()
 
     // 注册技能
     auto iceSpear = SkillIceSpear::create();
-    iceSpear->setUnlocked(false); // 默认解锁，等待存档功能，从存档读取
+    iceSpear->setUnlocked(SaveManager::getInstance()->getSkillState() > 0); // 从存档中读取是否解锁
     _skillManager->addSkill("IceSpear", iceSpear);
     auto ArcaneJet = SkillArcaneJet::create();
-    ArcaneJet->setUnlocked(false); // 默认解锁，等待存档功能，从存档读取
+    ArcaneJet->setUnlocked(SaveManager::getInstance()->getSkillState() > 2); // 从存档中读取是否解锁
     _skillManager->addSkill("ArcaneJet", ArcaneJet);
     auto ArcaneShield = SkillArcaneShield::create();
-    ArcaneShield->setUnlocked(false); // 默认解锁，等待存档功能，从存档读取
+    ArcaneShield->setUnlocked(SaveManager::getInstance()->getSkillState() > 1); // 从存档中读取是否解锁
     _skillManager->addSkill("ArcaneShield", ArcaneShield);
 
     // 初始化物理身体
@@ -126,6 +127,11 @@ bool Player::init()
 
     // 启用update函数
     this->scheduleUpdate();
+
+    // 读取存档
+    modifyAttack(SaveManager::getInstance()->getAttackUp());
+    modifyMove(SaveManager::getInstance()->getMoveSpeedUp());
+    
 
     return true;
 }

@@ -36,7 +36,7 @@ public:
             }
         }
 
-        // 3. 解析 JSON
+        // 解析 JSON
         if (contentStr.empty()) {
             doc.SetObject(); // 文件不存在或为空，初始化为空对象
         }
@@ -49,7 +49,7 @@ public:
             }
         }
 
-        // 4. 修改或添加字段
+        // 修改或添加字段
         rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
         // 创建 Value 对象 (注意：需要使用 allocator 进行深拷贝，防止局部变量销毁导致指针悬空)
@@ -65,13 +65,13 @@ public:
             doc.AddMember(jsonKey, jsonValue, allocator);
         }
 
-        // 5. 序列化 (将 Object 转回 String)
+        // 序列化 (将 Object 转回 String)
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         doc.Accept(writer);
         std::string outputStr = buffer.GetString();
 
-        // 6. 写入文件
+        // 写入文件
         // 使用标准 C++ 文件流写入，确保跨平台兼容性
         FILE* fp = fopen(writablePath.c_str(), "w");
         if (!fp) {
