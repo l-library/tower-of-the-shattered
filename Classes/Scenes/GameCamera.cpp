@@ -186,7 +186,20 @@ void GameCamera::initGold() {
 
 void GameCamera::initItemIcons()
 {
+    auto item_vector = ItemManager::getInstance()->getOwnedItems();
     _nextIconPosition = Vec2(_itemSize / 2, _mpBar->getPosition().y - _mpBar->getContentSize().height);
+    // 如果当前已经有了部分遗物
+    if(!item_vector.empty()){
+        for (auto item : item_vector) {
+            auto itemIcon = ItemManager::getInstance()->createItemIcon(item);
+            itemIcon->setCameraMask((unsigned short)CameraFlag::USER2);
+            float scale = _itemSize / itemIcon->getContentSize().width;
+            itemIcon->setScale(scale);
+            itemIcon->setPosition(_nextIconPosition);
+            _nextIconPosition.x += _itemSize + 5.0f;
+            _uiRoot->addChild(itemIcon, kUIZorder);
+        }
+    }
 }
 
 void GameCamera::update(float dt) {

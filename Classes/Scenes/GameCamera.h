@@ -14,6 +14,8 @@ public:
 
     void update(float dt);
 
+    cocos2d::Node* getUIRoot() { return _uiRoot; }
+
 private:
     GameCamera();
     bool init(cocos2d::Scene* scene, Player* player, cocos2d::TMXTiledMap* map);

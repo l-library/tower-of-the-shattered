@@ -22,6 +22,8 @@ public:
         _playerSpawnPosition = pos;
     }
 
+    GameCamera* getGamera() { return _cameraController; }
+
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
 
