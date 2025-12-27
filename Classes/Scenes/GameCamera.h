@@ -63,7 +63,12 @@ private:
 
     // Key为技能名称，value为冷却条
     std::unordered_map<std::string, cocos2d::ProgressTimer*> _skillCDTimers;
+    // Key为技能名称，value为冷却条
+    std::unordered_map<std::string, cocos2d::Sprite*> _skillIcons;
 
     // 放大倍数
     float _zoomFactor;
+
+    // 技能需要更新
+    std::unordered_map<std::string, bool> _skillNeedUpdate;
 };

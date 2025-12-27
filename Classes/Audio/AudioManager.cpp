@@ -15,13 +15,17 @@ AudioManager::AudioManager() : _bgmID(-1), _bgmVolume(0.5f), _effectVolume(1.0f)
 }
 
 void AudioManager::playBGM(const std::string& filename, bool loop) {
-    // 如果当前有BGM在播放，先停止
+    // 如果当前有BGM在播放
     if (_bgmID != -1) {
-        AudioEngine::stop(_bgmID);
+        if (_filename != filename) // 如果bgm不同，切换
+            AudioEngine::stop(_bgmID);
+        else
+            return;
     }
 
     // 播放新的BGM
     _bgmID = AudioEngine::play2d(filename, loop, _bgmVolume);
+    _filename = filename;
 
     // 设置播放结束的回调
     if (!loop) {
@@ -39,9 +43,6 @@ int AudioManager::playEffect(const std::string& filename, bool loop, float pitch
 void AudioManager::stopBGM() {
     if (_bgmID != -1) {
         AudioEngine::stop(_bgmID);
-        // 如果设置了 FinishCallback，调用 stop 通常不会触发它，
-        // 但为了逻辑严谨，我们必须将 ID 重置，
-        // 这样 Intro 的回调函数里的 if (_bgmID == currentIntroID) 判断就会失败。
         _bgmID = -1;
     }
 }

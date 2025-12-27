@@ -46,6 +46,19 @@ static void problemLoading(const char* filename)
 
 bool PlayerTestScene::init()
 {
+    // 添加一个全屏黑色遮罩，Z序设为最高
+    auto maskLayer = LayerColor::create(Color4B::BLACK);
+    this->addChild(maskLayer, 9999);
+
+    // 让遮罩层淡出
+    auto seq = Sequence::create(
+        DelayTime::create(0.1f), // 可选：多等0.1秒确保万无一失
+        FadeOut::create(1.0f),   // 1秒淡出，露出游戏画面
+        RemoveSelf::create(),    // 动画结束后删除遮罩
+        nullptr
+    );
+    maskLayer->runAction(seq);
+
     if (!Scene::initWithPhysics())
     {
         return false;

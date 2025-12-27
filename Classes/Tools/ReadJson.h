@@ -14,17 +14,21 @@ class ReadJson {
 public:
     /**
     * @brief 从指定的json文件中读取指定字段的内容
-    * @param[in] json路径path，字段名称name
+    * @param[in] json路径path，字段名称name，是否以resources文件夹为默认根目录readResources
     * @return json字段对应内容
     ***/
-    static std::string getString(std::string path , std::string name) {
+    static std::string getString(std::string path , std::string name, bool readResources = true) {
         // 读取文件内容
-        std::string fullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(path);
+        std::string fullPath;
+        if (readResources)
+            fullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(path);
+        else
+            fullPath = cocos2d::FileUtils::getInstance()->getWritablePath() + path;
         std::string contentStr = cocos2d::FileUtils::getInstance()->getStringFromFile(fullPath);
 
         if (contentStr.empty()) {
             cocos2d::log("ReadJson Error: Failed to load %s", name.c_str());
-            return false;
+            return "";
         }
 
         rapidjson::Document doc;
@@ -32,10 +36,13 @@ public:
 
         if (doc.HasParseError()) {
             cocos2d::log("ReadJson Error: JSON Parse error %d", doc.GetParseError());
-            return NULL;
+            return "";
         }
 
-        if (doc.HasMember(name.c_str()))
+        if (doc.HasMember(name.c_str()) && doc[name.c_str()].IsString())
             return doc[name.c_str()].GetString();
+
+        cocos2d::log("ReadJson Error: Field %s not found or not a string", name.c_str());
+        return "";
     }
 };

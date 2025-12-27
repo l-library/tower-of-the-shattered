@@ -6,3 +6,8 @@ void Skills::update(float dt)
 	if (_currentCooldown > 0)
 		_currentCooldown -= dt;
 }
+
+void Skills::setUnlocked(bool v)
+{
+	 _unlocked = v;
+}
