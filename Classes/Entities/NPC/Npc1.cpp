@@ -136,6 +136,9 @@ void NPC1::update(float delta) //直接说话（新手引导）
 {
     if (!hasTalked&&this->player_)
     {
+        player_->setControlEnabled(false);
+        player_->stopMoving();
+
         isDialogueDisplaying_ = true;
         handlePlayerInteraction();
         hasTalked = true;

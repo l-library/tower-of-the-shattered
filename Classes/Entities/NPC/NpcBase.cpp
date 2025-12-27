@@ -315,22 +315,25 @@ void NpcBase::showDialogueBackground()
     auto origin = Director::getInstance()->getVisibleOrigin();
     
     // 设置对话背景位置在屏幕底部中央
-    dialogueBackground_->setPosition(Vec2(origin.x + visibleSize.width / 3, origin.y + dialogueBackground_->getContentSize().height / 2));
-
+    dialogueBackground_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + dialogueBackground_->getContentSize().height / 2));
+    dialogueBackground_->setScale(1.5);
     // 获取当前场景并添加对话背景
-    auto scene = Director::getInstance()->getRunningScene();
+    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
     if (scene)
     {
-        scene->addChild(dialogueBackground_, 100); // 设置较高的层级以确保显示在最上层
+        dialogueBackground_->setCameraMask((uint16_t)CameraFlag::USER2, true);
+        scene->getGamera()->getUIRoot()->addChild(dialogueBackground_, 100); // 设置较高的层级以确保显示在最上层
         if (Illustration_ != nullptr)
         {
             // 设置立绘位置在背景正上偏右
             Vec2 illustrationPos = Vec2(
-                dialogueBackground_->getPositionX() + dialogueBackground_->getContentSize().width * 0.3f, // 偏右30%
-                dialogueBackground_->getPositionY() + dialogueBackground_->getContentSize().height // 正上方
+                dialogueBackground_->getPositionX(), // 偏右30%
+                dialogueBackground_->getPositionY() + dialogueBackground_->getContentSize().height * 1.2// 正上方
             );
+            Illustration_->setScale(1.5);
             Illustration_->setPosition(illustrationPos);
-            scene->addChild(Illustration_, 101);
+            Illustration_->setCameraMask((uint16_t)CameraFlag::USER2, true);
+            scene->getGamera()->getUIRoot()->addChild(Illustration_, 101);
         }
     }
     
@@ -363,7 +366,7 @@ void NpcBase::displayDialogueContent(int dialogueIndex)
     
     // 设置标签颜色为黑色
     dialogueLabel_->setColor(Color3B::BLACK);
-    
+    dialogueLabel_->setScale(1.5);
     // 设置标签自动换行
     float backgroundWidth = dialogueBackground_->getContentSize().width;
     float maxWidth = backgroundWidth * 0.8f; // 设置最大宽度为背景宽度的80%
@@ -377,7 +380,7 @@ void NpcBase::displayDialogueContent(int dialogueIndex)
     dialogueLabel_->setVerticalAlignment(TextVAlignment::CENTER);
     
     // 获取当前场景
-    auto scene = Director::getInstance()->getRunningScene();
+    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
     if (!scene)
     {
         return;
@@ -388,11 +391,11 @@ void NpcBase::displayDialogueContent(int dialogueIndex)
     auto origin = Director::getInstance()->getVisibleOrigin();
     
     // 设置标签位置在对话背景上方中央
-    dialogueLabel_->setPosition(Vec2(origin.x + visibleSize.width / 3, origin.y + dialogueBackground_->getContentSize().height / 2 + 10));
+    dialogueLabel_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + dialogueBackground_->getContentSize().height / 2 + 10));
     
     // 将标签添加到场景
-    scene->addChild(dialogueLabel_, 101); // 设置比背景更高的层级
-    
+    dialogueLabel_->setCameraMask((uint16_t)CameraFlag::USER2, true);
+    scene->getGamera()->getUIRoot()->addChild(dialogueLabel_, 101);
     // 记录当前显示的对话索引
     currentDialogueIndex_ = dialogueIndex;
     

@@ -81,11 +81,11 @@ bool PlayerTestScene::init()
     setupInput();
 
 
-    auto slime1 = NPC2::create();
+    auto slime1 = Slime::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
-    auto slime2 = NPC1::create();
+    auto slime2 = Slime::create();
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 

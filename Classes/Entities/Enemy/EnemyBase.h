@@ -78,7 +78,7 @@ public:
     EnemyBase();
     virtual ~EnemyBase();
 
-    // 更新方法（建议子类重写，父类提供基础逻辑）
+    // 更新方法
     void update(float delta) override;
 
 
@@ -138,7 +138,7 @@ public:
     void addBehavior(const std::string& name, const Behavior& behavior);
     void removeBehavior(const std::string& name);
     bool hasBehavior(const std::string& name) const;
-    BehaviorResult Execute(const std::string& name, float delta);//??????
+    BehaviorResult Execute(const std::string& name, float delta);
 
 };
 

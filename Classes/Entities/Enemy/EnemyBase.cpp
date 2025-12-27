@@ -1,5 +1,6 @@
 #include "EnemyBase.h"
 #include <utility>
+#include<random>
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
     , physicsBody_(nullptr)
@@ -445,8 +446,15 @@ bool EnemyBase::hasBehavior(const std::string& name) const
 
 void EnemyBase::DropLootOnDeath()
 {
+    //“≈ŒÔ101-110£¨Ω±“1000£¨¡ÈªÍ2000
+    int random = 1000;
+    srand(static_cast<unsigned int>(time(0)));
+    random = (rand() % 40) + 101;
+    if (random > 110)
+        random = 1000 * (1 + (random >= 121) && (random <= 125));
+    
 
-    auto item = Items::createWithId(110);
+    auto item = Items::createWithId(random);
     if (item) {
         item->setPosition(this->getPosition());
 
