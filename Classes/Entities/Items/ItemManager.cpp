@@ -232,3 +232,21 @@ cocos2d::Sprite* ItemManager::createItemIcon(int itemId) {
     }
     return sprite;
 }
+
+// 安全重置
+void ItemManager::resetRuntimeData() {
+    // 清空背包
+    _ownedItemIds.clear();
+
+    // 重置金币 (假设初始为100，或者你可以设为0)
+    _gold = 100;
+
+    // 重置灵魂 (通常从存档读取)
+    _soul = SaveManager::getInstance()->getSoulCount();
+
+    // 重置状态标记
+    _hasNewItems = false;
+
+    // 注意：_itemConfigCache 不清空，避免重复IO读取
+    log("ItemManager: Runtime data reset. Config cache kept.");
+}

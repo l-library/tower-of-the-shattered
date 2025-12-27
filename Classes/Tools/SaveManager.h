@@ -63,6 +63,13 @@ public:
      */
     static bool hasSaveFile();
 
+    /**
+     * @brief 当前场景是否从菜单场景切换过来
+     * @return true=是，false=否
+     */
+    bool sceneComeFromMenu() { return _sceneComeFromMenu; }
+    void setsceneComeFromMenu(bool input) { _sceneComeFromMenu = input; }
+
 private:
     SaveManager(); // 私有构造
     ~SaveManager();
@@ -77,4 +84,5 @@ private:
     int _moveSpeedUp;
     int _skillState;
     int _soulCount;
+    bool _sceneComeFromMenu = false;
 };

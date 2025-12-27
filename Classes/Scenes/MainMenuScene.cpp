@@ -187,6 +187,7 @@ void MainMenuScene::onStartGame(Ref* sender)
     log("Start Game Clicked");
     // 新游戏，删除原存档（如果不存在存档此操作会创建一个存档）
     SaveManager::getInstance()->resetSaveData();
+    SaveManager::getInstance()->setsceneComeFromMenu(true);
     Director::getInstance()->replaceScene(PlayerTestScene::createScene());
 }
 
@@ -196,6 +197,7 @@ void MainMenuScene::onLoadGame(Ref* sender)
     // 确定是否存在存档
     if (SaveManager::getInstance()->hasSaveFile()) {
         AudioManager::getInstance()->playEffect("sounds/button_click.ogg");
+        SaveManager::getInstance()->setsceneComeFromMenu(true);
         Director::getInstance()->replaceScene(PlayerTestScene::createScene());
     }
 }

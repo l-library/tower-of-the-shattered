@@ -107,6 +107,12 @@ public:
      */
     cocos2d::Sprite* createItemIcon(int itemId);
 
+    /**
+    * @brief 重置玩家数据（背包、金币），但保留物品配置缓存
+    * @details 适用于游戏“重新开始”的情况，不重新读取JSON
+    */
+    void resetRuntimeData();
+
 private:
     ItemManager();
     ~ItemManager();

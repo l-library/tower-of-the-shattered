@@ -2,6 +2,9 @@
 #include "MainMenuScene.h"
 #include "../Audio/AudioManager.h"
 #include "Tools/ReadJson.h"
+#include "Entities/Items/ItemManager.h"
+#include "Maps/GameSceneManager.h"
+#include "Maps/RoomData.h"
 
 USING_NS_CC;
 
@@ -177,5 +180,7 @@ void PauseMenuScene::onReturnToMainMenu(Ref* sender)
     AudioManager::getInstance()->playEffect("sounds/button_click.ogg");
     log("Return to Main Menu Clicked");
     // 替换场景为主菜单场景
+    ItemManager::getInstance()->resetRuntimeData();
+    g_currentRoomId = 1;
     Director::getInstance()->replaceScene(TransitionFade::create(1.0f, MainMenuScene::createScene()));
 }

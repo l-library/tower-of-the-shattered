@@ -1,4 +1,4 @@
-#include "PlayerTestScene.h"
+ï»¿#include "PlayerTestScene.h"
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Maps/ChangeLevel.h"
@@ -7,6 +7,9 @@
 #include "Entities/Player/PlayerData.h"
 #include "Maps/RoomData.h"
 #include "Scenes/PauseMenuScene.h"
+#include "Tools/SaveManager.h"
+#include "Entities/Items/ItemManager.h"
+
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -47,18 +50,21 @@ static void problemLoading(const char* filename)
 
 bool PlayerTestScene::init()
 {
-    // Ìí¼ÓÒ»¸öÈ«ÆÁºÚÉ«ÕÚÕÖ£¬ZÐòÉèÎª×î¸ß
-    auto maskLayer = LayerColor::create(Color4B::BLACK);
-    this->addChild(maskLayer, 9999);
+    if (SaveManager::getInstance()->sceneComeFromMenu()) {
+        // æ·»åŠ ä¸€ä¸ªå…¨å±é»‘è‰²é®ç½©ï¼ŒZåºè®¾ä¸ºæœ€é«˜
+        auto maskLayer = LayerColor::create(Color4B::BLACK);
+        this->addChild(maskLayer, 9999);
 
-    // ÈÃÕÚÕÖ²ãµ­³ö
-    auto seq = Sequence::create(
-        DelayTime::create(0.1f), // ¿ÉÑ¡£º¶àµÈ0.1ÃëÈ·±£ÍòÎÞÒ»Ê§
-        FadeOut::create(1.0f),   // 1Ãëµ­³ö£¬ÏÔÊ¾ÓÎÏ·»­Ãæ
-        RemoveSelf::create(),    // ¶¯»­½áÊøºóÒÆ³ýÕÚÕÖ
-        nullptr
-    );
-    maskLayer->runAction(seq);
+        // è®©é®ç½©å±‚æ·¡å‡º
+        auto seq = Sequence::create(
+            DelayTime::create(0.1f),
+            FadeOut::create(1.0f),
+            RemoveSelf::create(),    // åŠ¨ç”»ç»“æŸåŽåˆ é™¤é®ç½©
+            nullptr
+        );
+        maskLayer->runAction(seq);
+        SaveManager::getInstance()->setsceneComeFromMenu(false);
+    }
 
     if (!Scene::initWithPhysics())
     {
@@ -77,62 +83,62 @@ bool PlayerTestScene::init()
     // map_1
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // Éú³ÉÅö×²Ïä
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
     buildDamageBox(this, map_1);
     this->addChild(map_1, -1);
 
-    // ¼ÓÔØ¶¯»­ÎÄ¼þ
+    // ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    // ´´½¨playerÀà
+    // ï¿½ï¿½ï¿½ï¿½playerï¿½ï¿½
     //_player = Player::createNode();
     //const Sprite* player_sprite = _player->getSprite();
     //Size contentSize = player_sprite->getContentSize();
     //_player->setPosition(_playerSpawnPosition);
     //_player->setScale(2 * 32 / contentSize.width);
-    //this->addChild(_player, 1);// äÖÈ¾player
-    // ´´½¨playerÀà
+    //this->addChild(_player, 1);// ï¿½ï¿½È¾player
+    // ï¿½ï¿½ï¿½ï¿½playerï¿½ï¿½
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
 
     auto playerData = PlayerData::getInstance();
 
-    // »ñÈ¡Íæ¼ÒÉú³ÉÎ»ÖÃ
+    // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
     cocos2d::Vec2 spawnPos = _playerSpawnPosition;
 
-    // ¼ì²éÊÇ·ñÓÐ±£´æµÄÊý¾Ý£¨À´×Ô´æµµ»ò´«ËÍ£©
+    
     if (playerData->hasSavedData())
     {
-        // Ê¹ÓÃ±£´æµÄÊý¾ÝÉèÖÃÍæ¼Ò×´Ì¬
+        
         _player->setHealth(playerData->getSavedHealth());
         _player->setMagic(playerData->getSavedMagic());
 
-        CCLOG("Ó¦ÓÃ±£´æÊý¾Ý: ÑªÁ¿=%.1f, Ä§Á¦=%.1f",
+        CCLOG("Ó¦ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: Ñªï¿½ï¿½=%.1f, Ä§ï¿½ï¿½=%.1f",
             playerData->getSavedHealth(), playerData->getSavedMagic());
 
-        // Ê¹ÓÃÍê±£´æÊý¾ÝºóÇå³ý£¬±ÜÃâÖØ¸´Ê¹ÓÃ
+        
         playerData->clearSavedData();
     }
     else 
     {
-        // Ã»ÓÐ±£´æµÄÊý¾Ý£¬Ê¹ÓÃÄ¬ÈÏ×´Ì¬
+        
         _player->setHealth(100.0);
         _player->setMagic(100.0);
-        CCLOG("Ê¹ÓÃÄ¬ÈÏ×´Ì¬");
+        CCLOG("Ê¹ï¿½ï¿½Ä¬ï¿½ï¿½×´Ì¬");
     }
 
-    // ÉèÖÃÍæ¼ÒÎ»ÖÃ£¬Ê¹ÓÃÄ¬ÈÏ»ò±£´æµÄÉú³Éµã
+    
     _player->setPosition(spawnPos);
     _player->setScale(2 * 32 / contentSize.width);
     _player->setName("player");
 
 
-    this->addChild(_player, 1);// äÖÈ¾player
+    this->addChild(_player, 1);// ï¿½ï¿½È¾player
     setupInput();
 
     auto slime1 = NPC2::create();
@@ -143,39 +149,41 @@ bool PlayerTestScene::init()
     slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
     this->addChild(slime2, 1);
 
-    // ³õÊ¼»¯ÉãÏñ»úºÍ UI ¿ØÖÆÆ÷
+    setupCollisionListener(this);
+
+
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // ÒòÎªÊÇ Ref ÀàÐÍ£¬ÐèÒª retain ·ÀÖ¹±»×Ô¶¯ÊÍ·Å
+    _cameraController->retain(); 
     this->scheduleUpdate();
 
-    // ²¥·Å±³¾°ÒôÀÖ
+    
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
-    // ³õÊ¼»¯ÎïÆ·¹ÜÀíÆ÷
+    
     ItemManager::getInstance()->init("config/items.json");
-    // Ê¾Àý£ºÒÔÏÂ³õÊ¼»¯ÁËÒ»¸öÎïÆ·¹©²âÊÔ ÎïÆ·id107
-    auto item = Items::createWithId(2000);
+    
+    auto item = Items::createWithId(110);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
-        // Ä£Äâ±¬³öÀ´µÄÐ§¹û£º¸øÒ»¸öÏòÉÏµÄ³õËÙ¶È
+        
         item->getPhysicsBody()->setVelocity(Vec2(0, 200));
 
-        this->addChild(item, 5); // Z-order ÔÚ±³¾°Ö®ÉÏ
+        this->addChild(item, 5);
     }
-    // Ê¾Àý£ºÔö¼Ó½ð±Ò
-    ItemManager::getInstance()->addGold(50);
     return true;
 }
 
 void PlayerTestScene::update(float dt) {
-    // Ã¿Ò»Ö¡Ö»ÐèÒªÍ¨Öª¿ØÖÆÆ÷¸üÐÂ
+    // Ã¿Ò»Ö¡Ö»ï¿½ï¿½ÒªÍ¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     _cameraController->update(dt);
+    if (_player->getCurrentState() == "dead")
+        gameOver();
 }
 
 void PlayerTestScene::setupInput() {
-    // ´´½¨ÊäÈë¼àÌý
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
@@ -241,4 +249,70 @@ void PlayerTestScene::setupInput() {
 PlayerTestScene::~PlayerTestScene()
 {
     _cameraController->release();
+}
+
+void PlayerTestScene::gameOver()
+{
+    // é˜²æ­¢æ¯ä¸€å¸§é‡å¤è°ƒç”¨
+    static bool isGameOverProcessing = false;
+    if (isGameOverProcessing) return;
+    isGameOverProcessing = true;
+
+    // ç§»é™¤æ‰€æœ‰è¾“å…¥ç›‘å¬
+    _eventDispatcher->removeEventListenersForTarget(this);
+
+    // åœæ­¢ç‰©ç†ä¸–ç•Œçš„æ¨¡æ‹Ÿ
+    this->getPhysicsWorld()->setAutoStep(false);
+
+    // åœæ­¢èƒŒæ™¯éŸ³ä¹
+    AudioManager::getInstance()->pauseBGM();
+
+    // åˆ›å»ºæ­»äº¡æç¤º Sprite
+    Sprite* deadSprite = Sprite::create("player/dead.png");
+
+    // é‡ç½®itemMananger
+    ItemManager::getInstance()->resetRuntimeData();
+
+    if (deadSprite)
+    {
+        //ä»¥æ­¤ç¡®ä¿å›¾ç‰‡æ˜¾ç¤ºåœ¨å½“å‰ç›¸æœºçš„è§†é‡Žä¸­å¿ƒ
+        auto visibleSize = Director::getInstance()->getVisibleSize();
+        deadSprite->setPosition(visibleSize / 2);
+        deadSprite->setAnchorPoint(Vec2(0.5f,0.5f));
+        deadSprite->setOpacity(0); // åˆå§‹å®Œå…¨é€æ˜Ž
+        deadSprite->setScale(0.5f); // åˆå§‹ç¨å°ï¼Œé…åˆæ”¾å¤§æ•ˆæžœ
+        deadSprite->setCameraMask((uint16_t)CameraFlag::USER2, true);
+        _cameraController->getUIRoot()->addChild(deadSprite, 99999);
+
+        // å®šä¹‰åŠ¨ç”»åºåˆ—
+        auto spawnAction = Spawn::create(
+            FadeIn::create(2.0f),           // 2ç§’æ·¡å…¥
+            ScaleTo::create(2.0f, 2.0f),    // åŒæ—¶æ”¾å¤§åˆ°åŽŸæ¯”ä¾‹
+            nullptr
+        );
+
+        auto sequence = Sequence::create(
+            spawnAction,
+            DelayTime::create(2.0f),
+            CallFunc::create([this]() {
+                // é‡ç½®é™æ€å˜é‡
+                isGameOverProcessing = false;
+                AudioManager::getInstance()->playEffect("sounds/Death.ogg");
+                // åˆ›å»ºå¹¶åˆ‡æ¢åˆ°èœå•åœºæ™¯ï¼Œä½¿ç”¨æ·¡å‡ºæ·¡å…¥è½¬åœº
+                auto menuScene = MainMenuScene::createScene();
+                Director::getInstance()->replaceScene(TransitionFade::create(0.5f, menuScene, Color3B::BLACK));
+                }),
+            nullptr
+        );
+
+        deadSprite->runAction(sequence);
+    }
+    else
+    {
+        // å¦‚æžœå›¾ç‰‡åŠ è½½å¤±è´¥ï¼Œç›´æŽ¥åˆ‡æ¢åœºæ™¯
+        log("Error: player/dead.png not found!");
+        isGameOverProcessing = false;
+        auto menuScene = MainMenuScene::createScene();
+        Director::getInstance()->replaceScene(menuScene);
+    }
 }

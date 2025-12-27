@@ -88,22 +88,26 @@ void AudioManager::stopById(int audio_id){
 }
 
 void AudioManager::playIntroLoopBGM(const std::string& introFile, const std::string& loopFile) {
-    // 1. 先停止当前正在播放的BGM
+    if (_filename == loopFile)
+        return;
+    // 先停止当前正在播放的BGM
     stopBGM();
 
-    // 2. 关键：预加载两个文件，确保无缝衔接
+    // 关键：预加载两个文件，确保无缝衔接
     // 注意：preload 是异步的，但在本地文件较小的情况下通常很快。
     // 如果文件很大，建议在场景进入前（Loading界面）就统一preload。
     AudioEngine::preload(introFile);
     AudioEngine::preload(loopFile);
 
-    // 3. 播放前奏 (不循环)
+    // 播放前奏 (不循环)
     _bgmID = AudioEngine::play2d(introFile, false, _bgmVolume);
 
-    // 4. 设置播放结束的回调
+    // 设置播放结束的回调
     // 使用 lambda 表达式捕获 this 指针和 loopFile 路径
     // 注意：这里捕获当前的 _bgmID (introID) 用于校验
     int currentIntroID = _bgmID;
+
+    _filename = loopFile;
 
     AudioEngine::setFinishCallback(_bgmID, [this, loopFile, currentIntroID](int id, const std::string& filePath) {
 
