@@ -22,7 +22,7 @@ void ItemManager::destroyInstance() {
     }
 }
 
-ItemManager::ItemManager() : _gold(100) {}
+ItemManager::ItemManager() : _gold(100),_soul(0) {}
 
 ItemManager::~ItemManager() {
     _itemConfigCache.clear();
@@ -197,6 +197,19 @@ void ItemManager::addGold(int amount) {
 bool ItemManager::spendGold(int amount) {
     if (_gold >= amount) {
         _gold -= amount;
+        return true;
+    }
+    return false;
+}
+
+// ---- Áé»ê ----
+void ItemManager::addSoul(int amount) {
+    _soul += amount;
+}
+
+bool ItemManager::spendSoul(int amount) {
+    if (_soul >= amount) {
+        _soul -= amount;
         return true;
     }
     return false;

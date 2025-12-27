@@ -1,4 +1,5 @@
 #include "Boss1.h"
+#include "../../../Scenes/GameCamera.h"
 
 using namespace cocos2d;
 
@@ -86,10 +87,10 @@ bool Boss1::init()
     
     // 设置Boss1的基本属性
     this->setMaxVitality(1000); // 高生命值
-    this->setCurrentVitality(100);
+    this->setCurrentVitality(1000);
     this->setStaggerResistance(500); // 高韧性
     this->setBaseAttackPower(10);
-    this->setDefense(10); // 高防御力
+    this->setDefense(1); // 高防御力
     
     // 设置碰撞箱信息
     CollisionBoxInfo collisionInfo;
@@ -1109,6 +1110,9 @@ void Boss1::initHealthBar()
         return;
     }
     
+    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
+    if (!scene)
+        return;
     // 获取窗口大小
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -1121,9 +1125,9 @@ void Boss1::initHealthBar()
     healthBarBorder_->setOpacity(200);
     
     // 设置位置：屏幕顶部中间
-    healthBarBorder_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 50));
-    if (this->getParent() != nullptr)
-        this->getParent()->addChild(healthBarBorder_, 1000); // 添加到场景中，使用高Z轴确保显示在最上层
+    healthBarBorder_->setPosition(Vec2(origin.x + visibleSize.width / 2 + 100, origin.y + visibleSize.height - 50));
+    healthBarBorder_->setCameraMask((uint16_t)CameraFlag::USER2, true);
+    scene->getGamera()->getUIRoot()->addChild(healthBarBorder_, 1000); // 添加到场景中，使用高Z轴确保显示在最上层
     
     // 创建Boss的血条
     auto healthBarSprite = Sprite::create();
@@ -1147,16 +1151,15 @@ void Boss1::initHealthBar()
     // 设置位置：屏幕顶部中间
     if (clone_ != nullptr) {
         // 分身血条位置更低一些
-        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 80));
+        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2 + 100, origin.y + visibleSize.height - 80));
     } else {
         // 本体血条位置
-        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - 50));
+        healthBar_->setPosition(Vec2(origin.x + visibleSize.width / 2 + 100, origin.y + visibleSize.height - 50));
     }
     
     // 添加到父节点（如果存在）
-    if (this->getParent() != nullptr) {
-        this->getParent()->addChild(healthBar_, 1001);
-    }
+    healthBar_->setCameraMask((uint16_t)CameraFlag::USER2, true);
+    scene->getGamera()->getUIRoot()->addChild(healthBar_, 1001);
     
     // 标记血条已创建
     isHealthBarCreated_ = true;

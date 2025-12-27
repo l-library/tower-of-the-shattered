@@ -150,8 +150,7 @@ void Player::initPhysics()
     _physicsBody->setCollisionBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK);
     _physicsBody->setContactTestBitmask(WALL_MASK | BORDER_MASK | ENEMY_MASK | DAMAGE_WALL_MASK | ENEMY_BULLET_MASK | NPC_MASK | SENSOR_MASK | ITEM_MASK);
     _originalMask = WALL_MASK | BORDER_MASK | ENEMY_MASK | ENEMY_BULLET_MASK| NPC_MASK | SENSOR_MASK | ITEM_MASK;
-    _dodgeMask = WALL_MASK | BORDER_MASK | ITEM_MASK;
-
+    _dodgeMask = WALL_MASK | BORDER_MASK | ITEM_MASK | SENSOR_MASK;
     //给主身体一个Tag
     _physicsBody->getShape(0)->setTag(TAG_BODY);
 

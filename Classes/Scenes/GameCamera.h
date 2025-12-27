@@ -14,6 +14,8 @@ public:
 
     void update(float dt);
 
+    cocos2d::Node* getUIRoot() { return _uiRoot; }
+
 private:
     GameCamera();
     bool init(cocos2d::Scene* scene, Player* player, cocos2d::TMXTiledMap* map);
@@ -35,6 +37,7 @@ private:
     void initBar();
     void initSkillIcons();
     void initGold();
+    void initSoul();
     void initItemIcons();
 
     // --- 内部引用 ---
@@ -53,6 +56,7 @@ private:
     cocos2d::Label* _mpLabel;
 
     cocos2d::Label* _goldLabel;
+    cocos2d::Label* _soulLabel;
 
     cocos2d::Vec2 _nextIconPosition; // 存放下一个物品的坐标
     float _itemSize = 32.0f; // 物品图标大小

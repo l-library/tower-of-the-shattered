@@ -10,7 +10,7 @@ SkillArcaneJet::SkillArcaneJet()
         "skill-icons/ArcaneJet.png",  // 图标名称
         30.0f,                  // 消耗魔法
         10.0f,                   // 冷却时间
-        100.0f,                  // 伤害
+        5.0f,                  // 伤害
         300.0f                  // 速度
         })
 {

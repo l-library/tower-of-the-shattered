@@ -203,11 +203,11 @@ void EnemyBase::updateAI(float delta)
         
         // 更新后摇计时器
         recoveryTimer_ += delta;
-        sprite_->setColor(Color3B(150, 255, 150));
+        /*sprite_->setColor(Color3B(150, 255, 150));*/
         // 如果后摇时间结束，进入IDLE状态
         if (recoveryTimer_ >= recoveryDuration_)
         {
-            sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
+            //sprite_->setColor(Color3B(255, 255, 255)); // 恢复默认颜色
             currentState_ = EnemyState::IDLE;
         }
     }
