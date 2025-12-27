@@ -2,8 +2,7 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Roomdata.h"
-
-std::unordered_map<int, RoomData> g_roomDatabase;
+#include "Entities/Player/PlayerData.h"
 
 void initRoomDatabase()
 {
@@ -217,6 +216,83 @@ void switchLevelBox(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
     }
 }
 
+// 生成陷阱碰撞箱
+void buildDamageBox(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
+{
+    // 多边形碰撞
+    auto mapsize = map->getMapSize();
+    auto tilesize = map->getTileSize();
+    map->setScale(MAP_SIZE);
+
+    TMXObjectGroup* objectGroup = map->getObjectGroup("damage");
+    if (objectGroup)
+    {
+        // 获取对象组中的所有对象
+        ValueVector objects = objectGroup->getObjects();
+
+        for (const auto& objValue : objects)
+        {
+            ValueMap objMap = objValue.asValueMap();
+
+            // 检查是否存在points
+            if (objMap.count("points"))
+            {
+                ValueVector points = objMap.at("points").asValueVector();
+
+                // 获取坐标
+                std::vector<Vec2> polygonVertices;
+                for (const auto& pointValue : points)
+                {
+                    ValueMap pointMap = pointValue.asValueMap();
+                    float x = pointMap.at("x").asFloat();
+                    float y = -pointMap.at("y").asFloat();
+
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+
+                    Vec2 worldPoint(objectX + x, objectY + y - 16 / 2);
+                    polygonVertices.push_back(MAP_SIZE * worldPoint);
+                }
+
+                auto physicsBody = PhysicsBody::createPolygon(polygonVertices.data(),
+                    polygonVertices.size());
+
+                if (physicsBody)
+                {
+                    // 设置物理体的属性
+                    physicsBody->setDynamic(false);
+                    float objectX = objMap.at("x").asFloat();
+                    float objectY = objMap.at("y").asFloat();
+                    Vec2 objectPos(objectX, objectY);
+
+                    std::vector<Vec2> localVertices;
+                    for (const auto& worldPoint : polygonVertices) {
+                        localVertices.push_back(worldPoint - objectPos);
+                    }
+
+                    auto localPhysicsBody = PhysicsBody::createPolygon(localVertices.data(),
+                        localVertices.size());
+
+                    localPhysicsBody->setDynamic(false);
+
+                    // 其他属性设置
+                    auto polygonNode = Node::create();
+                    polygonNode->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+                    // 设置掩码
+                    localPhysicsBody->setCategoryBitmask(WALL_MASK | DAMAGE_WALL_MASK);
+                    localPhysicsBody->setCollisionBitmask(PLAYER_MASK);
+                    localPhysicsBody->setContactTestBitmask(PLAYER_MASK);
+
+                    polygonNode->setPhysicsBody(localPhysicsBody);
+                    polygonNode->setPosition(objectPos);
+
+                    scene->addChild(polygonNode, 1);
+                }
+            }
+        }
+    }
+}
+
 // 传送房间
 bool exitRoom(int currentRoomId, const std::string& exitDir)
 {
@@ -294,10 +370,26 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
 void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode)
 {
     std::string sensorName = sensorNode->getName();
-    if (exitRoom(g_currentRoomId, sensorName))
-        log("exit %d from [%s]", g_currentRoomId, sensorName.c_str());
-    else 
-        log("room %d does not have [%s]", g_currentRoomId, sensorName.c_str());
+
+    // 保存玩家当前状态
+    auto player = scene->getChildByName<Player*>("player");
+    if (player) {
+        PlayerData::getInstance()->savePlayerState(
+            player->getHealth(),
+            player->getMagic(),
+            player->getPosition(),
+            static_cast<int>(player->getDirection())
+        );
+
+        CCLOG("触碰传感器 %s，保存玩家状态", sensorName.c_str());
+    }
+    // 切换房间
+    if (exitRoom(g_currentRoomId, sensorName)) {
+        log("从房间 %d 通过 [%s] 出口离开", g_currentRoomId, sensorName.c_str());
+    }
+    else {
+        log("房间 %d 没有 [%s] 出口", g_currentRoomId, sensorName.c_str());
+    }
 }
 
 // 检测碰撞

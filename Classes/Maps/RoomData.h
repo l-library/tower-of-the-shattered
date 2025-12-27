@@ -13,7 +13,7 @@ struct Exit {
 };
 
 // 对应入口
-std::string targetEnterID(const std::string& enter)
+static inline std::string targetEnterID(const std::string& enter)
 {
     if (enter == UP)
         return DN;
@@ -66,23 +66,4 @@ struct RoomData {
 };
 
 extern std::unordered_map<int, RoomData> g_roomDatabase;
-extern int g_currentRoomId = 1; // 当前所在房间ID
-
-cocos2d::Vec2 RoomData::targetEnterLocation(const std::string& enter)
-{
-    for (const auto& pair : exits)
-    {
-        const Exit& exit = pair.second;
-        if (exit.targetEnterFrom == enter && exit.isActive)
-        {
-            // 直接使用全局数据库
-            auto targetIt = g_roomDatabase.find(exit.targetRoomId);
-            if (targetIt != g_roomDatabase.end())
-            {
-                const RoomData& targetRoom = targetIt->second;
-                return exit.spawnPosition; // 返回存储的出生点坐标
-            }
-        }
-    }
-    return cocos2d::Vec2::ZERO;
-}
+extern int g_currentRoomId; // 当前所在房间ID

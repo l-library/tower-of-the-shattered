@@ -4,6 +4,8 @@
 #include "Maps/ChangeLevel.h"
 #include "Entities/NPC/Npc2.h"
 #include "Entities/NPC/Npc1.h"
+#include "Entities/Player/PlayerData.h"
+#include "Maps/RoomData.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -64,6 +66,7 @@ bool PlayerTestScene::init()
     // 生成碰撞箱
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
+    buildDamageBox(this, map_1);
     this->addChild(map_1, -1);
 
     // 加载动画文件
@@ -71,17 +74,53 @@ bool PlayerTestScene::init()
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    // 创建player类
+    // ����player��
+    //_player = Player::createNode();
+    //const Sprite* player_sprite = _player->getSprite();
+    //Size contentSize = player_sprite->getContentSize();
+    //_player->setPosition(_playerSpawnPosition);
+    //_player->setScale(2 * 32 / contentSize.width);
+    //this->addChild(_player, 1);// ��Ⱦplayer
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
-    _player->setPosition(_playerSpawnPosition);
+
+    auto playerData = PlayerData::getInstance();
+
+    // ��������λ��
+    cocos2d::Vec2 spawnPos = _playerSpawnPosition;
+
+    // ����б�������״̬��ʹ�ñ��������
+    if (playerData->hasSavedData())
+    {
+        // ʹ�ñ����Ѫ��������
+        _player->setHealth(playerData->getSavedHealth());
+        _player->setMagic(playerData->getSavedMagic());
+
+        CCLOG("Ӧ�ñ����״̬: Ѫ��=%.1f, ����=%.1f",
+            playerData->getSavedHealth(), playerData->getSavedMagic());
+
+        // �����������ݣ������´δ���ʹ��
+        playerData->clearSavedData();
+    }
+    else 
+    {
+        // û�б�������ݣ���Ϸ�տ�ʼ���ֶ����ã�
+        _player->setHealth(100.0);
+        _player->setMagic(100.0);
+        CCLOG("ʹ��Ĭ��״̬");
+    }
+
+    // ����λ�ã�����ʹ�ô����������λ�ã�
+    _player->setPosition(spawnPos);
     _player->setScale(2 * 32 / contentSize.width);
-    this->addChild(_player, 1);// 渲染player
+    _player->setName("player");
+
+    this->addChild(_player, 1);
+
     setupInput();
 
-
-    auto slime1 = Slime::create();
+    auto slime1 = NPC2::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
@@ -91,28 +130,40 @@ bool PlayerTestScene::init()
 
     setupCollisionListener(this);
 
-    // 初始化摄像机和 UI 控制器
+    // ��ʼ��������� UI ������
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // 因为是 Ref 类型，需要 retain 防止被自动释放
+    _cameraController->retain(); // ��Ϊ�� Ref ���ͣ���Ҫ retain ��ֹ���Զ��ͷ�
     this->scheduleUpdate();
 
-    // 播放背景音乐
+    // ���ű�������
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
-    // 初始化物品管理器
+
+    setupCollisionListener(this);
+
+    // ��ʼ��������� UI ������
+    _cameraController = GameCamera::create(this, _player, map_1);
+    _cameraController->retain(); // ��Ϊ�� Ref ���ͣ���Ҫ retain ��ֹ���Զ��ͷ�
+    this->scheduleUpdate();
+
+    // ���ű�������
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
+
+    // ��ʼ����Ʒ������
     ItemManager::getInstance()->init("config/items.json");
-    // 示例：以下初始化了一个物品供测试 物品id107
-    auto item = Items::createWithId(2000);
+    // ʾ�������³�ʼ����һ����Ʒ������ ��Ʒid107
+    auto item = Items::createWithId(110);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
-        // 模拟爆出来的效果：给一个向上的初速度
+        // ģ�ⱬ������Ч������һ�����ϵĳ��ٶ�
         item->getPhysicsBody()->setVelocity(Vec2(0, 200));
 
-        this->addChild(item, 5); // Z-order 在背景之上
+        this->addChild(item, 5); // Z-order �ڱ���֮��
     }
-    // 示例：增加金币
+    // ʾ�������ӽ��
     ItemManager::getInstance()->addGold(50);
     return true;
 }
