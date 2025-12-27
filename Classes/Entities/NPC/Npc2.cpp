@@ -77,10 +77,10 @@ bool NPC2::init()
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
         DialogueEntry(ReadJson::getString(NPC2Path,"2"),
-                     [this]() 
+                     [this]()
             {
-                if (!has_enough_soul)
-                    currentDialogueIndex_ = 7;
+                if (ItemManager::getInstance()->getSoul() < 100)
+                    currentDialogueIndex_ = 10;
             },
                      []() {},
                      []() {},
@@ -89,24 +89,75 @@ bool NPC2::init()
                      nullptr,
                      []() {},
                      []() {},
-                     []() {}),        
+                     [this]() {
+
+            }),
         DialogueEntry(ReadJson::getString(NPC2Path,"4"),
-                     nullptr,
-                     []() {},
-                     []() {},
-                     []() {}),
+                     []() {    ItemManager::getInstance()->spendSoul(100); },
+                     [this]()
+            {//强化战斗
+
+                player_->modifyAttack(100);
+                currentDialogueIndex_ = 3;
+            },
+                     [this]()
+            {//强化机动
+
+                player_->modifyMove(100);
+                currentDialogueIndex_ = 4;
+            },
+                     [this]()
+            {//解锁技能
+
+               if (!player_->isUnlocked("IceSpear"))
+               {
+                   player_->getSkillManager()->getSkill("IceSpear")->setUnlocked(true);
+                   currentDialogueIndex_ = 5;
+               }
+               else if (!player_->isUnlocked("ArcaneShield"))
+               {
+                   player_->getSkillManager()->getSkill("ArcaneShield")->setUnlocked(true);
+                   currentDialogueIndex_ = 6;
+               }
+               else if (!player_->isUnlocked("ArcaneJet"))
+               {
+                   player_->getSkillManager()->getSkill("ArcaneJet")->setUnlocked(true);
+                   currentDialogueIndex_ = 7;
+               }
+               else
+               {
+                   currentDialogueIndex_ = 8;
+               }
+
+
+            }),
         DialogueEntry(ReadJson::getString(NPC2Path,"5"),
-                     nullptr,
+                     [this]() {   currentDialogueIndex_ = 10; },
                      []() {},
                      []() {},
                      []() {}),
         DialogueEntry(ReadJson::getString(NPC2Path,"6"),
-                     nullptr,
+                     [this]() {   currentDialogueIndex_ = 10; },
                      []() {},
                      []() {},
                      []() {}),
         DialogueEntry(ReadJson::getString(NPC2Path,"7"),
-                     nullptr,
+                     [this]() {   currentDialogueIndex_ = 10; },
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC2Path,"8"),
+                     [this]() {   currentDialogueIndex_ = 10; },
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC2Path,"9"),
+                     [this]() {   currentDialogueIndex_ = 10; },
+                     []() {},
+                     []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC2Path,"10"),
+                     []() {},
                      []() {},
                      []() {},
                      []() {})

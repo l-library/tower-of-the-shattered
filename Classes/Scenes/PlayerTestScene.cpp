@@ -2,7 +2,8 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Maps/ChangeLevel.h"
-#include "Entities/NPC/Npc3.h"
+#include "Entities/NPC/Npc2.h"
+#include "Entities/NPC/Npc1.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -80,13 +81,13 @@ bool PlayerTestScene::init()
     setupInput();
 
 
-    auto slime1 = NPC3::create();
+    auto slime1 = NPC2::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
-    //auto slime2 = Slime::create();
-    //slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
-    //this->addChild(slime2, 1);
+    auto slime2 = NPC1::create();
+    slime2->setPosition(Vec2(visibleSize.width * 3 / 4 + origin.x, visibleSize.height / 2 + origin.y));
+    this->addChild(slime2, 1);
 
     setupCollisionListener(this);
 
