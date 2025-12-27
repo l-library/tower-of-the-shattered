@@ -141,7 +141,7 @@ bool PlayerTestScene::init()
     this->addChild(_player, 1);// ��Ⱦplayer
     setupInput();
 
-    auto slime1 = NPC2::create();
+    auto slime1 = Slime::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     

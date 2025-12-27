@@ -85,7 +85,7 @@ bool EnemyAi::isPlayerVisible(EnemyBase* enemy)
         }
         return -1.0f; // 继续检测
     }, enemy->getPosition(), player->getPosition(), nullptr);
-    
+    hasWall = false;
     // 如果没有墙壁阻挡，则玩家可见
     return !hasWall;
 }
