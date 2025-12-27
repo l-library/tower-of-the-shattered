@@ -104,7 +104,15 @@ bool NPC1::init()
                      nullptr,
                      []() {},
                      []() {},
+                     []() {}),
+        DialogueEntry(ReadJson::getString(NPC1Path,"8"),
+                     nullptr,
+                     [this]() {
+                ItemManager::getInstance()->addSoul(1000);
+            },
+                     []() {},
                      []() {})
+
     };
     this->setDialogues(dialogues);
     
@@ -126,7 +134,7 @@ void NPC1::handlePlayerInteraction()
 
 void NPC1::update(float delta) //直接说话（新手引导）
 {
-    if (!hasTalked)
+    if (!hasTalked&&this->player_)
     {
         isDialogueDisplaying_ = true;
         handlePlayerInteraction();

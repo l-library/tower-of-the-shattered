@@ -5,6 +5,7 @@ USING_NS_CC;
 
 NPC2::NPC2()
 {
+    has_enough_soul = false;
 }
 
 NPC2::~NPC2()
@@ -75,8 +76,12 @@ bool NPC2::init()
                      []() {}, // 按键1回调
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
-        /*DialogueEntry(ReadJson::getString(NPC2Path,"2"),
-                     nullptr,
+        DialogueEntry(ReadJson::getString(NPC2Path,"2"),
+                     [this]() 
+            {
+                if (!has_enough_soul)
+                    currentDialogueIndex_ = 7;
+            },
                      []() {},
                      []() {},
                      []() {}),
@@ -104,7 +109,7 @@ bool NPC2::init()
                      nullptr,
                      []() {},
                      []() {},
-                     []() {})*/
+                     []() {})
     };
     this->setDialogues(dialogues);
     

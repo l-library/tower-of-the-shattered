@@ -17,6 +17,8 @@ public:
 protected:
     // 实现玩家交互方法
     void handlePlayerInteraction() override;
+
+    bool has_enough_soul;
 };
 
 #endif // __NPC2_H__

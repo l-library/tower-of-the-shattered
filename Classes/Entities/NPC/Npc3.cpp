@@ -112,7 +112,11 @@ bool NPC3::init()
                     }
                 }
             },
-                     [this]() {}),
+                     [this]() 
+            {
+                ItemManager::getInstance()->addSoul(goldspent_ / 10);
+
+            }),
         DialogueEntry(ReadJson::getString(NPC3Path,"6"),
                      [this]() 
             {
