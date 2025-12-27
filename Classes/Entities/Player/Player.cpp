@@ -930,3 +930,19 @@ const std::string Player::getCurrentState() const
     }
     return current;
 }
+
+void Player::modifyAttack(double value)
+{
+    modifyAttackDamage(value * 0.1);
+    modifyMaxHealth(value);
+    modifyMaxMagic(value);
+    modifyMagicRestore(value * 0.002);
+    setSkillDamage(_skillDamage + value * 0.1);
+}
+
+void Player::modifyMove(double value)
+{
+    modifySpeed(value);
+    modifyJumpForce(value);
+    modifyDodgeTime(value * 0.002);
+}

@@ -156,7 +156,10 @@ public:
 	void setSkillDamage(double skillDamage) { _skillDamage = skillDamage; }
 	void setDoubleDODGE(double value) { _maxDodgeTimes+= static_cast<int>(value); }
 
-	//利用宏生成一个create函数
+	// 主角属性提高，用于商店
+	void modifyAttack(double value);
+	void modifyMove(double value);
+	// 利用宏生成一个create函数
 	CREATE_FUNC(Player);
 
 protected:
