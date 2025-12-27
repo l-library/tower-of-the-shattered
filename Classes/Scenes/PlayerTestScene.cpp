@@ -2,8 +2,7 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Maps/ChangeLevel.h"
-#include "Entities/NPC/Npc2.h"
-#include "Entities/Enemy/Bosses/Boss1.h"
+#include "Entities/NPC/Npc3.h"
 USING_NS_CC;
 
 #define COOL_DOWN 900
@@ -61,27 +60,27 @@ bool PlayerTestScene::init()
     // map_1
     auto map_1 = TMXTiledMap::create(_currentMapFile);
 
-    // Éú³ÉÅö×²Ïä
+    // ç”Ÿæˆç¢°æ’žç®±
     buildPolyPhysicsFromLayer(this, map_1);
     switchLevelBox(this, map_1);
     this->addChild(map_1, -1);
 
-    // ¼ÓÔØ¶¯»­ÎÄ¼þ
+    // åŠ è½½åŠ¨ç”»æ–‡ä»¶
     auto cache = AnimationCache::getInstance();
     cache->addAnimationsWithFile("player/PlayerAnimation.plist");
     cache->addAnimationsWithFile("player/PlayerAttackBullet.plist");
 
-    // ´´½¨playerÀà
+    // åˆ›å»ºplayerç±»
     _player = Player::createNode();
     const Sprite* player_sprite = _player->getSprite();
     Size contentSize = player_sprite->getContentSize();
     _player->setPosition(_playerSpawnPosition);
     _player->setScale(2 * 32 / contentSize.width);
-    this->addChild(_player, 1);// äÖÈ¾player
+    this->addChild(_player, 1);// æ¸²æŸ“player
     setupInput();
 
 
-    auto slime1 = Boss1::create();
+    auto slime1 = NPC3::create();
     slime1->setPosition(_player->getPosition());
     this->addChild(slime1, 1);
     
@@ -91,39 +90,39 @@ bool PlayerTestScene::init()
 
     setupCollisionListener(this);
 
-    // ³õÊ¼»¯ÉãÏñ»úºÍ UI ¿ØÖÆÆ÷
+    // åˆå§‹åŒ–æ‘„åƒæœºå’Œ UI æŽ§åˆ¶å™¨
     _cameraController = GameCamera::create(this, _player, map_1);
-    _cameraController->retain(); // ÒòÎªÊÇ Ref ÀàÐÍ£¬ÐèÒª retain ·ÀÖ¹±»×Ô¶¯ÊÍ·Å
+    _cameraController->retain(); // å› ä¸ºæ˜¯ Ref ç±»åž‹ï¼Œéœ€è¦ retain é˜²æ­¢è¢«è‡ªåŠ¨é‡Šæ”¾
     this->scheduleUpdate();
 
-    // ²¥·Å±³¾°ÒôÀÖ
+    // æ’­æ”¾èƒŒæ™¯éŸ³ä¹
     AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
     AudioManager::getInstance()->setBGMVolume(0.9f);
 
-    // ³õÊ¼»¯ÎïÆ·¹ÜÀíÆ÷
+    // åˆå§‹åŒ–ç‰©å“ç®¡ç†å™¨
     ItemManager::getInstance()->init("config/items.json");
-    // Ê¾Àý£ºÒÔÏÂ³õÊ¼»¯ÁËÒ»¸öÎïÆ·¹©²âÊÔ ÎïÆ·id107
+    // ç¤ºä¾‹ï¼šä»¥ä¸‹åˆå§‹åŒ–äº†ä¸€ä¸ªç‰©å“ä¾›æµ‹è¯• ç‰©å“id107
     auto item = Items::createWithId(2000);
     if (item) {
         item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
-        // Ä£Äâ±¬³öÀ´µÄÐ§¹û£º¸øÒ»¸öÏòÉÏµÄ³õËÙ¶È
+        // æ¨¡æ‹Ÿçˆ†å‡ºæ¥çš„æ•ˆæžœï¼šç»™ä¸€ä¸ªå‘ä¸Šçš„åˆé€Ÿåº¦
         item->getPhysicsBody()->setVelocity(Vec2(0, 200));
 
-        this->addChild(item, 5); // Z-order ÔÚ±³¾°Ö®ÉÏ
+        this->addChild(item, 5); // Z-order åœ¨èƒŒæ™¯ä¹‹ä¸Š
     }
-    // Ê¾Àý£ºÔö¼Ó½ð±Ò
+    // ç¤ºä¾‹ï¼šå¢žåŠ é‡‘å¸
     ItemManager::getInstance()->addGold(50);
     return true;
 }
 
 void PlayerTestScene::update(float dt) {
-    // Ã¿Ò»Ö¡Ö»ÐèÒªÍ¨Öª¿ØÖÆÆ÷¸üÐÂ
+    // æ¯ä¸€å¸§åªéœ€è¦é€šçŸ¥æŽ§åˆ¶å™¨æ›´æ–°
     _cameraController->update(dt);
 }
 
 void PlayerTestScene::setupInput() {
-    // ´´½¨ÊäÈë¼àÌý
+    // åˆ›å»ºè¾“å…¥ç›‘å¬
     auto keyboardListener = EventListenerKeyboard::create();
 
     keyboardListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {

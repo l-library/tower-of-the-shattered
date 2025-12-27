@@ -1,7 +1,5 @@
 #include "NPC3.h"
-#include "TowerOfTheShattered.h"
-
-USING_NS_CC;
+#include"Entities/Enemy/Bosses/Boss1.h"
 
 NPC3::NPC3()
 {
@@ -30,7 +28,7 @@ bool NPC3::init()
     {
         return false;
     }
-    
+    goldspent_ = 0;
     // 加载精灵帧缓存
     auto cache = SpriteFrameCache::getInstance();
     cache->addSpriteFramesWithFile("NPC/NPC3/npc3_idle.plist");
@@ -75,7 +73,7 @@ bool NPC3::init()
                      []() {}, // 按键1回调
                      []() {}, // 按键2回调
                      []() {}), // 按键3回调
-        /*DialogueEntry(ReadJson::getString(NPC3Path,"2"),
+        DialogueEntry(ReadJson::getString(NPC3Path,"2"),
                      nullptr,
                      []() {},
                      []() {},
@@ -86,25 +84,75 @@ bool NPC3::init()
                      []() {},
                      []() {}),        
         DialogueEntry(ReadJson::getString(NPC3Path,"4"),
-                     nullptr,
+                     [this]() 
+            {
+                goldspent_ = ItemManager::getInstance()->getGold();
+                ItemManager::getInstance()->spendGold(goldspent_);
+
+            },
                      []() {},
                      []() {},
                      []() {}),
         DialogueEntry(ReadJson::getString(NPC3Path,"5"),
                      nullptr,
-                     []() {},
-                     []() {},
-                     []() {}),
+                     [this]() {player_->modifyMaxHealth(goldspent_); player_->modifyMaxMagic(goldspent_); },
+                     [this]() 
+            {
+                for (int i = 0; i < goldspent_ / 50; i++)
+                {
+
+                    auto item = Items::createWithId(110);
+                    if (item)
+                    {
+                        item->setPosition(this->getPosition());
+
+                        // 模拟爆出来的效果：给一个向上的初速度
+                        item->getPhysicsBody()->setVelocity(Vec2(0, 200));
+                        this->getParent()->addChild(item, 5); // Z-order 在背景之上
+                    }
+                }
+            },
+                     [this]() {}),
         DialogueEntry(ReadJson::getString(NPC3Path,"6"),
-                     nullptr,
+                     [this]() 
+            {
+                this->setVisible(false);
+                this->getPhysicsBody()->setEnabled(false);
+            },
                      []() {},
                      []() {},
-                     []() {}),
+                     []() {}), 
         DialogueEntry(ReadJson::getString(NPC3Path,"7"),
-                     nullptr,
+                     [this]()
+            {
+                if (dialogueBackground_)
+                        {
+                            dialogueBackground_->removeFromParentAndCleanup(true);
+                            dialogueBackground_ = nullptr;
+                        }
+
+                        if (dialogueLabel_)
+                        {
+                            dialogueLabel_->removeFromParentAndCleanup(true);
+                            dialogueLabel_ = nullptr;
+                        }
+
+                        if (Illustration_)
+                        {
+                            Illustration_->removeFromParent();
+                        }
+
+                        isDialogueDisplaying_ = false;
+                        currentDialogueIndex_ = 0;
+                        if (player_ != nullptr)
+                            player_->setControlEnabled(true);
+                auto boss = Boss1::create();
+                boss->setPosition(this->getPosition());
+                this->getParent()->addChild(boss, 1);
+            },
                      []() {},
                      []() {},
-                     []() {})*/
+                     []() {})
     };
     this->setDialogues(dialogues);
     

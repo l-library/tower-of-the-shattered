@@ -95,12 +95,13 @@ bool NpcBase::init(const std::string& spritePath)
     // 注册按键监听器
     keyboardListener_ = EventListenerKeyboard::create();
     keyboardListener_->onKeyPressed = [this](EventKeyboard::KeyCode keyCode, Event* event) {
+        int nextIndex;
         if (keyCode == EventKeyboard::KeyCode::KEY_E)
         {
             // 如果正在显示对话，按E键显示下一条对话
             if (isDialogueDisplaying_)
             {
-                int nextIndex = currentDialogueIndex_ + 1;
+                nextIndex = currentDialogueIndex_ + 1;
                 
                 // 如果还有下一条对话，显示它
                 if (nextIndex < dialogues_.size())
@@ -160,17 +161,35 @@ bool NpcBase::init(const std::string& spritePath)
                         {
                             currentEntry.option1Callback();
                         }
+                        nextIndex = currentDialogueIndex_ + 1;
+                        // 如果还有下一条对话，显示它
+                        if (nextIndex < dialogues_.size())
+                        {
+                            this->displayDialogueContent(nextIndex);
+                        }
                         break;
                     case EventKeyboard::KeyCode::KEY_2:
                         if (currentEntry.option2Callback)
                         {
                             currentEntry.option2Callback();
                         }
+                        nextIndex = currentDialogueIndex_ + 1;
+                        // 如果还有下一条对话，显示它
+                        if (nextIndex < dialogues_.size())
+                        {
+                            this->displayDialogueContent(nextIndex);
+                        }
                         break;
                     case EventKeyboard::KeyCode::KEY_3:
                         if (currentEntry.option3Callback)
                         {
                             currentEntry.option3Callback();
+                        }
+                        nextIndex = currentDialogueIndex_ + 1;
+                        // 如果还有下一条对话，显示它
+                        if (nextIndex < dialogues_.size())
+                        {
+                            this->displayDialogueContent(nextIndex);
                         }
                         break;
                     default:
