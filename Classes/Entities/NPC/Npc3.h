@@ -18,7 +18,7 @@ protected:
     // 实现玩家交互方法
     void handlePlayerInteraction() override;
 
-
+    int goldspent_;
 };
 
 #endif // __NPC3_H__

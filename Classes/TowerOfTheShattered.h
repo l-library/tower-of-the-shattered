@@ -2,7 +2,7 @@
 
 // 游戏基础常量定义
 #define GRID_SIZE	32		// 游戏格子大小（32x32像素）
-#define MAP_SIZE	1.25f	// 地图缩放
+#define MAP_SIZE	1.5f	// 地图缩放
 
 // 碰撞掩码定义
 #define ENEMY_MASK          0x00000001  // 敌人
