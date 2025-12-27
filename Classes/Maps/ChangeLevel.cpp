@@ -2,7 +2,10 @@
 #include "TowerOfTheShattered.h"
 #include "Entities/Enemy/Slime.h"
 #include "Roomdata.h"
-#include "Entities/Player/PlayerData.h"
+#include "Scenes/GameManager.h"
+#include "Entities/NPC/Npc1.h"
+#include "Entities/NPC/Npc2.h"
+#include "Entities/NPC/Npc3.h"
 
 void initRoomDatabase()
 {
@@ -293,6 +296,100 @@ void buildDamageBox(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
     }
 }
 
+// 生成怪
+void generateMonstersFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
+{
+    if (!scene || !map) return;
+
+    map->setScale(MAP_SIZE);
+
+    // 获取monster对象层
+    TMXObjectGroup* monsterGroup = map->getObjectGroup("monster");
+    if (!monsterGroup) {
+        return;
+    }
+
+    // 获取所有怪物对象
+    ValueVector monsters = monsterGroup->getObjects();
+
+    for (const auto& monsterValue : monsters) {
+        ValueMap monsterMap = monsterValue.asValueMap();
+
+        // 获取位置
+        float x = monsterMap.at("x").asFloat();
+        float y = monsterMap.at("y").asFloat();
+
+        cocos2d::Vec2 position(x * MAP_SIZE, y * MAP_SIZE);
+
+        // float mapHeight = map->getMapSize().height * map->getTileSize().height;
+        // float convertedY = mapHeight - y;
+        // cocos2d::Vec2 position(x * MAP_SIZE, convertedY * MAP_SIZE);
+
+        // 生成怪物
+        auto slime = Slime::create();
+        if (slime) {
+            slime->setPosition(position);
+            scene->addChild(slime, 1);
+
+            CCLOG("生成史莱姆在 (%.1f, %.1f)", position.x, position.y);
+        }
+    }
+}
+
+// npc
+void generateNPCsFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
+{
+    if (!scene || !map) return;
+
+    map->setScale(MAP_SIZE);
+
+    TMXObjectGroup* npcGroup = map->getObjectGroup("npc");
+    if (!npcGroup) return;
+
+    ValueVector npcs = npcGroup->getObjects();
+
+    for (const auto& npcValue : npcs) {
+        ValueMap npcMap = npcValue.asValueMap();
+
+        // 获取NPC名称
+        std::string npcName = npcMap.find("name") != npcMap.end() ?
+            npcMap.at("name").asString() : "npc_1";
+
+        // 获取位置
+        float x = npcMap.at("x").asFloat();
+        float y = npcMap.at("y").asFloat();
+
+        // 你的多边形是16x16的矩形，计算中心点
+        // 多边形顶点: (0,0) (16,0) (16,16) (0,16)
+        float centerX = x + 8;  // x + 16/2
+        float centerY = y + 8;  // y + 16/2
+
+        cocos2d::Vec2 position(centerX * MAP_SIZE, centerY * MAP_SIZE);
+
+        CCLOG("生成NPC: %s 位置=(%.1f,%.1f)", npcName.c_str(), position.x, position.y);
+
+        // 根据名称生成
+        if (npcName == "npc_1") {
+            if (auto npc = NPC1::create()) {
+                npc->setPosition(position);
+                scene->addChild(npc, 1);
+            }
+        }
+        else if (npcName == "npc_2") {
+            if (auto npc = NPC2::create()) {
+                npc->setPosition(position);
+                scene->addChild(npc, 1);
+            }
+        }
+        else if (npcName == "npc_3") {
+            if (auto npc = NPC3::create()) {
+                npc->setPosition(position);
+                scene->addChild(npc, 1);
+            }
+        }
+    }
+}
+
 // 传送房间
 bool exitRoom(int currentRoomId, const std::string& exitDir)
 {
@@ -367,29 +464,18 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
 }
 
 // 切换场景调用
-void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode)
-{
-    std::string sensorName = sensorNode->getName();
-
-    // 保存玩家当前状态
+void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode) {
     auto player = scene->getChildByName<Player*>("player");
     if (player) {
-        PlayerData::getInstance()->savePlayerState(
-            player->getHealth(),
-            player->getMagic(),
-            player->getPosition(),
-            static_cast<int>(player->getDirection())
-        );
-
-        CCLOG("触碰传感器 %s，保存玩家状态", sensorName.c_str());
+        auto physicsBody = player->getPhysicsBody();
+        if (physicsBody) {
+            player->removeComponent(physicsBody);
+            CCLOG("remove Player's PhysicsBody");
+        }
+        GameManager::getInstance()->savePlayer(player);
     }
-    // 切换房间
-    if (exitRoom(g_currentRoomId, sensorName)) {
-        log("从房间 %d 通过 [%s] 出口离开", g_currentRoomId, sensorName.c_str());
-    }
-    else {
-        log("房间 %d 没有 [%s] 出口", g_currentRoomId, sensorName.c_str());
-    }
+    std::string sensorName = sensorNode->getName();
+    exitRoom(g_currentRoomId, sensorName);
 }
 
 // 检测碰撞

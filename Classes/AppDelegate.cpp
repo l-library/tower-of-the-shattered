@@ -26,7 +26,7 @@
 #include "HelloWorldScene.h"
 #include "TowerOfTheShattered.h"
 #include "Scenes/MainMenuScene.h"
-#include "Entities/Player/PlayerData.h"
+
 //下面是音频相关引擎的开关
 
 // #define USE_AUDIO_ENGINE 1
@@ -75,7 +75,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // initialize director
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
-    PlayerData::getInstance();
+
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
         {

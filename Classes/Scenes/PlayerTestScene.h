@@ -27,6 +27,8 @@ public:
     // implement the "static create()" method manually
     CREATE_FUNC(PlayerTestScene);//生成一个create函数
 
+    void PlayerTestScene::resetPlayerForNewScene(Player* player);
+
     void gameOver();
 
     ~PlayerTestScene();

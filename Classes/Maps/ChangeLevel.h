@@ -12,6 +12,12 @@ void switchLevelBox(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map);
 // 生成陷阱碰撞箱
 void buildDamageBox(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map);
 
+// 
+void generateMonstersFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map);
+
+// npc
+void generateNPCsFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map);
+
 // 切换场景调用
 void onPlayerHitSensor(cocos2d::Scene* scene, cocos2d::Node* sensorNode);
 
