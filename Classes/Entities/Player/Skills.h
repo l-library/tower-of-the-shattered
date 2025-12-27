@@ -24,7 +24,7 @@ public:
     void update(float dt);
     bool isReady() const { return _currentCooldown <= 0; }
     bool isUnlocked() const { return _unlocked; }
-    void setUnlocked(bool v) { _unlocked = v; }
+    void setUnlocked(bool v);
 
     float getCooldownPercent() const { return _currentCooldown / _config.cooldown; }
     const Config& getConfig() const { return _config; }

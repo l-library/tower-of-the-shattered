@@ -1,5 +1,6 @@
 #include "NPC2.h"
 #include "TowerOfTheShattered.h"
+#include "../../Tools/SaveManager.h"
 
 USING_NS_CC;
 
@@ -99,12 +100,14 @@ bool NPC2::init()
 
                 player_->modifyAttack(100);
                 currentDialogueIndex_ = 3;
+                SaveManager::getInstance()->setAttackUp(100);
             },
                      [this]()
             {//强化机动
 
                 player_->modifyMove(100);
                 currentDialogueIndex_ = 4;
+                SaveManager::getInstance()->setMoveSpeedUp(100);
             },
                      [this]()
             {//解锁技能
@@ -113,16 +116,19 @@ bool NPC2::init()
                {
                    player_->getSkillManager()->getSkill("IceSpear")->setUnlocked(true);
                    currentDialogueIndex_ = 5;
+                   SaveManager::getInstance()->unlockNextSkill();
                }
                else if (!player_->isUnlocked("ArcaneShield"))
                {
                    player_->getSkillManager()->getSkill("ArcaneShield")->setUnlocked(true);
                    currentDialogueIndex_ = 6;
+                   SaveManager::getInstance()->unlockNextSkill();
                }
                else if (!player_->isUnlocked("ArcaneJet"))
                {
                    player_->getSkillManager()->getSkill("ArcaneJet")->setUnlocked(true);
                    currentDialogueIndex_ = 7;
+                   SaveManager::getInstance()->unlockNextSkill();
                }
                else
                {

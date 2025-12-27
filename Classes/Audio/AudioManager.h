@@ -54,6 +54,7 @@ private:
     int _bgmID;           // 当前背景音乐的ID
     float _bgmVolume;     // 记录BGM音量
     float _effectVolume;  // 记录音效音量
+    std::string _filename;// 记录音乐的路径
 };
 
 #endif // __AUDIO_MANAGER_H__
