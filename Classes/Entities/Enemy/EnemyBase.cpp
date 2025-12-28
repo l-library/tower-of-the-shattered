@@ -266,11 +266,12 @@ void EnemyBase::update(float delta)
             }
             
             // 如果没有正在运行的动作，移除敌人对象
-            if (!hasRunningActions)
+            if (1)
             {
                 DropLootOnDeath();
                 auto scene = dynamic_cast<MainGameScene*>(this->getParent());
-                if (scene && dynamic_cast<Boss1*>(this))
+                auto boss1 = dynamic_cast<Boss1*>(this);
+                if (scene && boss1 && !boss1->getClone())
                     scene->gameOver("player/win.png", "sounds/win.ogg");
                 this->removeFromParentAndCleanup(true);
             }

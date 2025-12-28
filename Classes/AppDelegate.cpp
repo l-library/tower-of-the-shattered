@@ -79,7 +79,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
         {
             //´´½¨´°¿Ú
-            glview = GLViewImpl::createWithRect("tower-of-the-shattered", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+            glview = GLViewImpl::createWithRect("Tower Of The Shattered", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
         }
 #else
         glview = GLViewImpl::create("tower-of-the-shattered");

@@ -249,10 +249,8 @@ void MainGameScene::resetPlayerForNewScene(Player* player) {
 
 void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
 {
-    // 防止每一帧重复调用
-    static bool isGameOverProcessing = false;
-    if (isGameOverProcessing) return;
-    isGameOverProcessing = true;
+    if (_isGameOverProcessing) return;
+    _isGameOverProcessing = true;
 
     // 移除所有输入监听
     _eventDispatcher->removeEventListenersForTarget(this);
@@ -264,6 +262,8 @@ void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
     Sprite* deadSprite = Sprite::create(end_sprite);
     // 重置itemMananger
     ItemManager::getInstance()->resetRuntimeData();
+    // 移除Player
+    GameManager::getInstance()->clearPlayer();
     g_currentRoomId = 1;
     if (deadSprite)
     {
@@ -282,13 +282,10 @@ void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
             ScaleTo::create(2.0f, 2.0f),    // 同时放大到原比例
             nullptr
         );
-
         auto sequence = Sequence::create(
             spawnAction,
             DelayTime::create(2.0f),
             CallFunc::create([end_sound]() {
-                // 重置静态变量
-                isGameOverProcessing = false;
                 AudioManager::getInstance()->playEffect(end_sound);
                 // 创建并切换到菜单场景，使用淡出淡入转场
                 auto menuScene = MainMenuScene::createScene();
@@ -303,7 +300,7 @@ void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
     {
         // 如果图片加载失败，直接切换场景
         log("Error: player/dead.png not found!");
-        isGameOverProcessing = false;
+        _isGameOverProcessing = false;
         auto menuScene = MainMenuScene::createScene();
         Director::getInstance()->replaceScene(menuScene);
     }

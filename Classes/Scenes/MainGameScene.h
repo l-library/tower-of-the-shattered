@@ -37,4 +37,5 @@ private:
     cocos2d::Vec2 _playerSpawnPosition = { 360,100 };
     Player* _player;
     GameCamera* _cameraController;
+    bool _isGameOverProcessing = false;
 };

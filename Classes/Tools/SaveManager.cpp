@@ -69,10 +69,8 @@ int SaveManager::getAttackUp() {
 }
 
 void SaveManager::setAttackUp(int value) {
-    if (_atkUp != value) {
-        _atkUp = value;
+        _atkUp += value;
         saveIntField(KEY_ATK_MULTI, _atkUp);
-    }
 }
 
 // 移动速率实现
@@ -81,10 +79,8 @@ int SaveManager::getMoveSpeedUp() {
 }
 
 void SaveManager::setMoveSpeedUp(int value) {
-    if (_moveSpeedUp != value) {
-        _moveSpeedUp = value;
-        saveIntField(KEY_MOVE_SPEED, _moveSpeedUp);
-    }
+    _moveSpeedUp += value;
+    saveIntField(KEY_MOVE_SPEED, _moveSpeedUp);
 }
 
 // 技能状态实现
