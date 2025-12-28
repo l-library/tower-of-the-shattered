@@ -1,6 +1,8 @@
 #include "EnemyBase.h"
 #include <utility>
 #include<random>
+
+#include<Entities/Enemy/Bosses/Boss1.h>
 EnemyBase::EnemyBase()
     : sprite_(nullptr)
     , physicsBody_(nullptr)
@@ -267,6 +269,9 @@ void EnemyBase::update(float delta)
             if (!hasRunningActions)
             {
                 DropLootOnDeath();
+                auto scene = dynamic_cast<MainGameScene*>(this->getParent());
+                if (scene && dynamic_cast<Boss1*>(this))
+                    scene->gameOver("player/win.png");
                 this->removeFromParentAndCleanup(true);
             }
         }
@@ -448,7 +453,6 @@ void EnemyBase::DropLootOnDeath()
 {
     //“≈ŒÔ101-110£¨Ω±“1000£¨¡ÈªÍ2000
     int random = 1000;
-    srand(static_cast<unsigned int>(time(0)));
     random = (rand() % 40) + 101;
     if (random > 110)
         random = 1000 * (1 + (random >= 121) && (random <= 125));

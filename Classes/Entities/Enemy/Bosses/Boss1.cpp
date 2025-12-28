@@ -1189,6 +1189,11 @@ void Boss1::updateHealthBar(float delta)
 // 更新函数
 void Boss1::otherUpdate(float delta)
 {
+    if (this->getCurrentState() == EnemyState::DEAD && this->isStage3_)
+    {
+        healthBarBorder_->setVisible(false);
+        healthBar_->setVisible(false);
+    }
     // 执行turn行为
     turn(delta);
 

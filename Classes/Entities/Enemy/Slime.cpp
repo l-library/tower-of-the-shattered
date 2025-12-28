@@ -356,7 +356,7 @@ BehaviorResult Slime::jumpAttack(float delta)
             jumpBullet->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
             jumpBullet->setCollisionBitmask(WALL_MASK | PLAYER_MASK | BORDER_MASK);
             jumpBullet->setCLearBitmask(PLAYER_MASK );
-            jumpBullet->setDamage(50);
+            jumpBullet->setDamage(20);
             this->getParent()->addChild(jumpBullet);
         }
     }
@@ -457,7 +457,7 @@ BehaviorResult Slime::chargeAttack(float delta)
             chargeBullet->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
             chargeBullet->setCollisionBitmask(WALL_MASK | PLAYER_MASK | BORDER_MASK);
             chargeBullet->setCLearBitmask(PLAYER_MASK );
-            chargeBullet->setDamage(50);
+            chargeBullet->setDamage(20);
             this->getParent()->addChild(chargeBullet);
         }
     }

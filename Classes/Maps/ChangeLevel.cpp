@@ -6,7 +6,7 @@
 #include "Entities/NPC/Npc1.h"
 #include "Entities/NPC/Npc2.h"
 #include "Entities/NPC/Npc3.h"
-
+#include "Scenes/MonsterGenerator.h"
 void initRoomDatabase()
 {
     RoomData room1(1, "maps/map_start.tmx");
@@ -324,13 +324,9 @@ void generateMonstersFromMap(cocos2d::Scene* scene, cocos2d::TMXTiledMap* map)
         // float mapHeight = map->getMapSize().height * map->getTileSize().height;
         // float convertedY = mapHeight - y;
         // cocos2d::Vec2 position(x * MAP_SIZE, convertedY * MAP_SIZE);
-
-        // 生成怪物
-        auto slime = Slime::create();
-        if (slime) {
-            slime->setPosition(position);
-            scene->addChild(slime, 1);
-        }
+        std::string name[4] = { "Slime","Mage","Bomber","Fly" };
+        std::string monsterType = name[rand() % 4]; // 默认类型
+        MonsterGenerator::generateMonster(scene, monsterType, position);
     }
 }
 

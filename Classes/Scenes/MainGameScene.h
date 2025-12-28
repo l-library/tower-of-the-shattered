@@ -29,7 +29,7 @@ public:
 
     void MainGameScene::resetPlayerForNewScene(Player* player);
 
-    void gameOver();
+    void gameOver(std::string end_sprite = "player/dead.png", std::string end_sound = "sounds/Death.ogg");
 
     ~MainGameScene();
     std::string _currentMapFile = "maps/map_start.tmx";

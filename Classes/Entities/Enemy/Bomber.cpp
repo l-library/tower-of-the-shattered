@@ -382,7 +382,7 @@ BehaviorResult Bomber::throwBombAttack(float delta)
             bomb->setCollisionWidth(GRID_SIZE *1.0f);
             bomb->setCollisionHeight(GRID_SIZE *1.0f);
             bomb->setPosition(this->getPosition() + Vec2(direction.x * 20, 10));
-            bomb->setCategoryBitmask(ENEMY_BULLET_MASK);
+            bomb->setCategoryBitmask(BULLET_MASK);
             bomb->setContactTestBitmask(PLAYER_MASK | WALL_MASK | BORDER_MASK);
             bomb->setCollisionBitmask(WALL_MASK | PLAYER_MASK | BORDER_MASK);
             bomb->setCLearBitmask(0);

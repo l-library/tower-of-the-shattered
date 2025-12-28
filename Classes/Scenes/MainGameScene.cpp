@@ -49,6 +49,7 @@ static void problemLoading(const char* filename)
 
 bool MainGameScene::init()
 {
+    srand(static_cast<unsigned int>(time(0)));
     if (SaveManager::getInstance()->sceneComeFromMenu()) {
         // 添加一个全屏黑色遮罩，Z序设为最高
         auto maskLayer = LayerColor::create(Color4B::BLACK);
@@ -249,7 +250,7 @@ void MainGameScene::resetPlayerForNewScene(Player* player) {
     CCLOG("Player已为新场景重置");
 }
 
-void MainGameScene::gameOver()
+void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
 {
     // 防止每一帧重复调用
     static bool isGameOverProcessing = false;

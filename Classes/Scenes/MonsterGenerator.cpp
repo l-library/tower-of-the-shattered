@@ -1,7 +1,9 @@
 #include "MonsterGenerator.h"
 #include "Entities/Enemy/Slime.h"
 #include "TowerOfTheShattered.h"
-
+#include "Entities/Enemy/Mage.h"
+#include "Entities/Enemy/Fly.h"
+#include "Entities/Enemy/Bomber.h"
 USING_NS_CC;
 
 void MonsterGenerator::generateMonstersFromMap(Scene* scene, TMXTiledMap* map) {
@@ -22,9 +24,9 @@ void MonsterGenerator::generateMonstersFromMap(Scene* scene, TMXTiledMap* map) {
 
     for (const auto& monsterValue : monsters) {
         ValueMap monsterMap = monsterValue.asValueMap();
-
         // 获取怪物类型
-        std::string monsterType = "Slime"; // 默认类型
+        std::string name[4] = { "Slime","Mage","Bomber","Fly" };
+        std::string monsterType = name[0]; // 默认类型
         if (monsterMap.find("type") != monsterMap.end()) {
             monsterType = monsterMap.at("type").asString();
         }
@@ -66,15 +68,32 @@ void MonsterGenerator::generateMonster(Scene* scene, const std::string& monsterT
         }
     }
     // 可以添加其他怪物类型
-    else if (monsterType == "Bat") {
-        // auto bat = Bat::create();
-        // if (bat) {
-        //     bat->setPosition(position);
-        //     scene->addChild(bat, 1);
-        // }
-        CCLOG("蝙蝠怪物类型暂未实现: %s", monsterType.c_str());
+    else if (monsterType == "Fly") 
+    {
+         auto fly = Fly::create();
+         if (fly) {
+             fly->setPosition(position);
+             scene->addChild(fly, 1);
+         }
     }
-    else {
+    else if (monsterType == "Mage")
+    {
+        auto fly = Mage::create();
+        if (fly) {
+            fly->setPosition(position);
+            scene->addChild(fly, 1);
+        }
+    }
+    else if (monsterType == "Bomber")
+    {
+        auto fly = Bomber::create();
+        if (fly) {
+            fly->setPosition(position);
+            scene->addChild(fly, 1);
+        }
+    }
+    else 
+    {
         CCLOG("未知怪物类型: %s", monsterType.c_str());
     }
 }
