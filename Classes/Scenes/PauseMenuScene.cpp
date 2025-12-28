@@ -3,7 +3,6 @@
 #include "../Audio/AudioManager.h"
 #include "Tools/ReadJson.h"
 #include "Entities/Items/ItemManager.h"
-#include "Maps/GameSceneManager.h"
 #include "Maps/RoomData.h"
 
 USING_NS_CC;
