@@ -1,8 +1,7 @@
 # 破碎之塔
 使用**Cocos2d-x**开发的类重生细胞2d平台动作游戏。  
 操纵主角在未知的高塔中探索，发现藏于其中的秘密，每一次的死亡都会让你的角色变得更强！
-游戏正在开发中……
-> 该项目为大学课程项目
+> 该项目为程序设计范式课程项目
 ## 开发环境
 - Windows11
 - Cocos2d-x-4.0
@@ -53,9 +52,9 @@
 ## 项目分工
 | Github用户名 | 分工           |
 | :----------- | :------------- |
-| @l-library   | 角色系统       |
-| @cardiest    | 敌人和boss设计 |
-| @Creeperwww  | 房间设计       |
+| @l-library   | 角色系统、摄像机、音频以及物品相关功能       |
+| @cardiest    | 敌人、boss设计，NPC和商店功能 |
+| @Creeperwww  | 房间设计、场景交互和场景切换功能       |
 ## 项目进度时间线
 ```mermaid
 gantt
@@ -85,8 +84,11 @@ gantt
     准备答辩 : d1,after c3 , 1w    
 ```
 ## 类的设计和继承关系
+![类设计关系](./Display/ClassTree.png)
 ## 游戏展示
-## 下载
-> 游戏正在开发中……
+![项目截图1](./Display/screenshot_1.png)
+![项目截图2](./Display/screenshot_2.png)
+![项目截图3](./Display/screenshot_3.png)
 ## 致谢
-- *第三方库致谢*
+- [MAJIKA](https://github.com/SardineFish/MAJIKA)这个项目优质的美术资源让我们的游戏项目活了起来
+- [rapidjson](https://github.com/Tencent/rapidjson)这个项目提供的优秀工具对本项目十分重要
