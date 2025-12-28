@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="19">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="21">
  <tileset firstgid="1" source="tiles.tsx"/>
  <layer id="1" name="background" width="40" height="23">
   <data encoding="base64" compression="zlib">
@@ -58,6 +58,14 @@
  <objectgroup id="4" name="sensor">
   <object id="3" name="right_down" x="624" y="256">
    <polygon points="0,0 16,0 16,80 0,80"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="npc">
+  <object id="19" name="npc_1" x="208" y="320">
+   <polygon points="0,0 16,0 16,16 0,16"/>
+  </object>
+  <object id="20" name="npc_2" x="400" y="320">
+   <polygon points="0,0 16,0 16,16 0,16"/>
   </object>
  </objectgroup>
 </map>

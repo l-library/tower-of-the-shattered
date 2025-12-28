@@ -1110,7 +1110,7 @@ void Boss1::initHealthBar()
         return;
     }
     
-    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
+    auto scene = dynamic_cast<MainGameScene*> (this->getParent());
     if (!scene)
         return;
     // 获取窗口大小

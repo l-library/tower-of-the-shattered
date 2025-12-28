@@ -1,7 +1,7 @@
 #include "MainMenuScene.h"
 #include "../Audio/AudioManager.h" 
 #include "Tools/ReadJson.h"
-#include "../Scenes/PlayerTestScene.h"
+#include "../Scenes/MainGameScene.h"
 #include "../Tools/SaveManager.h"
 #include "Credits.h"
 
@@ -188,7 +188,7 @@ void MainMenuScene::onStartGame(Ref* sender)
     // 新游戏，删除原存档（如果不存在存档此操作会创建一个存档）
     SaveManager::getInstance()->resetSaveData();
     SaveManager::getInstance()->setsceneComeFromMenu(true);
-    Director::getInstance()->replaceScene(PlayerTestScene::createScene());
+    Director::getInstance()->replaceScene(MainGameScene::createScene());
 }
 
 void MainMenuScene::onLoadGame(Ref* sender)
@@ -198,7 +198,7 @@ void MainMenuScene::onLoadGame(Ref* sender)
     if (SaveManager::getInstance()->hasSaveFile()) {
         AudioManager::getInstance()->playEffect("sounds/button_click.ogg");
         SaveManager::getInstance()->setsceneComeFromMenu(true);
-        Director::getInstance()->replaceScene(PlayerTestScene::createScene());
+        Director::getInstance()->replaceScene(MainGameScene::createScene());
     }
 }
 

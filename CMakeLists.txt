@@ -77,7 +77,7 @@ list(APPEND GAME_SOURCE
      Classes/Entities/NPC/Npc1.cpp
      Classes/Entities/Items/ItemManager.cpp
      Classes/Entities/Items/Items.cpp
-     Classes/Scenes/PlayerTestScene.cpp
+     Classes/Scenes/MainGameScene.cpp
      Classes/Scenes/GameCamera.cpp
      Classes/Scenes/MainMenuScene.cpp
      Classes/Maps/ChangeLevel.cpp
@@ -107,7 +107,7 @@ list(APPEND GAME_HEADER
      Classes/Entities/NPC/Npc1.h
      Classes/Entities/Items/ItemManager.h
      Classes/Entities/Items/Items.h
-     Classes/Scenes/PlayerTestScene.h
+     Classes/Scenes/MainGameScene.h
      Classes/Scenes/MainMenuScene.h
      Classes/Scenes/GameCamera.h
      Classes/Maps/ChangeLevel.h

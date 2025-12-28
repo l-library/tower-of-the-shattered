@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="80" height="45" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="14">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="80" height="45" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="15">
  <tileset firstgid="1" source="tiles.tsx"/>
  <layer id="1" name="background" width="80" height="45">
   <data encoding="base64" compression="zlib">
@@ -11,6 +11,11 @@
    eJztm1FKw0AABecK6gVexX6r6Dk8QfECev9vG0oxiEqTSWuEN/DIV9iXYZMsYbMBNo3K8z4PE/P+5XipnDqe6XXKuU8jf7eUqeyoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0OoP0Nw/q72uV4gN+Iaxh1eLtwlOH/j803M3F+qw5wudv/GPcvszXmcMfaRt5kdfsqULqHPP0OoP0OoP0OoP0P3/zlC/RnCwZ1dQ5yL8drYrLHPRTj4Wyth3fdH+D/+Xv+2yrcc3x9rJax7/tWfI9SfYZh/w39HS3yDWvIb0jF3fPrbThxjyR6/9duOOjbTM8y/D/BEVDc=
   </data>
  </layer>
+ <objectgroup id="5" name="npc">
+  <object id="14" name="npc_1" x="80" y="672">
+   <polygon points="0,0 16,0 16,16 0,16"/>
+  </object>
+ </objectgroup>
  <objectgroup id="3" name="obj">
   <object id="2" x="0" y="0">
    <polygon points="0,0 0,608 32,608 32,0"/>

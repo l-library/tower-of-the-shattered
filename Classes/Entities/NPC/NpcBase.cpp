@@ -318,7 +318,7 @@ void NpcBase::showDialogueBackground()
     dialogueBackground_->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + dialogueBackground_->getContentSize().height / 2));
     dialogueBackground_->setScale(1.5);
     // 获取当前场景并添加对话背景
-    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
+    auto scene = dynamic_cast<MainGameScene*> (this->getParent());
     if (scene)
     {
         dialogueBackground_->setCameraMask((uint16_t)CameraFlag::USER2, true);
@@ -380,7 +380,7 @@ void NpcBase::displayDialogueContent(int dialogueIndex)
     dialogueLabel_->setVerticalAlignment(TextVAlignment::CENTER);
     
     // 获取当前场景
-    auto scene = dynamic_cast<PlayerTestScene*> (this->getParent());
+    auto scene = dynamic_cast<MainGameScene*> (this->getParent());
     if (!scene)
     {
         return;

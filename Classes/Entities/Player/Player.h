@@ -162,6 +162,12 @@ public:
 	// 利用宏生成一个create函数
 	CREATE_FUNC(Player);
 
+	/**
+	* @brief 初始化主角物理效果
+	* @details 将主角物理属性初始化
+	***/
+	void initPhysics();
+
 protected:
 	/**
 	* @brief 更新主角状态
@@ -176,11 +182,7 @@ protected:
 	***/
 	void changeState(PlayerState newState);
 
-	/**
-	* @brief 初始化主角物理效果
-	* @details 将主角物理属性初始化
-	***/
-	void initPhysics();
+
 
 	void shootBullet();
 

@@ -66,31 +66,6 @@ bool Player::init()
     _maxDodgeCooldown = 1.0;
     _dodgeTime = 0;
 
-    // 状态标志
-    _isGrounded = false;
-    _isDodge = false;
-    _isHurt = false;
-    _isDead = false;
-    _isAttacking = false;
-    _isSkilling = false;
-    _isInvincible = false;
-    _controlEnabled = true;
-    _attack_num = 0;
-    _footContactCount = 0; // 用于记录脚部接触物体的数量
-
-    // 计时器
-    _jumpBufferTime = 0.0;
-    _coyoteTime = 0.0;
-    _dodgeCooldown = 0.0;
-    _attackCooldown = 0.0;
-    _invincibilityTime = 0.0;
-    _attackEngageTime = 0.0;
-    _stepSoundsInterval = 0.0f;
-
-    // 输入
-    _moveInput = 0.0;
-    _velocity = Vec2::ZERO;
-
     // 技能管理器初始化
     _skillManager = SkillManager::create(this);
     _skillManager->retain();
@@ -111,11 +86,10 @@ bool Player::init()
 
     // 初始化碰撞监听
     // 注册碰撞回调
-    auto contactListener = EventListenerPhysicsContact::create();
-    contactListener->onContactBegin = CC_CALLBACK_1(Player::onContactBegin, this);
-    contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
-
-    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+    //auto contactListener = EventListenerPhysicsContact::create();
+    //contactListener->onContactBegin = CC_CALLBACK_1(Player::onContactBegin, this);
+    //contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
+    //Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
     AudioManager::getInstance()->preload("sounds/FireBall.ogg");
     AudioManager::getInstance()->preload("sounds/PlayerFootstep.ogg");
@@ -150,6 +124,31 @@ void Player::initPhysics()
     _physicsBody->setRotationEnable(false);
     //设置质量
     _physicsBody->setMass(1.0f);
+    //部分状态初始化
+    // 初始化状态标志
+    _isGrounded = false;
+    _isDodge = false;
+    _isHurt = false;
+    _isDead = false;
+    _isAttacking = false;
+    _isSkilling = false;
+    _isInvincible = true;
+    _controlEnabled = true;
+    _attack_num = 0;
+    _footContactCount = 0; // 用于记录脚部接触物体的数量
+
+    // 计时器初始化
+    _jumpBufferTime = 0.0;
+    _coyoteTime = 0.0;
+    _dodgeCooldown = 0.0;
+    _attackCooldown = 0.0;
+    _invincibilityTime = 0.3;  // 开始时无敌0.3秒
+    _attackEngageTime = 0.0;
+    _stepSoundsInterval = 0.0f;
+
+    // 输入初始化
+    _moveInput = 0.0;
+    _velocity = Vec2::ZERO;
 
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
@@ -227,10 +226,6 @@ bool Player::onContactBegin(cocos2d::PhysicsContact& contact)
             _footContactCount++;
             if (_footContactCount > 0) {
                 _isGrounded = true;
-                // 如果是下落状态，播放落地音效
-                if (_currentState == PlayerState::FALLING) {
-                    // AudioEngine::play2d("land.mp3");
-                }
             }
         }
     }

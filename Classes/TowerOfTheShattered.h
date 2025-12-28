@@ -32,7 +32,7 @@
 #include "Entities/Enemy/EnemyBase.h"
 #include "Entities/Player/Player.h"
 #include "Entities/Bullet/Bullet.h"
-#include "Scenes/PlayerTestScene.h"
+#include "Scenes/MainGameScene.h"
 #include "Audio/AudioManager.h"
 #include "Entities/Items/ItemManager.h"
 #include "Entities/Items/Items.h"
