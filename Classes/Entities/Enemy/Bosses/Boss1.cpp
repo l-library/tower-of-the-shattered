@@ -90,7 +90,7 @@ bool Boss1::init()
     this->setCurrentVitality(1000);
     this->setStaggerResistance(500); // 高韧性
     this->setBaseAttackPower(10);
-    this->setDefense(1); // 高防御力
+    this->setDefense(1); 
     
     // 设置碰撞箱信息
     CollisionBoxInfo collisionInfo;
@@ -566,7 +566,7 @@ BehaviorResult Boss1::attack1(float delta)
 
 
 
-                return  { true, 3.0f };
+                return  { true, 1.5f };
             }
         }
 
@@ -794,6 +794,7 @@ BehaviorResult Boss1::attack2(float delta)
 
 BehaviorResult Boss1::attack3(float delta)
 {
+    this->setDefense(200);
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -903,6 +904,7 @@ BehaviorResult Boss1::attack3(float delta)
         // 设置attack3已使用
         IsStage2_ = true;
         
+        this->setDefense(1);
         // 返回true表示攻击行为结束,转阶段召唤分身没有后摇
         BehaviorResult result = { true, 0.0f };
         
@@ -915,6 +917,7 @@ BehaviorResult Boss1::attack3(float delta)
 //attack4相关
 BehaviorResult Boss1::attack4(float delta)
 {
+    this->setDefense(200);
     // 停止待机动画
     if (sprite_ != nullptr && isIdleAnimationPlaying_)
     {
@@ -970,6 +973,7 @@ BehaviorResult Boss1::attack4(float delta)
             }
             isStage3_ = true;
             // 返回完成状态
+            this->setDefense(1);
             return { true, 0.0f };
         }
         

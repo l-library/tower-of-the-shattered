@@ -72,6 +72,7 @@ public:
     static Boss1* create();
 
     Boss1* getClone(){ return clone_; }
+    int getStage() { return IsStage2_ + isStage3_ + 1; }
 
     // Ğéº¯ÊıÖØĞ´
     virtual bool init() override;
