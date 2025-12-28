@@ -114,6 +114,10 @@ bool Boss1::init()
     
     // 血条UI将在第一次攻击时创建
     
+    // 更换bgm
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Boss.ogg", "sounds/BGM-Boss-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
+
     return true;
 }
 

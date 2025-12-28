@@ -447,6 +447,10 @@ bool exitRoom(int currentRoomId, const std::string& exitDir)
     // ÇÐ»»³¡¾°
     cocos2d::Director::getInstance()->replaceScene(newScene);
 
+    // µÚÒ»´ÎÇÐ»»³¡¾°£¬ÇÐ»»ÒôÀÖ
+    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Start.ogg", "sounds/BGM-Start-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.8f);
+
     return true;
 }
 

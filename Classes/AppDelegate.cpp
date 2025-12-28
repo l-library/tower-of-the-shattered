@@ -27,13 +27,12 @@
 #include "TowerOfTheShattered.h"
 #include "Scenes/MainMenuScene.h"
 
-//下面是音频相关引擎的开关
 
-// #define USE_AUDIO_ENGINE 1
+
+#define USE_AUDIO_ENGINE 1
 
 #if USE_AUDIO_ENGINE
 #include "audio/include/AudioEngine.h"
-using namespace cocos2d::experimental;
 #endif
 
 USING_NS_CC;
