@@ -75,13 +75,21 @@ list(APPEND GAME_SOURCE
      Classes/Entities/Player/SkillArcaneJet.cpp
      Classes/Entities/NPC/NpcBase.cpp
      Classes/Entities/NPC/Npc1.cpp
+     Classes/Entities/NPC/Npc2.cpp
+     Classes/Entities/NPC/Npc3.cpp
      Classes/Entities/Items/ItemManager.cpp
      Classes/Entities/Items/Items.cpp
      Classes/Scenes/MainGameScene.cpp
      Classes/Scenes/GameCamera.cpp
      Classes/Scenes/MainMenuScene.cpp
+     Classes/Scenes/PauseMenuScene.cpp
+     Classes/Scenes/GameManager.cpp
+     Classes/Scenes/MonsterGenerator.cpp
+     Classes/Scenes/Credits.cpp
      Classes/Maps/ChangeLevel.cpp
+     Classes/Maps/RoomData.cpp
      Classes/Audio/AudioManager.cpp
+     Classes/Tools/SaveManager.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -105,13 +113,23 @@ list(APPEND GAME_HEADER
      Classes/Entities/Player/SkillManager.h
      Classes/Entities/NPC/NpcBase.h
      Classes/Entities/NPC/Npc1.h
+     Classes/Entities/NPC/Npc2.h
+     Classes/Entities/NPC/Npc3.h
      Classes/Entities/Items/ItemManager.h
      Classes/Entities/Items/Items.h
      Classes/Scenes/MainGameScene.h
      Classes/Scenes/MainMenuScene.h
      Classes/Scenes/GameCamera.h
+     Classes/Scenes/PauseMenuScene.h
+     Classes/Scenes/GameManager.h
+     Classes/Scenes/MonsterGenerator.h
+     Classes/Scenes/Credits.h
      Classes/Maps/ChangeLevel.h
+     Classes/Maps/RoomData.h
      Classes/Audio/AudioManager.h
+     Classes/Tools/SaveManager.h
+     Classes/Tools/WriteJson.h
+     Classes/Tools/ReadJson.h
      )
 
 if(ANDROID)
