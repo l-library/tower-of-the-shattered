@@ -409,6 +409,7 @@ BehaviorResult Fly::chargeAttack(float delta)
         });
         if (chargeBullet)
         {
+            chargeBullet->setVisible(false);
             chargeBullet->setCollisionWidth(GRID_SIZE * 1.2f);
             chargeBullet->setCollisionHeight(GRID_SIZE * 1.2f);
             chargeBullet->setPosition(this->getPosition());

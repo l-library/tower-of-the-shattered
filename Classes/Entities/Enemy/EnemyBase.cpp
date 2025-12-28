@@ -271,7 +271,7 @@ void EnemyBase::update(float delta)
                 DropLootOnDeath();
                 auto scene = dynamic_cast<MainGameScene*>(this->getParent());
                 if (scene && dynamic_cast<Boss1*>(this))
-                    scene->gameOver("player/win.png");
+                    scene->gameOver("player/win.png", "sounds/win.ogg");
                 this->removeFromParentAndCleanup(true);
             }
         }

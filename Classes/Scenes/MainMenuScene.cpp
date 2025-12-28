@@ -4,6 +4,7 @@
 #include "../Scenes/MainGameScene.h"
 #include "../Tools/SaveManager.h"
 #include "Credits.h"
+#include "../Entities/Items/ItemManager.h"
 
 USING_NS_CC;
 
@@ -188,6 +189,7 @@ void MainMenuScene::onStartGame(Ref* sender)
     // 新游戏，删除原存档（如果不存在存档此操作会创建一个存档）
     SaveManager::getInstance()->resetSaveData();
     SaveManager::getInstance()->setsceneComeFromMenu(true);
+    ItemManager::getInstance()->resetRuntimeData();
     Director::getInstance()->replaceScene(MainGameScene::createScene());
 }
 

@@ -30,21 +30,6 @@ bool Player::init()
         return false;
     }
 
-    // 加载主角图像
-    _sprite = Sprite::create("player/idle-0.png");
-    // 设置锚点
-    _sprite->setAnchorPoint(Vec2(0.5, 0));
-    this->addChild(_sprite);
-
-    // 初始化主角各属性
-    _currentState = PlayerState::IDLE;
-    _previousState = PlayerState::IDLE;
-    _direction = Direction::RIGHT;
-
-    // 基础属性
-    Size contentSize = _sprite->getContentSize();
-    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // 碰撞体通常比贴图稍小
-
     // 玩家初始数值
     _maxHealth = 100.0;
     _health = _maxHealth;
@@ -84,13 +69,6 @@ bool Player::init()
     // 初始化物理身体
     initPhysics();
 
-    // 初始化碰撞监听
-    // 注册碰撞回调
-    //auto contactListener = EventListenerPhysicsContact::create();
-    //contactListener->onContactBegin = CC_CALLBACK_1(Player::onContactBegin, this);
-    //contactListener->onContactSeparate = CC_CALLBACK_1(Player::onContactSeparate, this);
-    //Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
     AudioManager::getInstance()->preload("sounds/FireBall.ogg");
     AudioManager::getInstance()->preload("sounds/PlayerFootstep.ogg");
     AudioManager::getInstance()->preload("sounds/FlameSlash.ogg");
@@ -112,19 +90,19 @@ bool Player::init()
 
 void Player::initPhysics()
 {
-    //创建偏移量（碰撞箱对应图片）
-    Size originalSize = _sprite->getContentSize();
-    Vec2 offset = Vec2(0, originalSize.height / 2);
-    //创建主身体,材质：摩擦力1.0(防止卡墙)，弹性0
-    auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
-    //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
-    _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
-    if (!_physicsBody) return;
-    //禁止旋转
-    _physicsBody->setRotationEnable(false);
-    //设置质量
-    _physicsBody->setMass(1.0f);
     //部分状态初始化
+    // 初始化主角各属性
+    // 加载主角图像
+    _sprite = Sprite::create("player/idle-0.png");
+    // 设置锚点
+    _sprite->setAnchorPoint(Vec2(0.5, 0));
+    this->addChild(_sprite);
+    // 基础属性
+    Size contentSize = _sprite->getContentSize();
+    _physicsSize = Size(contentSize.width * 0.5f, contentSize.height * 0.75f); // 碰撞体通常比贴图稍小
+    _currentState = PlayerState::IDLE;
+    _previousState = PlayerState::IDLE;
+    _direction = Direction::RIGHT;
     // 初始化状态标志
     _isGrounded = false;
     _isDodge = false;
@@ -149,6 +127,19 @@ void Player::initPhysics()
     // 输入初始化
     _moveInput = 0.0;
     _velocity = Vec2::ZERO;
+
+    //创建偏移量（碰撞箱对应图片）
+    Size originalSize = _sprite->getContentSize();
+    Vec2 offset = Vec2(0, originalSize.height / 2);
+    //创建主身体,材质：摩擦力1.0(防止卡墙)，弹性0
+    auto bodyMaterial = PhysicsMaterial(0.1f, 0.0f, 0.0f);
+    //根据碰撞箱大小、身体材质、偏移量创建碰撞箱
+    _physicsBody = PhysicsBody::createBox(_physicsSize, bodyMaterial,offset);
+    if (!_physicsBody) return;
+    //禁止旋转
+    _physicsBody->setRotationEnable(false);
+    //设置质量
+    _physicsBody->setMass(1.0f);
 
     //设置掩码
     _physicsBody->setCategoryBitmask(PLAYER_MASK);
@@ -933,7 +924,7 @@ void Player::modifyAttack(double value)
     modifyMaxHealth(value);
     modifyMaxMagic(value);
     modifyMagicRestore(value * 0.002);
-    setSkillDamage(_skillDamage + value * 0.1);
+    setSkillDamage(_skillDamage + value * 0.002);
 }
 
 void Player::modifyMove(double value)

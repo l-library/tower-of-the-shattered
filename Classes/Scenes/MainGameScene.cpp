@@ -77,7 +77,7 @@ bool MainGameScene::init()
 
     this->getPhysicsWorld()->setGravity(Vec2(0, -980));
     this->getPhysicsWorld()->setSubsteps(3);
-    this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    // this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
     this->getPhysicsWorld()->setAutoStep(true);
 
@@ -146,14 +146,7 @@ bool MainGameScene::init()
     this->scheduleUpdate();
 
     ItemManager::getInstance()->init("config/items.json");
-    auto item = Items::createWithId(110);
-    if (item) {
-        item->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 
-        item->getPhysicsBody()->setVelocity(Vec2(0, 200));
-
-        this->addChild(item, 5);
-    }
     return true;
 }
 
@@ -233,6 +226,9 @@ MainGameScene::~MainGameScene()
 void MainGameScene::resetPlayerForNewScene(Player* player) {
     if (!player) return;
 
+    // 去除player上的子节点
+    player->removeAllChildrenWithCleanup(false);
+
     // 停止所有动作
     player->stopAllActions();
 
@@ -265,7 +261,7 @@ void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
     // 停止背景音乐
     AudioManager::getInstance()->pauseBGM();
     // 创建死亡提示 Sprite
-    Sprite* deadSprite = Sprite::create("player/dead.png");
+    Sprite* deadSprite = Sprite::create(end_sprite);
     // 重置itemMananger
     ItemManager::getInstance()->resetRuntimeData();
     g_currentRoomId = 1;
@@ -290,13 +286,13 @@ void MainGameScene::gameOver(std::string end_sprite, std::string end_sound)
         auto sequence = Sequence::create(
             spawnAction,
             DelayTime::create(2.0f),
-            CallFunc::create([this]() {
+            CallFunc::create([end_sound]() {
                 // 重置静态变量
                 isGameOverProcessing = false;
-                AudioManager::getInstance()->playEffect("sounds/Death.ogg");
+                AudioManager::getInstance()->playEffect(end_sound);
                 // 创建并切换到菜单场景，使用淡出淡入转场
                 auto menuScene = MainMenuScene::createScene();
-                Director::getInstance()->replaceScene(TransitionFade::create(0.5f, menuScene, Color3B::BLACK));
+                Director::getInstance()->replaceScene(TransitionFade::create(1.0f, menuScene, Color3B::BLACK));
                 }),
             nullptr
         );

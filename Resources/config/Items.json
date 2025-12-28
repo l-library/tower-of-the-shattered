@@ -33,7 +33,7 @@
         "desc": "技能伤害变为1.2倍",
         "information": "人们曾经热衷于制作这种石头",
         "effect_type": "SKILL_DAMAGE_UP",
-        "value": 10.2
+        "value": 1.2
     },
     {
         "id": 105,
@@ -95,7 +95,7 @@
         "icon": "items/gold.png",
         "desc": "可以用来购买东西",
         "information": "大灾变让这些被曾经的宝物变成了垃圾。",
-        "effect_type": "DOUBLE_DODGE",
+        "effect_type": "NONE",
         "value": 1.0
     },
     {
@@ -104,7 +104,7 @@
         "icon": "items/soul.png",
         "desc": "与你的灵魂绑定，不会因死亡而丢失",
         "information": "这种东西很受地下市场欢迎",
-        "effect_type": "DOUBLE_DODGE",
+        "effect_type": "NONE",
         "value": 1.0
     }
 ]

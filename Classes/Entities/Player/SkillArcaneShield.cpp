@@ -42,14 +42,18 @@ bool SkillArcaneShield::execute(Player* owner , double damage) {
     // 创建护盾实体
     auto shield = Bullet::create("player/ArcaneShield-0.png", 0, [sound_id](Bullet* b, float d) {});
 
-    // 延迟数秒后结束音效
-    auto delay = DelayTime::create(_config.speed);
-    auto fireFunc = CallFunc::create([sound_id]() {
-        // 播放音效
+    shield->setOnExitCallback([sound_id]() {
         AudioManager::getInstance()->stopById(sound_id);
         });
-    // 在当前玩家身上运行这个序列
-    owner->runAction(Sequence::create(delay, fireFunc, nullptr));
+
+    //// 延迟数秒后结束音效
+    //auto delay = DelayTime::create(_config.speed);
+    //auto fireFunc = CallFunc::create([sound_id]() {
+    //    // 播放音效
+    //    AudioManager::getInstance()->stopById(sound_id);
+    //    });
+    //// 在当前玩家身上运行这个序列
+    //owner->runAction(Sequence::create(delay, fireFunc, nullptr));
 
     if (!shield) return false;
 
