@@ -25,6 +25,9 @@ private:
     void onReturnToGame(cocos2d::Ref* sender);
     void onReturnToMainMenu(cocos2d::Ref* sender);
 
+    // 初始化物品展示
+    void initItemDisplay();
+
     // 记录当前高亮的 Item，用于防止音效重复播放
     cocos2d::MenuItem* _lastHighlightedItem;
 

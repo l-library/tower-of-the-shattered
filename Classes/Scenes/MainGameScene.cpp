@@ -66,6 +66,10 @@ bool MainGameScene::init()
         SaveManager::getInstance()->setsceneComeFromMenu(false);
     }
 
+    if (g_currentRoomId == 1)
+        AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
+    AudioManager::getInstance()->setBGMVolume(0.9f);
+
     if (!Scene::initWithPhysics())
     {
         return false;
@@ -140,9 +144,6 @@ bool MainGameScene::init()
     _cameraController = GameCamera::create(this, _player, map_1);
     _cameraController->retain();
     this->scheduleUpdate();
-
-    AudioManager::getInstance()->playIntroLoopBGM("sounds/BGM-Normal.ogg", "sounds/BGM-Normal-loop.ogg");
-    AudioManager::getInstance()->setBGMVolume(0.9f);
 
     ItemManager::getInstance()->init("config/items.json");
     auto item = Items::createWithId(110);
